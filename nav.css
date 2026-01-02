@@ -31,12 +31,12 @@
 }
 
 .landing-navbar .navbar-brand {
-    font-weight: 700;
-    font-size: 1.5rem;
+    font-weight: 600;
+    font-size: 1.1rem;
     color: var(--nav-primary) !important;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     text-decoration: none;
     transition: color 0.3s;
 }
@@ -46,16 +46,20 @@
 }
 
 .landing-navbar .navbar-brand img {
-    width: 40px;
-    height: 40px;
+    width: 28px !important;
+    height: 28px !important;
+    max-width: 28px !important;
+    max-height: 28px !important;
     border-radius: 50%;
+    object-fit: contain;
 }
 
 .landing-navbar .nav-link {
     color: var(--nav-text-muted) !important;
     font-weight: 500;
     transition: color 0.3s;
-    padding: 8px 16px !important;
+    padding: 6px 12px !important;
+    font-size: 0.95rem;
 }
 
 .landing-navbar .nav-link:hover {
@@ -67,11 +71,12 @@
     border: none;
     color: var(--nav-dark-bg);
     font-weight: 600;
-    padding: 10px 24px;
-    border-radius: 10px;
+    padding: 8px 20px;
+    border-radius: 8px;
     transition: all 0.3s;
     text-decoration: none;
     display: inline-block;
+    font-size: 0.9rem;
 }
 
 .landing-navbar .btn-nav-primary:hover {
@@ -165,12 +170,12 @@
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .landing-navbar .navbar-brand {
-        font-size: 1.2rem;
+        font-size: 1rem;
     }
     
     .landing-navbar .navbar-brand img {
-        width: 32px;
-        height: 32px;
+        width: 24px;
+        height: 24px;
     }
     
     .app-nav .nav-content {

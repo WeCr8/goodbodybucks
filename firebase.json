@@ -27,16 +27,49 @@
       "Dockerfile",
       ".firebase/**",
       ".git/**",
-      "agent-tools/**"
+      "agent-tools/**",
+      "__pycache__/**"
     ],
     "rewrites": [
       {
+        "source": "/",
+        "destination": "/landing.html"
+      },
+      {
         "source": "/app",
-        "destination": "/app.html"
+        "destination": "/index.html"
+      },
+      {
+        "source": "/landing",
+        "destination": "/landing.html"
+      },
+      {
+        "source": "/test-nav",
+        "destination": "/test_navigation.html"
       },
       {
         "source": "/api/**",
         "function": "api"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(jpg|jpeg|gif|png|svg|webp)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=7200"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(js|css)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=3600"
+          }
+        ]
       }
     ]
   }

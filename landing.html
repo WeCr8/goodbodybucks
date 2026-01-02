@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoodbodyBucks - Teaching Real-World Skills Through Everyday Life</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Navigation Component CSS -->
+    <link rel="stylesheet" href="/nav.css">
+    
+    <style>
+        :root {
+            --primary: #34d399;
+            --secondary: #60a5fa;
+            --dark-bg: #0b0f14;
+            --card-bg: #121823;
+            --card-border: #223146;
+            --text-light: #eaf2ff;
+            --text-muted: #8aa0b6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 50%, #1e3a5f 100%);
+            padding: 100px 0 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(52, 211, 153, 0.1), transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(96, 165, 250, 0.1), transparent 50%);
+            pointer-events: none;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 24px;
+            line-height: 1.2;
+        }
+        
+        .hero .highlight {
+            color: var(--primary);
+        }
+        
+        .hero p.lead {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+        
+        .hero-coin {
+            width: 150px;
+            height: 150px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        /* Section Styles */
+        section {
+            padding: 80px 0;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 60px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Cards */
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 32px;
+            height: 100%;
+            transition: all 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 12px 24px rgba(52, 211, 153, 0.2);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-light);
+        }
+        
+        .feature-card p {
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+        
+        /* Legacy Section */
+        .legacy-section {
+            background: var(--card-bg);
+            border-top: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
+        }
+        
+        .legacy-image-container {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 3px solid var(--primary);
+        }
+        
+        .legacy-image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .legacy-caption {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
+            padding: 20px;
+            text-align: center;
+            font-style: italic;
+            color: var(--text-muted);
+            border-top: 2px solid var(--primary);
+        }
+        
+        /* Value Props */
+        .value-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .value-list li {
+            padding: 12px 0;
+            font-size: 1.1rem;
+            position: relative;
+            padding-left: 40px;
+        }
+        
+        .value-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        /* Interface Preview */
+        .interface-preview {
+            background: var(--card-bg);
+            border-top: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
+            padding: 80px 0;
+        }
+        
+        .preview-card {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
+            border: 2px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px;
+            height: 100%;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .preview-card::after {
+            content: '👁️ Click to view';
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            background: var(--primary);
+            color: var(--dark-bg);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+        }
+        
+        .preview-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(52, 211, 153, 0.3);
+        }
+        
+        .preview-card:hover::after {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .preview-card img {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 2px solid var(--card-border);
+        }
+        
+        .preview-card h3 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+        
+        .preview-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 0;
+        }
+        
+        /* Demo Wallet */
+        .demo-wallet {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
+            border: 3px solid var(--primary);
+            border-radius: 24px;
+            padding: 32px;
+            text-align: center;
+            margin: 40px 0;
+            box-shadow: 0 12px 40px rgba(52, 211, 153, 0.3);
+        }
+        
+        .demo-wallet-logo {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            box-shadow: 0 6px 20px rgba(52, 211, 153, 0.4);
+        }
+        
+        .demo-wallet-title {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+        
+        .demo-wallet-balance {
+            font-size: 56px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 12px 0;
+            text-shadow: 0 2px 8px rgba(52, 211, 153, 0.3);
+        }
+        
+        .demo-wallet-minutes {
+            font-size: 36px;
+            font-weight: 600;
+            color: var(--secondary);
+            margin: 12px 0;
+        }
+        
+        .demo-wallet-label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        
+        .demo-wallet-status {
+            margin-top: 20px;
+            padding: 12px;
+            background: rgba(52, 211, 153, 0.2);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        /* Modal Preview */
+        .modal-preview {
+            background: var(--card-bg);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px 0;
+            box-shadow: 0 8px 32px rgba(52, 211, 153, 0.3);
+        }
+        
+        .modal-preview-header {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .modal-preview-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--card-border);
+        }
+        
+        .modal-preview-item:last-child {
+            border-bottom: none;
+        }
+        
+        .modal-preview-label {
+            color: var(--text-muted);
+        }
+        
+        .modal-preview-value {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        /* Interactive Demo Modal */
+        .demo-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        
+        .demo-modal-overlay.active {
+            display: flex;
+        }
+        
+        .demo-modal {
+            background: linear-gradient(135deg, #121823 0%, #1a2332 100%);
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(52, 211, 153, 0.4);
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .demo-modal-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
+            padding: 24px;
+            border-bottom: 2px solid var(--primary);
+            text-align: center;
+            position: relative;
+        }
+        
+        .demo-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .demo-modal-close:hover {
+            background: rgba(251, 113, 133, 0.3);
+            border-color: #fb7185;
+            color: #fb7185;
+        }
+        
+        .demo-modal-body {
+            padding: 32px;
+        }
+        
+        .demo-modal img {
+            width: 100%;
+            border-radius: 12px;
+            border: 2px solid var(--card-border);
+            margin-bottom: 20px;
+        }
+        
+        .demo-cta {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid var(--card-border);
+        }
+        
+        .btn-demo {
+            display: inline-block;
+            padding: 12px 32px;
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .btn-demo:hover {
+            background: rgba(52, 211, 153, 0.1);
+            transform: scale(1.05);
+        }
+        
+        /* How It Works */
+        .step-card {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
+            border: 2px solid var(--card-border);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            height: 100%;
+        }
+        
+        .step-number {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: var(--dark-bg);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(52, 211, 153, 0.4);
+        }
+        
+        .step-card i {
+            font-size: 3rem;
+            color: var(--secondary);
+            margin-bottom: 20px;
+        }
+        
+        .step-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 16px;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
+            padding: 80px 0;
+            text-align: center;
+        }
+        
+        .cta-section h2 {
+            font-size: 3rem;
+            margin-bottom: 24px;
+        }
+        
+        .cta-section p {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+        
+        .btn-hero {
+            font-size: 1.2rem;
+            padding: 16px 48px;
+            background: var(--primary);
+            color: var(--dark-bg);
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+        
+        .btn-hero:hover {
+            background: #22c088;
+            transform: scale(1.05);
+            box-shadow: 0 12px 32px rgba(52, 211, 153, 0.4);
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--card-bg);
+            border-top: 1px solid var(--card-border);
+            padding: 40px 0;
+            text-align: center;
+            color: var(--text-muted);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p.lead {
+                font-size: 1.2rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .hero-coin {
+                width: 100px;
+                height: 100px;
+                margin-top: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark landing-navbar">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="/images/gbucks-coin-nav.png" alt="GB$" width="28" height="28" style="max-width: 28px; max-height: 28px;">
+                GoodbodyBucks
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#what-is">What Is It?</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#interface">See It</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#legacy">The Legacy</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#how-it-works">How It Works</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#why">Why It Works</a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <a href="/app" class="btn-nav-primary">Launch App</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="hero-content">
+                        <h1>Teaching Real-World Skills<br>Through <span class="highlight">Everyday Life</span></h1>
+                        <p class="lead">A family economy system that turns learning into earning, choices into budgeting, and responsibility into something visible.</p>
+                        <a href="/app" class="btn btn-hero">Get Started <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-center">
+                    <img src="/images/gbucks-coin.png" alt="GoodBodyBucks Coin" class="hero-coin">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- What Is GoodbodyBucks Section -->
+    <section id="what-is">
+        <div class="container">
+            <h2 class="section-title">What Is <span style="color: var(--primary);">GoodbodyBucks</span>?</h2>
+            <p class="section-subtitle">GoodbodyBucks (GB$) is a family economy system that teaches kids real-world skills through everyday life.</p>
+            
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-lightbulb feature-icon"></i>
+                        <h3>It Turns</h3>
+                        <ul class="value-list">
+                            <li>learning into earning</li>
+                            <li>choices into budgeting</li>
+                            <li>time into something valuable</li>
+                            <li>responsibility into something visible</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-piggy-bank feature-icon"></i>
+                        <h3>Kids Earn GB$ For</h3>
+                        <ul class="value-list">
+                            <li>math</li>
+                            <li>reading</li>
+                            <li>writing</li>
+                            <li>outdoor work</li>
+                            <li>caring for animals</li>
+                            <li>helping the household run</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-cart3 feature-icon"></i>
+                        <h3>Kids Spend GB$ On</h3>
+                        <ul class="value-list">
+                            <li>meals</li>
+                            <li>screen time</li>
+                            <li>games</li>
+                            <li>special privileges</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="feature-card text-center">
+                        <h3 style="color: var(--primary); margin-bottom: 24px;">Just Like Real Life</h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="value-list text-start">
+                                    <li>money is limited</li>
+                                    <li>time runs out</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="value-list text-start">
+                                    <li>good choices compound</li>
+                                    <li>poor choices have consequences</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interface Preview Section -->
+    <section id="interface" class="interface-preview">
+        <div class="container">
+            <h2 class="section-title">See It In <span style="color: var(--primary);">Action</span></h2>
+            <p class="section-subtitle">Real menus, real choices, real learning</p>
+            
+            <!-- Demo Wallet -->
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="demo-wallet">
+                        <img src="/images/gbucks-coin.png" alt="Wallet Logo" class="demo-wallet-logo">
+                        <div class="demo-wallet-title">Kid's Wallet</div>
+                        <div class="demo-wallet-balance">GB$ 12.50</div>
+                        <div class="demo-wallet-label">Available Balance</div>
+                        <div class="demo-wallet-minutes">45 minutes</div>
+                        <div class="demo-wallet-label">Screen Time Available</div>
+                        <div class="demo-wallet-status">
+                            ✓ Wallet Active
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interface Previews -->
+            <div class="row g-4 mt-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="preview-card" onclick="openDemoModal('food')">
+                        <img src="/images/food/food_menu.png" alt="Food Menu">
+                        <h3>Food Menu</h3>
+                        <p>Kids purchase meals with their earned GB$. Real budgeting, real consequences.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="preview-card" onclick="openDemoModal('gaming')">
+                        <img src="/images/tablet_time/gaming_menu.png" alt="Screen Time Menu">
+                        <h3>Screen Time</h3>
+                        <p>Purchase gaming and tablet time. They manage their minutes wisely.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="preview-card" onclick="openDemoModal('learning')">
+                        <img src="/images/learning/learning_menu.png" alt="Learning Menu">
+                        <h3>Earning Menu</h3>
+                        <p>Clear rewards for math, reading, writing, and household responsibilities.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="preview-card" onclick="openDemoModal('wallet')">
+                        <img src="/images/wallet/wallet_menu.png" alt="Wallet Menu">
+                        <h3>Wallet View</h3>
+                        <p>Track balance, minutes, and make smart financial decisions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consequences Section -->
+            <div class="row mt-5">
+                <div class="col-lg-10 mx-auto">
+                    <div class="feature-card">
+                        <h3 style="color: var(--primary); text-align: center; margin-bottom: 32px; font-size: 1.8rem;">Parents Have Control</h3>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="modal-preview">
+                                    <div class="modal-preview-header">Time Consequences</div>
+                                    <img src="/images/consequences/consequences_menu_time.png" alt="Time Consequences" style="width: 100%; border-radius: 12px; margin-bottom: 16px;">
+                                    <div class="modal-preview-item">
+                                        <span class="modal-preview-label">Reduce screen time</span>
+                                        <span class="modal-preview-value">-5, -10, -15, -30 min</span>
+                                    </div>
+                                    <div class="modal-preview-item">
+                                        <span class="modal-preview-label">End session</span>
+                                        <span class="modal-preview-value">Immediate</span>
+                                    </div>
+                                    <div class="modal-preview-item">
+                                        <span class="modal-preview-label">Lock screens</span>
+                                        <span class="modal-preview-value">For the day</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="modal-preview">
+                                    <div class="modal-preview-header">Money Consequences</div>
+                                    <img src="/images/consequences/consequences_menu_money.png" alt="Money Consequences" style="width: 100%; border-radius: 12px; margin-bottom: 16px;">
+                                    <div class="modal-preview-item">
+                                        <span class="modal-preview-label">Financial penalties</span>
+                                        <span class="modal-preview-value">-$0.25 to -$5.00</span>
+                                    </div>
+                                    <div class="modal-preview-item">
+                                        <span class="modal-preview-label">Teach budgeting</span>
+                                        <span class="modal-preview-value">Real-world lessons</span>
+                                    </div>
+                                    <div class="modal-preview-item">
+                                        <span class="modal-preview-label">Fair & visible</span>
+                                        <span class="modal-preview-value">Kids understand</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p style="text-align: center; margin-top: 32px; font-size: 1.1rem; color: var(--text-muted);">
+                            Clear consequences. No arguments. Kids learn that actions have real impacts.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Legacy Section -->
+    <section id="legacy" class="legacy-section">
+        <div class="container">
+            <h2 class="section-title">A Legacy, <span style="color: var(--primary);">Continued</span></h2>
+            <p class="section-subtitle">GoodbodyBucks is inspired by a handwritten board from a previous generation.</p>
+            
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <div class="legacy-image-container">
+                        <img src="/images/legacy/goodbody_legacy_schedule.JPG" alt="Original hand-drawn schedule from the Goodbody household">
+                        <div class="legacy-caption">
+                            The original hand-drawn schedule that managed 9 children in the Goodbody household
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <h3 style="font-size: 2rem; margin-bottom: 24px;">Managing Nine Children</h3>
+                    <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text-muted);">
+                        Before apps and smartphones, a simple hand-drawn board kept an entire household running. 
+                        Nine children learned responsibility through a visible system where everyone knew their role.
+                    </p>
+                    <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text-muted);">
+                        The board showed who cleaned dishes, who had ice rights for the week, and when each child contributed to the family. 
+                        It wasn't about control—it was about clarity.
+                    </p>
+                    <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text-muted);">
+                        <strong style="color: var(--primary);">The tools have changed. The lesson hasn't.</strong>
+                    </p>
+                    <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text-muted);">
+                        Responsibility builds confidence. Clarity builds trust. And when kids understand the system, they rise to meet it.
+                    </p>
+                    <p style="font-size: 1.2rem; margin-top: 32px; font-weight: 600; color: var(--primary);">
+                        This is the Goodbody way—then and now.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How It <span style="color: var(--primary);">Works</span></h2>
+            <p class="section-subtitle">Simple to set up, powerful in practice</p>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <i class="bi bi-house-door"></i>
+                        <h3>Set Up Your Family</h3>
+                        <p>Create your family account and add your kids. Set up earning opportunities and spending options that match your household values.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <i class="bi bi-cash-coin"></i>
+                        <h3>Kids Earn & Learn</h3>
+                        <p>Award GoodBodyBucks for schoolwork, chores, and responsibilities. Watch as kids start making connections between effort and reward.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <i class="bi bi-graph-up-arrow"></i>
+                        <h3>Build Real Skills</h3>
+                        <p>Kids make spending decisions, budget their money, and learn the value of saving. Real consequences, real growth.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why It Works Section -->
+    <section id="why">
+        <div class="container">
+            <h2 class="section-title">Why It <span style="color: var(--primary);">Works</span></h2>
+            <p class="section-subtitle">GoodbodyBucks isn't about control. It's about understanding.</p>
+            
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="feature-card">
+                        <h3 style="color: var(--primary);"><i class="bi bi-x-circle"></i> Instead of arguing about:</h3>
+                        <ul class="value-list" style="margin-top: 24px;">
+                            <li>"Why can't I?"</li>
+                            <li>"That's not fair."</li>
+                            <li>"Just one more minute."</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="feature-card">
+                        <h3 style="color: var(--primary);"><i class="bi bi-check-circle"></i> The system provides:</h3>
+                        <ul class="value-list" style="margin-top: 24px;">
+                            <li>Visible rules</li>
+                            <li>Real math</li>
+                            <li>Clear choices</li>
+                            <li>Kid ownership</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-lg-10 mx-auto">
+                    <div class="feature-card text-center" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);">
+                        <h3 style="font-size: 1.8rem; margin-bottom: 32px;">The Result</h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <i class="bi bi-person-check" style="font-size: 3rem; color: var(--primary);"></i>
+                                <h4 style="margin-top: 16px; margin-bottom: 12px;">Parents Stop Being the Referee</h4>
+                                <p style="color: var(--text-muted);">The system handles the "no"</p>
+                            </div>
+                            <div class="col-md-6">
+                                <i class="bi bi-trophy" style="font-size: 3rem; color: var(--secondary);"></i>
+                                <h4 style="margin-top: 16px; margin-bottom: 12px;">Kids Become Decision-Makers</h4>
+                                <p style="color: var(--text-muted);">They own their choices</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Built for Real Families Section -->
+    <section style="background: var(--card-bg);">
+        <div class="container">
+            <h2 class="section-title">Built for <span style="color: var(--primary);">Real Families</span></h2>
+            <p class="section-subtitle">GoodbodyBucks is designed to work on paper, on a phone, on a kitchen counter, in a barn</p>
+            
+            <div class="row g-4 mb-5">
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature-card text-center">
+                        <i class="bi bi-phone feature-icon"></i>
+                        <h3 style="font-size: 1.2rem;">Digital Wallet</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 12px;">
+                            Web app works on any device, anywhere
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature-card text-center">
+                        <i class="bi bi-journal-text feature-icon"></i>
+                        <h3 style="font-size: 1.2rem;">Physical Ledger</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 12px;">
+                            Track everything with built-in transaction history
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature-card text-center">
+                        <i class="bi bi-printer feature-icon"></i>
+                        <h3 style="font-size: 1.2rem;">Printable Menus</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 12px;">
+                            Post menus on fridge for easy reference
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature-card text-center">
+                        <i class="bi bi-house-heart feature-icon"></i>
+                        <h3 style="font-size: 1.2rem;">Real Responsibility</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 12px;">
+                            Blends seamlessly with household tasks
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-10 mx-auto">
+                    <div class="feature-card" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);">
+                        <h3 style="font-size: 2rem; margin-bottom: 32px; text-align: center; color: var(--primary);">
+                            The Complete System
+                        </h3>
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <div style="text-align: center;">
+                                    <i class="bi bi-cash-stack" style="font-size: 3rem; color: var(--primary); margin-bottom: 16px; display: block;"></i>
+                                    <h4 style="color: var(--text-light); margin-bottom: 12px;">Earning System</h4>
+                                    <p style="color: var(--text-muted); font-size: 0.95rem;">
+                                        Clear rewards for learning, chores, and responsibilities
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div style="text-align: center;">
+                                    <i class="bi bi-cart-check" style="font-size: 3rem; color: var(--secondary); margin-bottom: 16px; display: block;"></i>
+                                    <h4 style="color: var(--text-light); margin-bottom: 12px;">Spending System</h4>
+                                    <p style="color: var(--text-muted); font-size: 0.95rem;">
+                                        Purchase meals, screen time, and privileges
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div style="text-align: center;">
+                                    <i class="bi bi-shield-check" style="font-size: 3rem; color: var(--primary); margin-bottom: 16px; display: block;"></i>
+                                    <h4 style="color: var(--text-light); margin-bottom: 12px;">Parent Controls</h4>
+                                    <p style="color: var(--text-muted); font-size: 0.95rem;">
+                                        Manage consequences and settings with ease
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--card-border);">
+                            <h4 style="font-size: 1.5rem; margin-bottom: 16px; color: var(--text-light);">No Gimmicks</h4>
+                            <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text-muted);">
+                                No fake rewards. No "gamification for the sake of it." 
+                                Just a system that respects kids enough to teach them how the world actually works.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to Start?</h2>
+            <p>Join families who are teaching real-world skills through everyday life.</p>
+            <a href="/app" class="btn btn-hero">Launch GoodbodyBucks <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p style="margin-bottom: 8px;">&copy; 2026 GoodbodyBucks. Teaching responsibility, one GB$ at a time.</p>
+            <p style="font-size: 0.9rem;">A family legacy continued.</p>
+        </div>
+    </footer>
+
+    <!-- Demo Modals -->
+    <div id="demoModalOverlay" class="demo-modal-overlay" onclick="closeDemoModal(event)">
+        <div class="demo-modal" onclick="event.stopPropagation()">
+            <div class="demo-modal-header">
+                <button class="demo-modal-close" onclick="closeDemoModal()">&times;</button>
+                <h2 id="modalTitle" style="color: var(--primary); margin: 0;">Feature Preview</h2>
+            </div>
+            <div class="demo-modal-body">
+                <img id="modalImage" src="" alt="Feature Preview">
+                <h3 id="modalHeading" style="color: var(--primary); margin-bottom: 16px;"></h3>
+                <p id="modalDescription" style="color: var(--text-muted); line-height: 1.8; margin-bottom: 20px;"></p>
+                <div id="modalFeatures"></div>
+                <div class="demo-cta">
+                    <p style="color: var(--text-muted); margin-bottom: 16px;">Ready to get started?</p>
+                    <a href="/app" class="btn btn-hero">Launch GoodbodyBucks</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Navigation Component JS -->
+    <script src="/nav.js"></script>
+    
+    <!-- Demo Modal JS -->
+    <script>
+        const demoContent = {
+            food: {
+                title: 'Food Menu',
+                image: '/images/food/food_menu.png',
+                heading: 'Real Meals, Real Budgeting',
+                description: 'Kids use their earned GoodbodyBucks to purchase breakfast, lunch, dinner, and snacks. They learn to budget their money and make smart choices about what they can afford.',
+                features: [
+                    { label: 'Breakfast Options', value: 'Eggs, bacon, waffles, yogurt' },
+                    { label: 'Lunch Choices', value: 'Sandwiches, nuggets, drinks' },
+                    { label: 'Dinner Selections', value: 'Spaghetti, tacos, dessert' },
+                    { label: 'Teaching Moment', value: 'Limited budget = smart choices' }
+                ]
+            },
+            gaming: {
+                title: 'Screen Time Packages',
+                image: '/images/tablet_time/gaming_menu.png',
+                heading: 'Earn Time, Spend Wisely',
+                description: 'Purchase screen time in blocks ranging from 10 to 60 minutes. Kids learn to manage their time and make it last throughout the day or week.',
+                features: [
+                    { label: 'Tablet Time', value: '10, 20, 30, 45, or 60 minutes' },
+                    { label: 'Game Time', value: '15, 30, 45, or 60 minutes' },
+                    { label: 'Cost Structure', value: 'GB$0.50 to GB$3.00 per package' },
+                    { label: 'Life Lesson', value: 'Time is valuable and limited' }
+                ]
+            },
+            learning: {
+                title: 'Earning Opportunities',
+                image: '/images/learning/learning_menu.png',
+                heading: 'Learn, Work, Earn',
+                description: 'Kids earn GoodbodyBucks by completing schoolwork, chores, and household responsibilities. Every task has a clear reward, teaching the value of effort.',
+                features: [
+                    { label: 'Math Problems', value: 'GB$0.25 to GB$1.00 per problem' },
+                    { label: 'Reading', value: 'GB$0.25 per page, GB$1.00 for 5 pages' },
+                    { label: 'Writing & Spelling', value: 'GB$0.25 to GB$0.50 per task' },
+                    { label: 'Core Principle', value: 'Effort = Reward' }
+                ]
+            },
+            wallet: {
+                title: 'Kid Wallet Dashboard',
+                image: '/images/wallet/wallet_menu.png',
+                heading: 'Track Everything',
+                description: 'Kids see their balance, available screen time, and can make purchase decisions. The wallet is their personal financial dashboard.',
+                features: [
+                    { label: 'GB$ Balance', value: 'Current spending money' },
+                    { label: 'Screen Minutes', value: 'Available time remaining' },
+                    { label: 'Purchase History', value: 'See what you\'ve bought' },
+                    { label: 'Wallet Status', value: 'Active, locked, or limited' }
+                ]
+            }
+        };
+        
+        function openDemoModal(type) {
+            const content = demoContent[type];
+            if (!content) return;
+            
+            document.getElementById('modalTitle').textContent = content.title;
+            document.getElementById('modalImage').src = content.image;
+            document.getElementById('modalHeading').textContent = content.heading;
+            document.getElementById('modalDescription').textContent = content.description;
+            
+            const featuresHTML = content.features.map(f => `
+                <div class="modal-preview-item">
+                    <span class="modal-preview-label">${f.label}</span>
+                    <span class="modal-preview-value">${f.value}</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('modalFeatures').innerHTML = `
+                <div class="modal-preview" style="margin-top: 24px;">
+                    ${featuresHTML}
+                </div>
+            `;
+            
+            document.getElementById('demoModalOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeDemoModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('demoModalOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeDemoModal();
+            }
+        });
+    </script>
+</body>
+</html>
+
