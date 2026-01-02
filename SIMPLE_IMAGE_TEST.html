@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Test</title>
+</head>
+<body>
+    <h1>Image Loading Test</h1>
+    <p>Testing image loading from Flask server...</p>
+    
+    <h2>Test 1: Logo</h2>
+    <img src="http://127.0.0.1:5000/images/gbucks-coin.png" 
+         onload="console.log('✅ Logo loaded')" 
+         onerror="console.error('❌ Logo failed')" 
+         style="width:100px; border:2px solid red;"/>
+    
+    <h2>Test 2: Food Menu</h2>
+    <img src="http://127.0.0.1:5000/images/food/food_menu.png" 
+         onload="console.log('✅ Food menu loaded')" 
+         onerror="console.error('❌ Food menu failed')" 
+         style="max-width:300px; border:2px solid red;"/>
+    
+    <h2>Test 3: Screen Time Menu</h2>
+    <img src="http://127.0.0.1:5000/images/tablet_time/gaming_menu.png" 
+         onload="console.log('✅ Screen menu loaded')" 
+         onerror="console.error('❌ Screen menu failed')" 
+         style="max-width:300px; border:2px solid red;"/>
+    
+    <h2>Console Output</h2>
+    <p>Open browser console (F12) to see load/error messages</p>
+    
+    <script>
+        console.log('Testing image URLs...');
+        const images = [
+            'http://127.0.0.1:5000/images/gbucks-coin.png',
+            'http://127.0.0.1:5000/images/food/food_menu.png',
+            'http://127.0.0.1:5000/images/tablet_time/gaming_menu.png'
+        ];
+        
+        images.forEach(url => {
+            fetch(url, { method: 'HEAD' })
+                .then(r => console.log(`✅ ${url} - Status: ${r.status}`))
+                .catch(e => console.error(`❌ ${url} - Error:`, e.message));
+        });
+    </script>
+</body>
+</html>
+

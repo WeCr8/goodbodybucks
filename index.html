@@ -1,0 +1,1547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>GB$ Family Wallet</title>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<style>
+  body { margin:0; font-family:system-ui; background:#0b0f14; color:#eaf2ff; }
+  .wrap { max-width:1100px; margin:auto; padding:16px; }
+  .card { background:#121823; border:1px solid #223146; border-radius:14px; padding:14px; margin-bottom:12px; }
+  h1,h2,h3 { margin:6px 0; }
+  label { font-size:12px; color:#8aa0b6; display:block; margin-top:10px; }
+  input,select,textarea,button {
+    width:100%; padding:10px; border-radius:10px;
+    border:1px solid #223146; background:#0d121b; color:#eaf2ff;
+  }
+  button { cursor:pointer; font-weight:600; margin-top:8px; }
+  .row { display:flex; gap:10px; }
+  .row > * { flex:1; }
+  .hidden { display:none; }
+  .kid { background:#0d121b; border-radius:12px; padding:10px; margin-bottom:8px; }
+  .pill { font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid #223146; }
+  .ok { color:#34d399; }
+  .bad { color:#fb7185; }
+  .wallet { background:linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%); border:2px solid #3a5f8f; border-radius:20px; padding:24px; margin:16px 0; text-align:center; }
+  .wallet-title { font-size:14px; color:#8aa0b6; margin-bottom:12px; text-transform:uppercase; letter-spacing:1px; }
+  .wallet-balance { font-size:48px; font-weight:700; color:#34d399; margin:8px 0; text-shadow:0 2px 8px rgba(52,211,153,0.3); }
+  .wallet-minutes { font-size:32px; font-weight:600; color:#60a5fa; margin:8px 0; }
+  .wallet-label { font-size:12px; color:#8aa0b6; margin-top:4px; }
+  .wallet-status { margin-top:12px; padding:8px; border-radius:8px; background:rgba(0,0,0,0.2); }
+  .wallet-locked { background:rgba(251,113,133,0.2); border:1px solid #fb7185; }
+  .wallet-active { background:rgba(52,211,153,0.2); border:1px solid #34d399; }
+  .logo-header { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
+  .logo-header img { width:64px; height:64px; border-radius:50%; border:2px solid #34d399; box-shadow:0 4px 12px rgba(52,211,153,0.3); }
+  .wallet-logo { width:120px; height:120px; margin:0 auto 16px; border-radius:50%; border:3px solid #34d399; box-shadow:0 6px 20px rgba(52,211,153,0.4); display:block; }
+  .menu-section { margin:20px 0; }
+  .menu-image { width:100%; max-width:600px; border-radius:12px; border:2px solid #223146; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; }
+  .menu-image:hover { transform:scale(1.02); box-shadow:0 8px 24px rgba(52,211,153,0.3); }
+  .menu-toggle { background:#223146; color:#8aa0b6; padding:8px 12px; border-radius:8px; font-size:12px; cursor:pointer; display:inline-block; margin-bottom:8px; }
+  .menu-toggle:hover { background:#2a3a52; color:#eaf2ff; }
+  .menu-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-top:16px; }
+  .menu-card { background:#0d121b; border:1px solid #223146; border-radius:12px; padding:12px; text-align:center; }
+  .menu-card img { width:100%; border-radius:8px; margin-bottom:8px; }
+  .menu-card-title { font-size:14px; font-weight:600; color:#eaf2ff; margin-bottom:4px; }
+  .menu-card-price { font-size:12px; color:#34d399; }
+  .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:1000; }
+  .modal { background:#121823; border:2px solid #34d399; border-radius:16px; padding:24px; max-width:500px; width:90%; box-shadow:0 8px 32px rgba(52,211,153,0.3); }
+  .modal-header { font-size:20px; font-weight:700; color:#34d399; margin-bottom:16px; text-align:center; }
+  .modal-content { margin:16px 0; }
+  .modal-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #223146; }
+  .modal-row:last-child { border-bottom:none; font-weight:600; font-size:16px; }
+  .modal-label { color:#8aa0b6; }
+  .modal-value { color:#eaf2ff; }
+  .modal-value.positive { color:#34d399; }
+  .modal-value.negative { color:#fb7185; }
+  .modal-actions { display:flex; gap:12px; margin-top:20px; }
+  .modal-actions button { flex:1; padding:12px; font-weight:600; border-radius:10px; cursor:pointer; }
+  .modal-cancel { background:#223146; color:#8aa0b6; border:1px solid #223146; }
+  .modal-cancel:hover { background:#2a3a52; color:#eaf2ff; }
+  .modal-confirm { background:#34d399; color:#0b0f14; border:1px solid #34d399; }
+  .modal-confirm:hover { background:#22c088; }
+  .modal-menu-section { max-height:300px; overflow-y:auto; margin-top:16px; padding-top:16px; border-top:1px solid #223146; }
+  .modal-menu-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:8px; margin-top:12px; }
+  .modal-menu-item { background:#0d121b; border:2px solid #223146; border-radius:8px; padding:8px; text-align:center; cursor:pointer; transition:all 0.2s; }
+  .modal-menu-item:hover { border-color:#34d399; transform:scale(1.05); }
+  .modal-menu-item.selected { border-color:#34d399; background:rgba(52,211,153,0.1); }
+  .modal-menu-item img { width:100%; border-radius:4px; margin-bottom:4px; }
+  .modal-menu-item-title { font-size:11px; color:#eaf2ff; margin-bottom:2px; }
+  .modal-menu-item-price { font-size:10px; color:#34d399; }
+  .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:1000; }
+  .modal { background:#121823; border:2px solid #34d399; border-radius:16px; padding:24px; max-width:500px; width:90%; box-shadow:0 8px 32px rgba(52,211,153,0.3); }
+  .modal-header { font-size:20px; font-weight:700; color:#34d399; margin-bottom:16px; text-align:center; }
+  .modal-content { margin:16px 0; }
+  .modal-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #223146; }
+  .modal-row:last-child { border-bottom:none; font-weight:600; font-size:16px; }
+  .modal-label { color:#8aa0b6; }
+  .modal-value { color:#eaf2ff; }
+  .modal-value.positive { color:#34d399; }
+  .modal-value.negative { color:#fb7185; }
+  .modal-actions { display:flex; gap:12px; margin-top:20px; }
+  .modal-actions button { flex:1; padding:12px; font-weight:600; border-radius:10px; cursor:pointer; }
+  .modal-cancel { background:#223146; color:#8aa0b6; border:1px solid #223146; }
+  .modal-cancel:hover { background:#2a3a52; color:#eaf2ff; }
+  .modal-confirm { background:#34d399; color:#0b0f14; border:1px solid #34d399; }
+  .modal-confirm:hover { background:#22c088; }
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="logo-header">
+    <div>
+      <h1 style="margin:0; display:flex; align-items:center; gap:8px;">
+        <img src="/images/gbucks-coin.png" alt="GB$ Logo" style="width:32px; height:32px; vertical-align:middle;" 
+             onload="console.log('[IMAGE] ✅ Loaded: gbucks-coin.png');" 
+             onerror="console.error('[IMAGE] ❌ Failed to load: gbucks-coin.png from', this.src); this.style.display='none';"/>
+        GB$ Family Wallet
+      </h1>
+      <p style="color:#8aa0b6; font-size:14px; margin:0;">Earn, Spend, Learn!</p>
+    </div>
+  </div>
+
+<div class="card">
+<h2>Family Setup (one-time)</h2>
+<form onsubmit="event.preventDefault(); setupFamily();">
+<label>Family Name</label>
+<input id="familyName" value="Goodbody" required/>
+<button type="submit">Create Family</button>
+</form>
+<div id="setupResult" class="pill"></div>
+</div>
+
+<div class="card">
+<h2>Login</h2>
+
+<label>Family ID</label>
+<input id="familyId" required/>
+
+<div class="row">
+  <button type="button" onclick="showAdmin()">Admin</button>
+  <button type="button" onclick="showKid()">Kid</button>
+</div>
+
+<div id="adminBox" class="hidden">
+  <form onsubmit="event.preventDefault(); loginAdmin();">
+    <label>Admin Email</label>
+    <input id="adminEmail" type="email" autocomplete="email" required/>
+    <label>Password</label>
+    <input id="adminPass" type="password" autocomplete="current-password" required minlength="6"/>
+    <button type="submit">Login Admin</button>
+  </form>
+</div>
+
+<div id="kidBox" class="hidden">
+  <form onsubmit="event.preventDefault(); loginKid();">
+    <label>Kid Name</label>
+    <input id="kidName" autocomplete="username" required/>
+    <label>PIN (min 6 characters)</label>
+    <input id="kidPin" type="password" autocomplete="current-password" required minlength="6" placeholder="At least 6 characters"/>
+    <button type="submit">Login Kid</button>
+  </form>
+</div>
+
+<div id="status" class="pill"></div>
+</div>
+
+<div class="card">
+<h2>Dashboard</h2>
+<button onclick="refreshState()">Refresh</button>
+<div id="kids"></div>
+</div>
+
+<div id="kidWallet" class="card hidden">
+<h2>My Wallet</h2>
+<div id="walletDisplay"></div>
+</div>
+
+<div id="historyView" class="card hidden"></div>
+
+<!-- Purchase Confirmation Modal -->
+<div id="purchaseModal" class="modal-overlay hidden" style="display:none !important;" onclick="if(event.target.id === 'purchaseModal') closePurchaseModal();">
+  <div class="modal" onclick="event.stopPropagation();" style="max-width:700px; max-height:90vh; overflow-y:auto;">
+    <div class="modal-header" id="modalTitle">Confirm Purchase</div>
+    <div class="modal-content">
+      <!-- Menu Image Display -->
+      <div id="modalMenuImage" style="margin-bottom:16px; text-align:center;">
+        <img id="modalMenuImageSrc" src="" alt="Menu" style="max-width:100%; max-height:200px; border-radius:12px; border:2px solid #223146;" 
+             onload="console.log('[IMAGE] ✅ Loaded modal menu image');"
+             onerror="console.error('[IMAGE] ❌ Failed to load modal menu image:', this.src); this.style.display='none';"/>
+      </div>
+      
+      <div class="modal-row">
+        <span class="modal-label">Item:</span>
+        <span class="modal-value" id="modalItemName">-</span>
+      </div>
+      <div class="modal-row">
+        <span class="modal-label">Cost:</span>
+        <span class="modal-value negative" id="modalCost">-</span>
+      </div>
+      <div class="modal-row">
+        <span class="modal-label">Current Balance:</span>
+        <span class="modal-value positive" id="modalCurrentBalance">-</span>
+      </div>
+      <div class="modal-row">
+        <span class="modal-label">New Balance:</span>
+        <span class="modal-value" id="modalNewBalance">-</span>
+      </div>
+      <div id="modalExtraInfo" style="margin-top:12px; padding-top:12px; border-top:1px solid #223146; color:#8aa0b6; font-size:12px;"></div>
+      
+      <!-- Menu Options -->
+      <div class="modal-menu-section">
+        <div style="color:#8aa0b6; font-size:12px; margin-bottom:8px;">Select a different option:</div>
+        <div id="modalMenuGrid" class="modal-menu-grid"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closePurchaseModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmPurchase()">Confirm Purchase</button>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+<h2>Kid Actions</h2>
+
+<!-- Visual Menu Toggle -->
+<div style="margin-bottom:16px;">
+  <span class="menu-toggle" onclick="toggleMenuView()" id="menuViewToggle">📋 Hide Visual Menus</span>
+</div>
+
+<!-- Visual Menu Display -->
+<div id="visualMenus">
+  <div class="menu-section">
+    <h3>🍕 Food Menu</h3>
+    <img src="/images/food/food_menu.png" alt="Food Menu" class="menu-image" onclick="showFoodMenu()"
+         onload="console.log('[IMAGE] ✅ Loaded: food/food_menu.png');"
+         onerror="console.error('[IMAGE] ❌ Failed to load: food/food_menu.png from', this.src);"/>
+    <div id="foodMenuGrid" class="menu-grid"></div>
+  </div>
+  
+  <div class="menu-section">
+    <h3>🎮 Screen Time Menu</h3>
+    <img src="/images/tablet_time/gaming_menu.png" alt="Screen Time Menu" class="menu-image" onclick="showScreenMenu()"
+         onload="console.log('[IMAGE] ✅ Loaded: tablet_time/gaming_menu.png');"
+         onerror="console.error('[IMAGE] ❌ Failed to load: tablet_time/gaming_menu.png from', this.src);"/>
+    <div id="screenMenuGrid" class="menu-grid"></div>
+  </div>
+  
+  <div class="menu-section">
+    <h3>📚 Learning Rewards</h3>
+    <img src="/images/learning/learning_menu.png" alt="Learning Menu" class="menu-image" onclick="showLearningMenu()"
+         onload="console.log('[IMAGE] ✅ Loaded: learning/learning_menu.png');"
+         onerror="console.error('[IMAGE] ❌ Failed to load: learning/learning_menu.png from', this.src);"/>
+    <div id="learningMenuGrid" class="menu-grid"></div>
+  </div>
+</div>
+
+<!-- Traditional Dropdowns (fallback) -->
+<div id="dropdownMenus" class="hidden">
+  <label>Screen Package</label>
+  <select id="screenPkg"></select>
+  <button onclick="buyScreen()">Buy Screen Time</button>
+
+  <label>Food Item</label>
+  <select id="foodItem"></select>
+  <img id="foodPreview" src="" style="max-width:200px; max-height:200px; display:none; margin-top:8px; border-radius:8px; border:1px solid #223146;" alt="Food preview"/>
+  <button onclick="buyFood()">Buy Food</button>
+</div>
+
+<label>Timer Mode</label>
+<select id="mode">
+  <option value="tablet">Tablet</option>
+  <option value="game">Game</option>
+</select>
+<button onclick="startSession()">Start Session</button>
+<button onclick="stopSession()">Stop Session</button>
+</div>
+
+<div class="card">
+<h2>Admin Controls</h2>
+
+<!-- Admin Menu Reference -->
+<div style="margin-bottom:16px;">
+  <span class="menu-toggle" onclick="toggleAdminMenuView()" id="adminMenuViewToggle">📋 Show Menu Reference</span>
+</div>
+
+<div id="adminVisualMenus" class="hidden">
+  <div class="menu-section">
+    <h3>🍕 Food Menu</h3>
+    <img src="/images/food/food_menu.png" alt="Food Menu" class="menu-image" onclick="showAdminFoodMenu()"/>
+    <div id="adminFoodMenuGrid" class="menu-grid hidden"></div>
+  </div>
+  
+  <div class="menu-section">
+    <h3>🎮 Screen Time Menu</h3>
+    <img src="/images/tablet_time/gaming_menu.png" alt="Screen Time Menu" class="menu-image" onclick="showAdminScreenMenu()"
+         onload="console.log('[IMAGE] ✅ Loaded admin: tablet_time/gaming_menu.png');"
+         onerror="console.error('[IMAGE] ❌ Failed to load admin: tablet_time/gaming_menu.png from', this.src);"/>
+    <div id="adminScreenMenuGrid" class="menu-grid hidden"></div>
+  </div>
+  
+  <div class="menu-section">
+    <h3>📚 Learning Rewards</h3>
+    <img src="/images/learning/learning_menu.png" alt="Learning Menu" class="menu-image" onclick="showAdminLearningMenu()"
+         onload="console.log('[IMAGE] ✅ Loaded admin: learning/learning_menu.png');"
+         onerror="console.error('[IMAGE] ❌ Failed to load admin: learning/learning_menu.png from', this.src);"/>
+    <div id="adminLearningMenuGrid" class="menu-grid hidden"></div>
+  </div>
+</div>
+
+<label>Daily Allotment JSON</label>
+<textarea id="allotment">{ "Miles": 12, "Sabrina": 15 }</textarea>
+<button onclick="dailyAllotment()">Apply</button>
+
+<label>Reward Kid</label>
+<input id="rewardKid"/>
+<select id="rewardAction"></select>
+<button onclick="rewardKid()">Reward</button>
+
+<label>Time Consequence</label>
+<input id="timeKid"/>
+<select id="timeConsequence"></select>
+<button onclick="timePunish()">Apply</button>
+
+<label>Money Consequence</label>
+<input id="moneyKid"/>
+<select id="moneyConsequence"></select>
+<button onclick="moneyPunish()">Apply</button>
+</div>
+
+<div class="card">
+<h2>Member Management</h2>
+
+<label>Add Member</label>
+<div class="row">
+  <input id="addMemberName" placeholder="Name"/>
+  <select id="addMemberRole">
+    <option value="kid">Kid</option>
+    <option value="admin">Admin</option>
+  </select>
+</div>
+<input id="addMemberUid" placeholder="Firebase UID (optional - leave blank to lookup by name)"/>
+<button onclick="addMember()">Add Member</button>
+
+<label>Remove Member</label>
+<input id="removeMemberUid" placeholder="Firebase UID or Kid Name"/>
+<button onclick="removeMember()">Remove Member</button>
+
+<label>Reset Kid Values</label>
+<input id="resetKidUid" placeholder="Firebase UID or Kid Name"/>
+<div class="row">
+  <input id="resetBalance" type="number" step="0.01" placeholder="Balance (default: 0)" style="flex:1;"/>
+  <input id="resetMinutes" type="number" placeholder="Minutes (default: 0)" style="flex:1;"/>
+</div>
+<label style="margin-top:8px;">
+  <input type="checkbox" id="resetLocked"/> Lock screens
+</label>
+<button onclick="resetKid()">Reset Kid</button>
+</div>
+</div>
+
+<script>
+/* ---------------- FIREBASE CONFIG ---------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyB2I-KBIn2Y1tN9_NmfPdidvRRLyLKmAIg",
+  authDomain: "goodbodybucks.firebaseapp.com",
+  projectId: "goodbodybucks"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+/* ---------------- STATE ---------------- */
+let familyId = "";
+let idToken = "";
+let currentUser = null; // Track current user info
+
+// API base URL - use same origin to avoid CORS issues
+const API_BASE = window.location.origin; // Always use same origin (works for localhost, 127.0.0.1, and production)
+console.log('[GB$] API Base URL:', API_BASE);
+console.log('[GB$] Current URL:', window.location.href);
+
+console.log('[GB$] 🖼️ Image Loading Debug Enabled');
+console.log('[GB$] API Base URL:', API_BASE);
+console.log('[GB$] Current URL:', window.location.href);
+console.log('[GB$] Testing image availability...');
+
+// Test image loading on page load
+window.addEventListener('load', function() {
+  console.log('[GB$] 📋 Page loaded, checking image availability...');
+  const testImages = [
+    '/images/gbucks-coin.png',
+    '/images/food/food_menu.png',
+    '/images/tablet_time/gaming_menu.png',
+    '/images/learning/learning_menu.png'
+  ];
+  
+  console.log('[GB$] Testing', testImages.length, 'images...');
+  
+  testImages.forEach(imgPath => {
+    const fullUrl = API_BASE + imgPath;
+    console.log('[IMAGE TEST] Testing:', fullUrl);
+    
+    const testImg = new Image();
+    testImg.onload = () => console.log(`[IMAGE TEST] ✅ ${imgPath} - Available at ${fullUrl}`);
+    testImg.onerror = () => console.error(`[IMAGE TEST] ❌ ${imgPath} - NOT FOUND (404) at ${fullUrl}`);
+    testImg.src = fullUrl;
+  });
+  
+  // Also test direct fetch
+  setTimeout(() => {
+    console.log('[GB$] Testing with fetch API...');
+    testImages.forEach(async imgPath => {
+      const fullUrl = API_BASE + imgPath;
+      try {
+        const response = await fetch(fullUrl, { method: 'HEAD' });
+        if (response.ok) {
+          console.log(`[IMAGE FETCH] ✅ ${imgPath} - Status: ${response.status} OK`);
+        } else {
+          console.error(`[IMAGE FETCH] ❌ ${imgPath} - Status: ${response.status} ${response.statusText}`);
+        }
+      } catch (e) {
+        console.error(`[IMAGE FETCH] ❌ ${imgPath} - Error:`, e.message, 'URL:', fullUrl);
+      }
+    });
+  }, 500);
+});
+
+/* ---------------- USER JOURNEY LOGGING ---------------- */
+function logEvent(eventType, details = {}) {
+  const timestamp = new Date().toISOString();
+  const logEntry = {
+    timestamp,
+    event: eventType,
+    familyId: familyId || 'none',
+    userId: currentUser?.uid || 'anonymous',
+    userRole: currentUser?.role || 'none',
+    ...details
+  };
+  console.log(`[GB$ Journey] ${eventType}`, logEntry);
+  return logEntry;
+}
+
+function logClick(elementId, action, details = {}) {
+  logEvent('click', { element: elementId, action, ...details });
+}
+
+function logTransaction(type, details) {
+  logEvent('transaction', { transactionType: type, ...details });
+}
+
+function logError(context, error) {
+  logEvent('error', { context, error: error.message, errorCode: error.code });
+}
+
+/* ---------------- HELPERS ---------------- */
+async function api(path, method="GET", body=null) {
+  const url = path.startsWith('http') ? path : API_BASE + path;
+  const res = await fetch(url, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + idToken,
+      "X-Family-Id": familyId
+    },
+    body: body ? JSON.stringify(body) : null
+  });
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error);
+  return data;
+}
+
+function setStatus(msg){ document.getElementById("status").textContent = msg; }
+
+/* ---------------- SETUP ---------------- */
+async function setupFamily(){
+  logClick('setupFamily', 'create_family');
+  try {
+    const name = document.getElementById("familyName").value;
+    if (!name) {
+      logError('setupFamily', new Error('Family name required'));
+      setStatus("Error: Family name required");
+      return;
+    }
+    logEvent('family_setup_start', { familyName: name });
+    
+    const url = API_BASE + "/api/setup_family";
+    const res = await fetch(url, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ family_name:name })
+    });
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({error: `HTTP ${res.status}`}));
+      const error = new Error(errorData.error || `Server error: ${res.status}`);
+      logError('setupFamily', error);
+      throw error;
+    }
+    
+    const data = await res.json();
+    if (!data.ok) {
+      const error = new Error(data.error);
+      logError('setupFamily', error);
+      throw error;
+    }
+    
+    familyId = data.family_id;
+    document.getElementById("familyId").value = familyId;
+    logEvent('family_setup_success', { familyId, familyName: name });
+    setStatus("Family created: " + familyId);
+  } catch(e) {
+    logError('setupFamily', e);
+    setStatus("Error: " + e.message);
+    console.error("Setup family error:", e);
+  }
+}
+
+/* ---------------- LOGIN ---------------- */
+function showAdmin(){
+  logClick('showAdmin', 'login_mode_switch', { mode: 'admin' });
+  document.getElementById("adminBox").classList.remove("hidden");
+  document.getElementById("kidBox").classList.add("hidden");
+}
+function showKid(){
+  logClick('showKid', 'login_mode_switch', { mode: 'kid' });
+  document.getElementById("kidBox").classList.remove("hidden");
+  document.getElementById("adminBox").classList.add("hidden");
+}
+
+async function loginAdmin(){
+  logClick('loginAdmin', 'admin_login_attempt');
+  try {
+    familyId = familyIdInput();
+    if (!familyId) {
+      setStatus("Enter Family ID");
+      return;
+    }
+    const email = document.getElementById("adminEmail").value.trim();
+    const pass = document.getElementById("adminPass").value;
+    
+    logEvent('admin_login_start', { email, familyId, hasPassword: !!pass });
+    
+    if (!email || !pass) {
+      logError('loginAdmin', new Error('Email and password required'));
+      setStatus("Error: Email and password required");
+      return;
+    }
+    
+    // Validate password length (Firebase requires 6+ characters)
+    if (pass.length < 6) {
+      logError('loginAdmin', new Error('Password too short'));
+      setStatus("Error: Password must be at least 6 characters");
+      return;
+    }
+    
+    let cred;
+    let accountCreated = false;
+    try {
+      // Try to sign in
+      logEvent('admin_auth_attempt', { method: 'signin' });
+      cred = await auth.signInWithEmailAndPassword(email, pass);
+      logEvent('admin_auth_success', { method: 'signin' });
+    } catch (signInError) {
+      const errorCode = signInError.code || '';
+      const errorMessage = signInError.message || 'Unknown error';
+      logError('admin_auth_signin', signInError);
+      
+      // If user doesn't exist, try to create
+      if (errorCode === 'auth/user-not-found' || errorCode === 'auth/invalid-credential' || errorCode === 'auth/wrong-password') {
+        setStatus("Account not found or wrong password. Creating account...");
+        logEvent('admin_account_creation_attempt', { email });
+        try {
+          // Create the account
+          cred = await auth.createUserWithEmailAndPassword(email, pass);
+          accountCreated = true;
+          logEvent('admin_account_created', { email });
+          setStatus("Account created! Logging in...");
+        } catch (createError) {
+          const createCode = createError.code || '';
+          logError('admin_account_creation', createError);
+          if (createCode === 'auth/email-already-in-use') {
+            setStatus("Error: Email exists. Password may be wrong. Use Firebase Console to reset.");
+          } else if (createCode === 'auth/weak-password') {
+            setStatus("Error: Password must be at least 6 characters");
+          } else {
+            setStatus("Error: " + (createError.message || createCode));
+          }
+          console.error("Create account error:", createError);
+          return;
+        }
+      } else {
+        setStatus("Error: " + errorMessage + " (Code: " + errorCode + ")");
+        console.error("Sign in error:", signInError);
+        return;
+      }
+    }
+    
+    idToken = await cred.user.getIdToken();
+    currentUser = { uid: cred.user.uid, email: cred.user.email, role: 'admin' };
+    
+    // Bootstrap if needed
+    try {
+      logEvent('admin_bootstrap_attempt', { uid: cred.user.uid });
+      await api("/api/bootstrap", "POST", { name: email.split("@")[0], role: "admin" });
+      logEvent('admin_bootstrap_success', { uid: cred.user.uid });
+    } catch (e) {
+      logEvent('admin_bootstrap_skipped', { reason: e.message });
+      // Already registered or other error - continue
+    }
+    
+    logEvent('admin_login_success', { 
+      uid: cred.user.uid, 
+      email, 
+      accountCreated,
+      familyId 
+    });
+    setStatus("Admin logged in");
+    await refreshCatalog();
+    await refreshState();
+  } catch (e) {
+    logError('loginAdmin', e);
+    setStatus("Error: " + e.message);
+    console.error("Login error:", e);
+  }
+}
+
+async function loginKid(){
+  try {
+    familyId = familyIdInput();
+    if (!familyId) {
+      setStatus("Enter Family ID");
+      return;
+    }
+    const name = document.getElementById("kidName").value.toLowerCase().replace(/\s+/g,"");
+    const email = `${name}.${familyId}@gbucks.local`;
+    const pin = document.getElementById("kidPin").value;
+
+    // Validate PIN length (Firebase requires 6+ characters)
+    if (pin.length < 6) {
+      setStatus("Error: PIN must be at least 6 characters (Firebase requirement)");
+      return;
+    }
+    
+    let cred;
+    let accountCreated = false;
+    try {
+      logEvent('kid_auth_attempt', { method: 'signin', email });
+      cred = await auth.signInWithEmailAndPassword(email, pin);
+      logEvent('kid_auth_success', { method: 'signin' });
+    } catch (signInError) {
+      const errorCode = signInError.code || '';
+      logError('kid_auth_signin', signInError);
+      if (errorCode === 'auth/user-not-found' || errorCode === 'auth/invalid-credential' || errorCode === 'auth/wrong-password') {
+        try {
+          logEvent('kid_account_creation_attempt', { email, kidName: name });
+          cred = await auth.createUserWithEmailAndPassword(email, pin);
+          accountCreated = true;
+          logEvent('kid_account_created', { email, kidName: name });
+          setStatus("Kid account created!");
+        } catch (createError) {
+          const createCode = createError.code || '';
+          logError('kid_account_creation', createError);
+          if (createCode === 'auth/weak-password') {
+            setStatus("Error: PIN must be at least 6 characters");
+          } else {
+            setStatus("Error: " + (createError.message || createCode));
+          }
+          console.error("Create kid account error:", createError);
+          return;
+        }
+      } else {
+        setStatus("Error: " + (signInError.message || errorCode));
+        console.error("Kid sign in error:", signInError);
+        return;
+      }
+    }
+    idToken = await cred.user.getIdToken();
+    currentUser = { uid: cred.user.uid, email: cred.user.email, role: 'kid', name: name };
+    
+    // Bootstrap - auto-register kid
+    try {
+      logEvent('kid_bootstrap_attempt', { uid: cred.user.uid, kidName: name });
+      await api("/api/bootstrap", "POST", { name: name.charAt(0).toUpperCase() + name.slice(1), role: "kid" });
+      logEvent('kid_bootstrap_success', { uid: cred.user.uid });
+    } catch (e) {
+      logEvent('kid_bootstrap_skipped', { reason: e.message });
+      // Already registered or other error - continue
+    }
+
+    logEvent('kid_login_success', { 
+      uid: cred.user.uid, 
+      email, 
+      kidName: name,
+      accountCreated,
+      familyId 
+    });
+    setStatus("Kid logged in");
+    await refreshCatalog();
+    await refreshState();
+  } catch (e) {
+    logError('loginKid', e);
+    setStatus("Error: " + e.message);
+    console.error("Kid login error:", e);
+  }
+}
+
+function familyIdInput(){
+  return document.getElementById("familyId").value.trim();
+}
+
+/* ---------------- DATA ---------------- */
+let catalogData = null;
+
+async function refreshCatalog(){
+  logEvent('catalog_refresh_start');
+  try {
+    const cfg = (await api("/api/catalog")).config;
+    catalogData = cfg;
+    logEvent('catalog_refresh_success', { 
+      screenPackages: cfg.screen?.length || 0,
+      foodItems: cfg.food?.length || 0,
+      rewards: cfg.rewards?.length || 0
+    });
+    
+    // Populate dropdowns (fallback)
+    document.getElementById("screenPkg").innerHTML = cfg.screen.map(x=>`<option value="${x.id}">${x.label} (${x.cost_gb} GB$)</option>`).join("");
+    document.getElementById("foodItem").innerHTML = cfg.food.map(x=>{
+      const imgUrl = x.image_url || '/images/food/placeholder.jpg';
+      return `<option value="${x.id}" data-image="${imgUrl}">${x.label} (${x.cost_gb} GB$)</option>`;
+    }).join("");
+    document.getElementById("rewardAction").innerHTML = cfg.rewards.map(x=>`<option value="${x.id}">${x.label}</option>`).join("");
+    document.getElementById("timeConsequence").innerHTML = cfg.time_consequences.map(x=>`<option value="${x.id}">${x.label}</option>`).join("");
+    document.getElementById("moneyConsequence").innerHTML = cfg.money_consequences.map(x=>`<option value="${x.id}">${x.label}</option>`).join("");
+    
+    // Build visual menu grids (visible by default)
+    buildFoodMenuGrid(cfg.food);
+    buildScreenMenuGrid(cfg.screen);
+    buildLearningMenuGrid(cfg.rewards);
+    
+    // Make menu grids visible after building
+    setTimeout(() => {
+      const foodGrid = document.getElementById("foodMenuGrid");
+      const screenGrid = document.getElementById("screenMenuGrid");
+      const learningGrid = document.getElementById("learningMenuGrid");
+      if (foodGrid && foodGrid.innerHTML) foodGrid.classList.remove("hidden");
+      if (screenGrid && screenGrid.innerHTML) screenGrid.classList.remove("hidden");
+      if (learningGrid && learningGrid.innerHTML) learningGrid.classList.remove("hidden");
+    }, 100);
+    
+    // Update food image preview when selection changes
+    document.getElementById("foodItem").addEventListener("change", function() {
+      const selected = this.options[this.selectedIndex];
+      const imgUrl = selected.getAttribute("data-image");
+      const preview = document.getElementById("foodPreview");
+      if (preview && imgUrl) {
+        logClick('foodItem', 'food_selection_change', { itemId: selected.value, imageUrl: imgUrl });
+        preview.src = API_BASE + imgUrl;
+        preview.style.display = "block";
+      }
+    });
+  } catch(e) {
+    logError('refreshCatalog', e);
+    setStatus("Error loading catalog: " + e.message);
+  }
+}
+
+function buildFoodMenuGrid(foodItems) {
+  const grid = document.getElementById("foodMenuGrid");
+  if (!grid || !foodItems) return;
+  
+  grid.innerHTML = foodItems.map(item => `
+    <div class="menu-card" onclick="selectFoodItem('${item.id}')">
+      <img src="${API_BASE}${item.image_url || '/images/food/placeholder.jpg'}" alt="${item.label}" onerror="this.src='${API_BASE}/images/food/placeholder.jpg'"/>
+      <div class="menu-card-title">${item.label}</div>
+      <div class="menu-card-price">${item.cost_gb} GB$</div>
+    </div>
+  `).join("");
+  
+  // Make grid visible after building
+  grid.classList.remove("hidden");
+}
+
+function buildScreenMenuGrid(screenItems) {
+  const grid = document.getElementById("screenMenuGrid");
+  if (!grid || !screenItems) return;
+  
+  grid.innerHTML = screenItems.map(item => `
+    <div class="menu-card" onclick="selectScreenItem('${item.id}')">
+      <img src="${API_BASE}${item.image_url || '/images/tablet_time/placeholder.jpg'}" alt="${item.label}" onerror="this.src='${API_BASE}/images/tablet_time/placeholder.jpg'"/>
+      <div class="menu-card-title">${item.label}</div>
+      <div class="menu-card-price">${item.cost_gb} GB$ → ${item.minutes} min</div>
+    </div>
+  `).join("");
+  
+  // Make grid visible after building
+  grid.classList.remove("hidden");
+}
+
+function buildLearningMenuGrid(rewardItems) {
+  const grid = document.getElementById("learningMenuGrid");
+  if (!grid || !rewardItems) return;
+  
+  grid.innerHTML = rewardItems.map(item => `
+    <div class="menu-card">
+      <div class="menu-card-title">${item.label}</div>
+      <div class="menu-card-price">+${item.delta_gb} GB$</div>
+    </div>
+  `).join("");
+  
+  // Make grid visible after building
+  grid.classList.remove("hidden");
+}
+
+function toggleMenuView() {
+  const visual = document.getElementById("visualMenus");
+  const dropdown = document.getElementById("dropdownMenus");
+  const toggle = document.getElementById("menuViewToggle");
+  
+  if (visual.classList.contains("hidden")) {
+    visual.classList.remove("hidden");
+    dropdown.classList.add("hidden");
+    toggle.textContent = "📋 Hide Visual Menus";
+    logClick('toggleMenuView', 'show_visual_menus');
+  } else {
+    visual.classList.add("hidden");
+    dropdown.classList.remove("hidden");
+    toggle.textContent = "📋 Show Visual Menus";
+    logClick('toggleMenuView', 'show_dropdown_menus');
+  }
+}
+
+function showFoodMenu() {
+  const grid = document.getElementById("foodMenuGrid");
+  grid.classList.toggle("hidden");
+  logClick('showFoodMenu', 'food_menu_toggle');
+}
+
+function showScreenMenu() {
+  const grid = document.getElementById("screenMenuGrid");
+  grid.classList.toggle("hidden");
+  logClick('showScreenMenu', 'screen_menu_toggle');
+}
+
+function showLearningMenu() {
+  const grid = document.getElementById("learningMenuGrid");
+  grid.classList.toggle("hidden");
+  logClick('showLearningMenu', 'learning_menu_toggle');
+}
+
+function selectFoodItem(itemId) {
+  logClick('selectFoodItem', 'food_item_selected', { itemId });
+  document.getElementById("foodItem").value = itemId;
+  // Trigger buyFood which will show modal
+  buyFood();
+}
+
+function selectScreenItem(itemId) {
+  logClick('selectScreenItem', 'screen_item_selected', { itemId });
+  document.getElementById("screenPkg").value = itemId;
+  // Trigger buyScreen which will show modal
+  buyScreen();
+}
+
+async function refreshState(){
+  logClick('refreshState', 'state_refresh');
+  try {
+    logEvent('state_refresh_start');
+    const data = await api("/api/state");
+    const kidsCount = data.kids?.length || 0;
+    logEvent('state_refresh_success', { kidsCount, kids: data.kids?.map(k => ({ name: k.name, balance: k.balance_gb, minutes: k.minutes })) });
+    
+    // Check if current user is a kid (show their wallet prominently)
+    const isKid = currentUser?.role === 'kid';
+    const currentKid = isKid ? data.kids.find(k => k.kid_user_id === currentUser.uid) : null;
+    
+    let html = '';
+    
+    // Show large wallet for current kid user
+    if (currentKid) {
+      const sessionElapsed = currentKid.session.active && currentKid.session.start_ts 
+        ? Math.floor((Date.now()/1000 - currentKid.session.start_ts) / 60)
+        : 0;
+      
+      html += `
+        <div class="wallet ${currentKid.locked ? 'wallet-locked' : currentKid.session.active ? 'wallet-active' : ''}">
+          <img class="wallet-logo" src="/images/gbucks-coin.png" alt="GB$ Logo" 
+               onload="console.log('[IMAGE] ✅ Loaded wallet logo: gbucks-coin.png');"
+               onerror="console.error('[IMAGE] ❌ Failed to load wallet logo: gbucks-coin.png from', this.src); this.style.display='none';"/>
+          <div class="wallet-title">${currentKid.name}'s Wallet</div>
+          <div class="wallet-balance">GB$ ${currentKid.balance_gb.toFixed(2)}</div>
+          <div class="wallet-label">Goodbody Bucks</div>
+          <div class="wallet-minutes">${currentKid.minutes} min</div>
+          <div class="wallet-label">Screen Time Available</div>
+          <div class="wallet-status">
+            ${currentKid.locked ? '<span class="bad">🔒 SCREENS LOCKED</span>' : ''}
+            ${currentKid.session.active ? `<span class="ok">▶️ ${currentKid.session.mode} session active (${sessionElapsed}m elapsed)</span>` : '<span style="color:#8aa0b6;">⏸️ No active session</span>'}
+          </div>
+        </div>
+      `;
+    }
+    
+    // Show all kids for admin, or just current kid's details
+    if (!isKid || currentKid) {
+      html += data.kids.map(k=>{
+        const sessionElapsed = k.session.active && k.session.start_ts 
+          ? Math.floor((Date.now()/1000 - k.session.start_ts) / 60)
+          : 0;
+        return `
+          <div class="kid">
+            <b>${k.name}</b> <span style="font-size:10px; color:#8aa0b6;">(${k.kid_user_id.substring(0,8)}...)</span><br/>
+            <div style="margin-top:8px;">
+              <span style="color:#34d399; font-size:18px; font-weight:600;">GB$ ${k.balance_gb.toFixed(2)}</span>
+              <span style="color:#60a5fa; font-size:16px; margin-left:12px;">${k.minutes} min</span>
+            </div>
+            ${k.locked ? "<span class='bad' style='display:inline-block; margin-top:4px;'>🔒 LOCKED</span>" : ""}
+            ${k.session.active ? `<span class='ok' style='display:inline-block; margin-top:4px;'>▶️ ${k.session.mode} (${sessionElapsed}m)</span>` : ""}
+            <div style="margin-top:8px;">
+              <button onclick="viewHistory('${k.kid_user_id}')" style="padding:6px 12px; font-size:11px; margin-right:4px;">History</button>
+              ${!isKid ? `<button onclick="quickResetKid('${k.kid_user_id}', '${k.name}')" style="padding:6px 12px; font-size:11px; background:#fb7185; border-color:#fb7185; color:white;">Reset</button>` : ''}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+    
+    document.getElementById("kids").innerHTML = html;
+  } catch(e) {
+    logError('refreshState', e);
+    setStatus("Error loading state: " + e.message);
+  }
+}
+
+async function viewHistory(kidUid){
+  logClick('viewHistory', 'purchase_history_view', { kidUid });
+  try {
+    logEvent('history_load_start', { kidUid });
+    const data = await api(`/api/purchase_history?kid_user_id=${kidUid}`);
+    const history = data.history || [];
+    logEvent('history_load_success', { kidUid, historyCount: history.length });
+    const histHtml = history.map(h=>{
+      const date = new Date(h.ts * 1000).toLocaleString();
+      return `<div style="font-size:11px; padding:4px; border-bottom:1px solid #223146;">
+        ${date}: ${h.label} - ${h.cost_gb} GB$ (${h.type})
+      </div>`;
+    }).join("");
+    document.getElementById("historyView").innerHTML = `<h3>Purchase History</h3>${histHtml || "No purchases yet"}`;
+    document.getElementById("historyView").classList.remove("hidden");
+  } catch(e) {
+    logError('viewHistory', e);
+    setStatus("Error loading history: " + e.message);
+  }
+}
+
+/* ---------------- ACTIONS ---------------- */
+// Purchase modal state
+let pendingPurchase = null;
+
+async function buyScreen(){ 
+  logClick('buyScreen', 'purchase_screen_time');
+  try {
+    const packageId = document.getElementById("screenPkg").value;
+    if (!packageId) {
+      setStatus("Error: Select a screen package");
+      return;
+    }
+    
+    // Get current state to show balance
+    const state = await api("/api/state");
+    let currentKid;
+    
+    // If kid user, find their own data
+    if (currentUser && currentUser.role === 'kid') {
+      currentKid = state.kids.find(k => k.kid_user_id === currentUser.uid);
+    } else {
+      // Admin testing - use first kid or show error
+      if (state.kids && state.kids.length > 0) {
+        currentKid = state.kids[0];
+        setStatus("Note: Using first kid's balance for preview");
+      } else {
+        setStatus("Error: No kids found");
+        return;
+      }
+    }
+    
+    if (!currentKid) {
+      setStatus("Error: Kid not found");
+      return;
+    }
+    
+    // Find package details
+    if (!catalogData || !catalogData.screen) {
+      await refreshCatalog();
+    }
+    const pkg = catalogData.screen.find(p => p.id === packageId);
+    if (!pkg) {
+      setStatus("Error: Package not found");
+      return;
+    }
+    
+    const currentBalance = currentKid.balance_gb;
+    const cost = pkg.cost_gb;
+    const newBalance = currentBalance - cost;
+    
+    if (newBalance < 0) {
+      setStatus(`Error: Insufficient funds. Need ${cost} GB$, have ${currentBalance.toFixed(2)} GB$`);
+      return;
+    }
+    
+    // Show confirmation modal
+    showPurchaseModal({
+      type: 'screen',
+      title: 'Buy Screen Time',
+      itemName: pkg.label,
+      cost: cost,
+      currentBalance: currentBalance,
+      newBalance: newBalance,
+      extraInfo: `You'll receive ${pkg.minutes} minutes of screen time`,
+      packageId: packageId,
+      kidUid: currentKid.kid_user_id
+    });
+  } catch(e) { 
+    logError('buyScreen', e);
+    setStatus("Error: " + e.message); 
+  }
+}
+
+async function buyFood(){ 
+  logClick('buyFood', 'purchase_food');
+  try {
+    const itemId = document.getElementById("foodItem").value;
+    if (!itemId) {
+      setStatus("Error: Select a food item");
+      return;
+    }
+    
+    // Get current state to show balance
+    const state = await api("/api/state");
+    let currentKid;
+    
+    // If kid user, find their own data
+    if (currentUser && currentUser.role === 'kid') {
+      currentKid = state.kids.find(k => k.kid_user_id === currentUser.uid);
+    } else {
+      // Admin testing - use first kid or show error
+      if (state.kids && state.kids.length > 0) {
+        currentKid = state.kids[0];
+        setStatus("Note: Using first kid's balance for preview");
+      } else {
+        setStatus("Error: No kids found");
+        return;
+      }
+    }
+    
+    if (!currentKid) {
+      setStatus("Error: Kid not found");
+      return;
+    }
+    
+    // Find food item details
+    if (!catalogData || !catalogData.food) {
+      await refreshCatalog();
+    }
+    const item = catalogData.food.find(f => f.id === itemId);
+    if (!item) {
+      setStatus("Error: Food item not found");
+      return;
+    }
+    
+    const currentBalance = currentKid.balance_gb;
+    const cost = item.cost_gb;
+    const newBalance = currentBalance - cost;
+    
+    if (newBalance < 0) {
+      setStatus(`Error: Insufficient funds. Need ${cost} GB$, have ${currentBalance.toFixed(2)} GB$`);
+      return;
+    }
+    
+    // Show confirmation modal
+    showPurchaseModal({
+      type: 'food',
+      title: 'Buy Food',
+      itemName: item.label,
+      cost: cost,
+      currentBalance: currentBalance,
+      newBalance: newBalance,
+      extraInfo: `Category: ${item.category || 'Food'}`,
+      itemId: itemId,
+      kidUid: currentKid.kid_user_id
+    });
+  } catch(e) { 
+    logError('buyFood', e);
+    setStatus("Error: " + e.message); 
+  }
+}
+
+function showPurchaseModal(purchase) {
+  pendingPurchase = purchase;
+  document.getElementById("modalTitle").textContent = purchase.title;
+  document.getElementById("modalItemName").textContent = purchase.itemName;
+  document.getElementById("modalCost").textContent = `-${purchase.cost.toFixed(2)} GB$`;
+  document.getElementById("modalCurrentBalance").textContent = `${purchase.currentBalance.toFixed(2)} GB$`;
+  
+  const newBalanceEl = document.getElementById("modalNewBalance");
+  newBalanceEl.textContent = `${purchase.newBalance.toFixed(2)} GB$`;
+  newBalanceEl.className = purchase.newBalance < 0 ? "modal-value negative" : "modal-value";
+  
+  const extraInfo = document.getElementById("modalExtraInfo");
+  if (purchase.extraInfo) {
+    extraInfo.textContent = purchase.extraInfo;
+    extraInfo.style.display = "block";
+  } else {
+    extraInfo.style.display = "none";
+  }
+  
+  // Build menu grid in modal
+  const selectedId = purchase.type === 'screen' ? purchase.packageId : purchase.itemId;
+  buildModalMenuGrid(purchase.type, selectedId);
+  
+  const modal = document.getElementById("purchaseModal");
+  if (modal) {
+    modal.classList.remove("hidden");
+    modal.style.display = "flex"; // Ensure it's visible
+    // Add escape key listener
+    document.addEventListener("keydown", handleModalEscape);
+    logEvent('purchase_modal_shown', { type: purchase.type, itemName: purchase.itemName, cost: purchase.cost });
+  }
+}
+
+function buildModalMenuGrid(type, selectedId) {
+  const grid = document.getElementById("modalMenuGrid");
+  if (!grid || !catalogData) return;
+  
+  let items = [];
+  if (type === 'screen' && catalogData.screen) {
+    items = catalogData.screen;
+  } else if (type === 'food' && catalogData.food) {
+    items = catalogData.food;
+  }
+  
+  grid.innerHTML = items.map(item => {
+    const isSelected = item.id === selectedId;
+    const imgUrl = item.image_url || (type === 'food' ? '/images/food/placeholder.jpg' : '/images/tablet_time/placeholder.jpg');
+    const extraText = type === 'screen' ? `→ ${item.minutes} min` : (item.category ? `(${item.category})` : '');
+    
+    return `
+      <div class="modal-menu-item ${isSelected ? 'selected' : ''}" onclick="selectModalItem('${item.id}', '${type}')">
+        <img src="${API_BASE}${imgUrl}" alt="${item.label}" onerror="this.style.display='none';"/>
+        <div class="modal-menu-item-title">${item.label}</div>
+        <div class="modal-menu-item-price">${item.cost_gb} GB$ ${extraText}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+async function selectModalItem(itemId, type) {
+  logClick('selectModalItem', 'modal_item_selected', { itemId, type });
+  
+  // Update the selected item in the modal
+  const items = document.querySelectorAll('.modal-menu-item');
+  items.forEach(item => item.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  
+  // Get current state to recalculate balance
+  const state = await api("/api/state");
+  let currentKid;
+  
+  if (currentUser && currentUser.role === 'kid') {
+    currentKid = state.kids.find(k => k.kid_user_id === currentUser.uid);
+  } else {
+    if (state.kids && state.kids.length > 0) {
+      currentKid = state.kids[0];
+    } else {
+      setStatus("Error: No kids found");
+      return;
+    }
+  }
+  
+  if (!currentKid) {
+    setStatus("Error: Kid not found");
+    return;
+  }
+  
+  // Find item details
+  let item;
+  if (type === 'screen') {
+    item = catalogData.screen.find(p => p.id === itemId);
+  } else if (type === 'food') {
+    item = catalogData.food.find(f => f.id === itemId);
+  }
+  
+  if (!item) {
+    setStatus("Error: Item not found");
+    return;
+  }
+  
+  const currentBalance = currentKid.balance_gb;
+  const cost = item.cost_gb;
+  const newBalance = currentBalance - cost;
+  
+  // Update modal with new selection
+  document.getElementById("modalItemName").textContent = item.label;
+  document.getElementById("modalCost").textContent = `-${cost.toFixed(2)} GB$`;
+  
+  const newBalanceEl = document.getElementById("modalNewBalance");
+  newBalanceEl.textContent = `${newBalance.toFixed(2)} GB$`;
+  newBalanceEl.className = newBalance < 0 ? "modal-value negative" : "modal-value";
+  
+  // Update extra info
+  const extraInfo = document.getElementById("modalExtraInfo");
+  if (type === 'screen') {
+    extraInfo.textContent = `You'll receive ${item.minutes} minutes of screen time`;
+  } else if (type === 'food') {
+    extraInfo.textContent = `Category: ${item.category || 'Food'}`;
+  }
+  extraInfo.style.display = "block";
+  
+  // Update pending purchase
+  pendingPurchase = {
+    ...pendingPurchase,
+    itemName: item.label,
+    cost: cost,
+    newBalance: newBalance,
+    extraInfo: type === 'screen' ? `You'll receive ${item.minutes} minutes of screen time` : `Category: ${item.category || 'Food'}`,
+    [type === 'screen' ? 'packageId' : 'itemId']: itemId
+  };
+  
+  // Check if insufficient funds
+  if (newBalance < 0) {
+    setStatus(`Warning: Insufficient funds. Need ${cost} GB$, have ${currentBalance.toFixed(2)} GB$`);
+  }
+}
+
+function handleModalEscape(event) {
+  if (event.key === "Escape" && !document.getElementById("purchaseModal").classList.contains("hidden")) {
+    closePurchaseModal();
+  }
+}
+
+function closePurchaseModal() {
+  const modal = document.getElementById("purchaseModal");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.style.display = "none"; // Force hide
+    document.removeEventListener("keydown", handleModalEscape);
+    pendingPurchase = null;
+    logEvent('purchase_modal_cancelled');
+  }
+}
+
+// Force close modal on page load (safety measure)
+window.addEventListener("load", function() {
+  closePurchaseModal();
+});
+
+// Also ensure modal is hidden when DOM is ready
+document.addEventListener("DOMContentLoaded", function() {
+  const modal = document.getElementById("purchaseModal");
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+});
+
+async function confirmPurchase() {
+  if (!pendingPurchase) {
+    return;
+  }
+  
+  logClick('confirmPurchase', 'purchase_confirmed', { type: pendingPurchase.type });
+  
+  try {
+    // Show loading state
+    const confirmBtn = document.querySelector('.modal-confirm');
+    const originalText = confirmBtn.textContent;
+    confirmBtn.textContent = "Processing...";
+    confirmBtn.disabled = true;
+    
+    if (pendingPurchase.type === 'screen') {
+      logTransaction('purchase_screen', { packageId: pendingPurchase.packageId });
+      await api("/api/purchase_screen","POST",{package_id: pendingPurchase.packageId}); 
+      logTransaction('purchase_screen_success', { packageId: pendingPurchase.packageId });
+      setStatus("Screen time purchased!");
+    } else if (pendingPurchase.type === 'food') {
+      logTransaction('purchase_food', { itemId: pendingPurchase.itemId });
+      await api("/api/purchase_food","POST",{item_id: pendingPurchase.itemId}); 
+      logTransaction('purchase_food_success', { itemId: pendingPurchase.itemId });
+      setStatus("Food purchased!");
+    }
+    
+    // Update state before closing modal
+    console.log('[MODAL] Updating state after purchase...');
+    await refreshState();
+    
+    // Update modal with new balance (show success)
+    const state = await api("/api/state");
+    let currentKid;
+    if (currentUser && currentUser.role === 'kid') {
+      currentKid = state.kids.find(k => k.kid_user_id === currentUser.uid);
+    } else if (state.kids && state.kids.length > 0) {
+      currentKid = state.kids[0];
+    }
+    
+    if (currentKid) {
+      document.getElementById("modalCurrentBalance").textContent = `${currentKid.balance_gb.toFixed(2)} GB$`;
+      document.getElementById("modalNewBalance").textContent = `${currentKid.balance_gb.toFixed(2)} GB$`;
+      document.getElementById("modalNewBalance").className = "modal-value positive";
+      document.getElementById("modalExtraInfo").textContent = "✅ Purchase successful! Balance updated.";
+      document.getElementById("modalExtraInfo").style.display = "block";
+      document.getElementById("modalExtraInfo").style.color = "#34d399";
+      
+      // Close modal after showing updated balance
+      setTimeout(() => {
+        closePurchaseModal();
+        logEvent('purchase_completed', { type: pendingPurchase.type, newBalance: currentKid.balance_gb });
+      }, 1500);
+    } else {
+      closePurchaseModal();
+      logEvent('purchase_completed', { type: pendingPurchase.type });
+    }
+  } catch(e) {
+    logError('confirmPurchase', e);
+    setStatus("Error: " + e.message);
+    const confirmBtn = document.querySelector('.modal-confirm');
+    confirmBtn.textContent = "Confirm Purchase";
+    confirmBtn.disabled = false;
+    // Don't close modal on error - let user see the error
+  }
+}
+async function startSession(){ 
+  logClick('startSession', 'timer_start');
+  try {
+    const mode = document.getElementById("mode").value;
+    logEvent('session_start_attempt', { mode });
+    await api("/api/session/start","POST",{mode:mode}); 
+    logEvent('session_start_success', { mode });
+    await refreshState();
+    setStatus("Session started");
+  } catch(e) { 
+    logError('startSession', e);
+    setStatus("Error: " + e.message); 
+  }
+}
+async function stopSession(){ 
+  logClick('stopSession', 'timer_stop');
+  try {
+    logEvent('session_stop_attempt');
+    await api("/api/session/stop","POST",{}); 
+    logEvent('session_stop_success');
+    await refreshState();
+    setStatus("Session stopped");
+  } catch(e) { 
+    logError('stopSession', e);
+    setStatus("Error: " + e.message); 
+  }
+}
+async function dailyAllotment(){ 
+  logClick('dailyAllotment', 'admin_allotment');
+  try {
+    const amounts = JSON.parse(document.getElementById("allotment").value);
+    logTransaction('daily_allotment', { amounts });
+    await api("/api/daily_allotment","POST",{amounts:amounts}); 
+    logTransaction('daily_allotment_success', { amounts });
+    await refreshState();
+    setStatus("Allotment applied");
+  } catch(e) { 
+    logError('dailyAllotment', e);
+    setStatus("Error: " + e.message); 
+  }
+}
+async function rewardKid(){ 
+  logClick('rewardKid', 'admin_reward');
+  try {
+    const kidName = document.getElementById("rewardKid").value;
+    const actionId = document.getElementById("rewardAction").value;
+    logTransaction('reward', { kidName, actionId });
+    await api("/api/reward","POST",{kid_name:kidName,action_id:actionId}); 
+    logTransaction('reward_success', { kidName, actionId });
+    await refreshState();
+    setStatus("Reward applied");
+  } catch(e) { 
+    logError('rewardKid', e);
+    setStatus("Error: " + e.message); 
+  }
+}
+async function timePunish(){ 
+  logClick('timePunish', 'admin_consequence_time');
+  try {
+    const kidName = document.getElementById("timeKid").value;
+    const consequenceId = document.getElementById("timeConsequence").value;
+    logTransaction('consequence_time', { kidName, consequenceId });
+    await api("/api/consequence_time","POST",{kid_name:kidName,consequence_id:consequenceId}); 
+    logTransaction('consequence_time_success', { kidName, consequenceId });
+    await refreshState();
+    setStatus("Time consequence applied");
+  } catch(e) { 
+    logError('timePunish', e);
+    setStatus("Error: " + e.message); 
+  }
+}
+async function moneyPunish(){ 
+  logClick('moneyPunish', 'admin_consequence_money');
+  try {
+    const kidName = document.getElementById("moneyKid").value;
+    const consequenceId = document.getElementById("moneyConsequence").value;
+    logTransaction('consequence_money', { kidName, consequenceId });
+    await api("/api/consequence_money","POST",{kid_name:kidName,consequence_id:consequenceId}); 
+    logTransaction('consequence_money_success', { kidName, consequenceId });
+    await refreshState();
+    setStatus("Money consequence applied");
+  } catch(e) { 
+    logError('moneyPunish', e);
+    setStatus("Error: " + e.message); 
+  }
+}
+
+/* ---------------- MEMBER MANAGEMENT ---------------- */
+async function addMember(){
+  logClick('addMember', 'admin_add_member');
+  try {
+    const name = document.getElementById("addMemberName").value.trim();
+    const role = document.getElementById("addMemberRole").value;
+    let uid = document.getElementById("addMemberUid").value.trim();
+    
+    if (!name) {
+      setStatus("Error: Name required");
+      return;
+    }
+    
+    // If no UID provided, we can't create - need Firebase Auth UID
+    if (!uid) {
+      setStatus("Error: Firebase UID required. Create account in Firebase Auth first, then add here.");
+      return;
+    }
+    
+    logEvent('member_add_attempt', { name, role, uid });
+    await api("/api/admin/add_member","POST",{uid, name, role});
+    logEvent('member_add_success', { name, role, uid });
+    await refreshState();
+    setStatus(`Member ${name} added as ${role}`);
+    
+    // Clear form
+    document.getElementById("addMemberName").value = "";
+    document.getElementById("addMemberUid").value = "";
+  } catch(e) {
+    logError('addMember', e);
+    setStatus("Error: " + e.message);
+  }
+}
+
+async function removeMember(){
+  logClick('removeMember', 'admin_remove_member');
+  try {
+    const input = document.getElementById("removeMemberUid").value.trim();
+    if (!input) {
+      setStatus("Error: UID or name required");
+      return;
+    }
+    
+    if (!confirm(`Remove member "${input}"? This will delete their membership, wallet, and session data.`)) {
+      return;
+    }
+    
+    // Try to find by name first, then use as UID
+    let uid = input;
+    try {
+      const state = await api("/api/state");
+      const kid = state.kids.find(k => k.name.toLowerCase() === input.toLowerCase());
+      if (kid) {
+        uid = kid.kid_user_id;
+      }
+    } catch (e) {
+      // Use input as UID
+    }
+    
+    logEvent('member_remove_attempt', { uid, input });
+    await api("/api/admin/remove_member","POST",{uid});
+    logEvent('member_remove_success', { uid });
+    await refreshState();
+    setStatus(`Member removed`);
+    
+    // Clear form
+    document.getElementById("removeMemberUid").value = "";
+  } catch(e) {
+    logError('removeMember', e);
+    setStatus("Error: " + e.message);
+  }
+}
+
+async function resetKid(){
+  logClick('resetKid', 'admin_reset_kid');
+  try {
+    const input = document.getElementById("resetKidUid").value.trim();
+    if (!input) {
+      setStatus("Error: UID or name required");
+      return;
+    }
+    
+    // Try to find by name first, then use as UID
+    let uid = input;
+    try {
+      const state = await api("/api/state");
+      const kid = state.kids.find(k => k.name.toLowerCase() === input.toLowerCase());
+      if (kid) {
+        uid = kid.kid_user_id;
+      }
+    } catch (e) {
+      // Use input as UID
+    }
+    
+    const balance = parseFloat(document.getElementById("resetBalance").value) || 0.0;
+    const minutes = parseInt(document.getElementById("resetMinutes").value) || 0;
+    const locked = document.getElementById("resetLocked").checked;
+    
+    if (!confirm(`Reset kid to GB$${balance}, ${minutes} min, ${locked ? 'locked' : 'unlocked'}?`)) {
+      return;
+    }
+    
+    logEvent('kid_reset_attempt', { uid, balance, minutes, locked });
+    await api("/api/admin/reset_kid","POST",{
+      uid,
+      balance_gb: balance,
+      minutes: minutes,
+      locked: locked
+    });
+    logEvent('kid_reset_success', { uid, balance, minutes, locked });
+    await refreshState();
+    setStatus(`Kid reset: GB$${balance}, ${minutes} min, ${locked ? 'locked' : 'unlocked'}`);
+    
+    // Clear form
+    document.getElementById("resetKidUid").value = "";
+    document.getElementById("resetBalance").value = "";
+    document.getElementById("resetMinutes").value = "";
+    document.getElementById("resetLocked").checked = false;
+  } catch(e) {
+    logError('resetKid', e);
+    setStatus("Error: " + e.message);
+  }
+}
+
+async function quickResetKid(uid, name){
+  logClick('quickResetKid', 'admin_quick_reset', { uid, name });
+  if (!confirm(`Reset ${name} to GB$0, 0 minutes, unlocked?`)) {
+    return;
+  }
+  try {
+    logEvent('kid_reset_attempt', { uid, balance: 0, minutes: 0, locked: false });
+    await api("/api/admin/reset_kid","POST",{
+      uid,
+      balance_gb: 0.0,
+      minutes: 0,
+      locked: false
+    });
+    logEvent('kid_reset_success', { uid, balance: 0, minutes: 0, locked: false });
+    await refreshState();
+    setStatus(`${name} reset to zero`);
+  } catch(e) {
+    logError('quickResetKid', e);
+    setStatus("Error: " + e.message);
+  }
+}
+</script>
+</body>
+</html>

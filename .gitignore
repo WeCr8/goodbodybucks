@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+
+# Service account keys (sensitive)
+serviceAccountKey.json
+goodbodybucks-firebase-adminsdk-*.json
+
+# Node modules (if using Firebase tools locally)
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test files
+test_*.py
+diagnose_*.py
+check_*.py
+VERIFY_*.py
+
+# Documentation (temporary)
+*.md
+!README.md
+
+# Deployment scripts
+deploy_*.sh
+deploy_*.ps1
+START_*.ps1
+START_*.md
+*.bat
+
+# Agent tools
+agent-tools/
+
+# Terminals
+terminals/

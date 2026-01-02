@@ -1,0 +1,23 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "**/*.py",
+      "**/*.md",
+      "**/*.bat",
+      "**/*.ps1",
+      "**/*.sh",
+      "hosting/**",
+      "test_*.py",
+      "diagnose_*.py",
+      "check_*.py",
+      "*.json",
+      "requirements.txt",
+      "Dockerfile"
+    ],
+    "rewrites": []
+  }
+}
