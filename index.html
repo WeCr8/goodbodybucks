@@ -834,10 +834,20 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
+// Enable Firebase auth persistence
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+  .then(() => {
+    console.log('[GB$] ✅ Auth persistence enabled');
+  })
+  .catch((error) => {
+    console.error('[GB$] ❌ Auth persistence error:', error);
+  });
+
 /* ---------------- STATE ---------------- */
-let familyId = "";
+let familyId = localStorage.getItem('familyId') || "";
 let idToken = "";
 let currentUser = null; // Track current user info
+let isAuthInitialized = false;
 
 // API base URL - use same origin to avoid CORS issues
 const API_BASE = window.location.origin; // Always use same origin (works for localhost, 127.0.0.1, and production)
@@ -890,6 +900,58 @@ window.addEventListener('load', function() {
   }, 500);
 });
 
+/* ---------------- AUTH STATE LISTENER ---------------- */
+auth.onAuthStateChanged(async (user) => {
+  console.log('[GB$] 🔐 Auth state changed:', user ? user.email : 'logged out');
+  
+  if (user) {
+    // User is signed in
+    try {
+      idToken = await user.getIdToken();
+      
+      // Try to get stored familyId
+      const storedFamilyId = localStorage.getItem('familyId');
+      const storedRole = localStorage.getItem('userRole');
+      
+      if (storedFamilyId) {
+        familyId = storedFamilyId;
+        document.getElementById("familyId").value = familyId;
+      }
+      
+      currentUser = { 
+        uid: user.uid, 
+        email: user.email, 
+        role: storedRole || 'admin' 
+      };
+      
+      // Hide auth UI, show dashboard
+      hideAuthUI();
+      
+      // If we have familyId, load the dashboard
+      if (familyId) {
+        console.log('[GB$] ✅ Auto-login successful');
+        logEvent('auto_login_success', { email: user.email, familyId });
+        await refreshCatalog();
+        await refreshState();
+      } else {
+        // Show onboarding if no family
+        console.log('[GB$] 📝 New user - showing onboarding');
+        showOnboarding();
+      }
+    } catch (error) {
+      console.error('[GB$] ❌ Auth state error:', error);
+      logError('auth_state_change', error);
+    }
+  } else {
+    // User is signed out
+    currentUser = null;
+    idToken = "";
+    showAuthUI();
+  }
+  
+  isAuthInitialized = true;
+});
+
 /* ---------------- USER JOURNEY LOGGING ---------------- */
 function logEvent(eventType, details = {}) {
   const timestamp = new Date().toISOString();
@@ -915,6 +977,204 @@ function logTransaction(type, details) {
 
 function logError(context, error) {
   logEvent('error', { context, error: error.message, errorCode: error.code });
+}
+
+/* ---------------- UI HELPERS ---------------- */
+function hideAuthUI() {
+  const authCards = document.querySelectorAll('.card');
+  if (authCards.length >= 2) {
+    authCards[0].style.display = 'none'; // Family setup card
+    authCards[1].style.display = 'none'; // Login card
+  }
+  // Show logout button
+  updateNavbar();
+}
+
+function showAuthUI() {
+  const authCards = document.querySelectorAll('.card');
+  if (authCards.length >= 2) {
+    authCards[0].style.display = 'block'; // Family setup card
+    authCards[1].style.display = 'block'; // Login card
+  }
+  // Hide dashboard elements
+  const dashboardCards = document.querySelectorAll('.card');
+  dashboardCards.forEach((card, index) => {
+    if (index >= 2) card.style.display = 'none';
+  });
+}
+
+function updateNavbar() {
+  const navUserInfo = document.getElementById('navUserInfo');
+  if (navUserInfo && currentUser) {
+    const logoutBtn = `<button onclick="logout()" style="padding:6px 12px;width:auto;background:#fb7185;border:1px solid #f43f5e;">Logout</button>`;
+    navUserInfo.innerHTML = `<span style="color:#34d399;margin-right:10px;">${currentUser.email}</span>${logoutBtn}`;
+  }
+}
+
+async function logout() {
+  logEvent('logout', { email: currentUser?.email });
+  try {
+    await auth.signOut();
+    localStorage.clear();
+    familyId = "";
+    idToken = "";
+    currentUser = null;
+    setStatus("Logged out");
+    location.reload();
+  } catch (error) {
+    logError('logout', error);
+    setStatus("Error logging out: " + error.message);
+  }
+}
+
+function showOnboarding() {
+  // Hide other UI
+  hideAuthUI();
+  
+  // Create onboarding wizard
+  const wrap = document.querySelector('.wrap');
+  const onboardingHTML = `
+    <div class="card" id="onboardingWizard" style="max-width:600px;margin:40px auto;">
+      <h2 style="text-align:center;color:#34d399;">Welcome to GoodbodyBucks! 🎉</h2>
+      <p style="text-align:center;color:#8aa0b6;margin-bottom:30px;">Let's set up your family in 3 easy steps</p>
+      
+      <div id="onboardingStep1">
+        <h3 style="color:#60a5fa;">Step 1: Create Your Family</h3>
+        <p style="color:#8aa0b6;font-size:14px;">Choose a name for your family (you can change this later)</p>
+        <form onsubmit="event.preventDefault(); onboardingCreateFamily();">
+          <label>Family Name</label>
+          <input id="onboardingFamilyName" value="The ${currentUser?.email?.split('@')[0] || 'Smith'} Family" required/>
+          <button type="submit" style="background:#34d399;border:1px solid #22c088;">Create Family →</button>
+        </form>
+        <div id="onboardingStatus" style="margin-top:10px;color:#60a5fa;"></div>
+      </div>
+      
+      <div id="onboardingStep2" class="hidden">
+        <h3 style="color:#60a5fa;">Step 2: Add Family Members</h3>
+        <p style="color:#8aa0b6;font-size:14px;">Add kids to your family (you can add more later)</p>
+        <form onsubmit="event.preventDefault(); onboardingAddKid();">
+          <label>Kid's Name</label>
+          <input id="onboardingKidName" placeholder="e.g., Emma" required/>
+          <label>Starting GB$ Balance</label>
+          <input id="onboardingKidBalance" type="number" value="100" min="0"/>
+          <label>Starting Screen Time (minutes)</label>
+          <input id="onboardingKidTime" type="number" value="60" min="0"/>
+          <button type="submit" style="background:#34d399;border:1px solid #22c088;">Add Kid</button>
+        </form>
+        <div id="onboardingKidsList" style="margin-top:15px;"></div>
+        <button onclick="onboardingSkipKids()" style="background:#0d121b;border:1px solid #223146;margin-top:10px;">Skip for Now</button>
+        <button onclick="onboardingFinish()" style="background:#60a5fa;border:1px solid #3b82f6;margin-top:10px;">Continue to Dashboard →</button>
+      </div>
+      
+      <div id="onboardingStep3" class="hidden">
+        <h3 style="color:#34d399;text-align:center;">✅ All Set!</h3>
+        <p style="text-align:center;color:#8aa0b6;margin:20px 0;">Your family is ready to start using GoodbodyBucks!</p>
+        <button onclick="onboardingFinish()" style="background:#34d399;border:1px solid #22c088;">Go to Dashboard →</button>
+      </div>
+    </div>
+  `;
+  
+  // Insert at beginning of wrap
+  const onboardingDiv = document.createElement('div');
+  onboardingDiv.innerHTML = onboardingHTML;
+  wrap.insertBefore(onboardingDiv.firstElementChild, wrap.firstChild);
+}
+
+async function onboardingCreateFamily() {
+  const name = document.getElementById('onboardingFamilyName').value;
+  const statusEl = document.getElementById('onboardingStatus');
+  
+  try {
+    statusEl.textContent = 'Creating family...';
+    
+    const url = API_BASE + "/api/setup_family";
+    const res = await fetch(url, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ family_name:name })
+    });
+    
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    
+    familyId = data.family_id;
+    localStorage.setItem('familyId', familyId);
+    localStorage.setItem('familyName', name);
+    
+    logEvent('onboarding_family_created', { familyId, familyName: name });
+    statusEl.textContent = '✅ Family created!';
+    
+    // Move to step 2
+    setTimeout(() => {
+      document.getElementById('onboardingStep1').classList.add('hidden');
+      document.getElementById('onboardingStep2').classList.remove('hidden');
+    }, 500);
+  } catch(e) {
+    logError('onboardingCreateFamily', e);
+    statusEl.textContent = '❌ Error: ' + e.message;
+  }
+}
+
+let onboardingKidsAdded = 0;
+async function onboardingAddKid() {
+  const name = document.getElementById('onboardingKidName').value;
+  const balance = parseInt(document.getElementById('onboardingKidBalance').value) || 0;
+  const time = parseInt(document.getElementById('onboardingKidTime').value) || 0;
+  const listEl = document.getElementById('onboardingKidsList');
+  
+  try {
+    listEl.innerHTML += `<div style="color:#8aa0b6;">Adding ${name}...</div>`;
+    
+    // Create kid account
+    const email = `${name.toLowerCase().replace(/\s+/g,'')}@${familyId}.goodbody.local`;
+    const pin = Math.random().toString(36).slice(-8);
+    
+    await auth.createUserWithEmailAndPassword(email, pin);
+    await api("/api/bootstrap", "POST", { name, role: "kid" });
+    
+    // Add initial balance
+    if (balance > 0) {
+      await api("/api/add_gbucks", "POST", { kid_name: name, amount: balance, reason: "Welcome bonus!" });
+    }
+    if (time > 0) {
+      await api("/api/add_time", "POST", { kid_name: name, minutes: time, reason: "Welcome bonus!" });
+    }
+    
+    onboardingKidsAdded++;
+    listEl.innerHTML += `<div style="color:#34d399;padding:8px;background:#0d121b;border-radius:8px;margin-top:5px;">✅ ${name} added (GB$${balance}, ${time} min)</div>`;
+    
+    // Clear form
+    document.getElementById('onboardingKidName').value = '';
+    document.getElementById('onboardingKidBalance').value = '100';
+    document.getElementById('onboardingKidTime').value = '60';
+    
+    logEvent('onboarding_kid_added', { kidName: name, balance, time });
+  } catch(e) {
+    logError('onboardingAddKid', e);
+    listEl.innerHTML += `<div style="color:#fb7185;">❌ Error adding ${name}: ${e.message}</div>`;
+  }
+}
+
+function onboardingSkipKids() {
+  logEvent('onboarding_kids_skipped');
+  onboardingFinish();
+}
+
+async function onboardingFinish() {
+  logEvent('onboarding_completed', { kidsAdded: onboardingKidsAdded });
+  
+  // Remove onboarding wizard
+  const wizard = document.getElementById('onboardingWizard');
+  if (wizard) wizard.remove();
+  
+  // Show dashboard
+  showAuthUI();
+  hideAuthUI();
+  await refreshCatalog();
+  await refreshState();
+  
+  setStatus(`Welcome! Your family is ready. ${onboardingKidsAdded > 0 ? `${onboardingKidsAdded} kid(s) added.` : ''}`);
 }
 
 /* ---------------- HELPERS ---------------- */
@@ -971,6 +1231,11 @@ async function setupFamily(){
     
     familyId = data.family_id;
     document.getElementById("familyId").value = familyId;
+    
+    // Save to localStorage
+    localStorage.setItem('familyId', familyId);
+    localStorage.setItem('familyName', name);
+    
     logEvent('family_setup_success', { familyId, familyName: name });
     setStatus("Family created: " + familyId);
   } catch(e) {
@@ -1063,6 +1328,11 @@ async function loginAdmin(){
     idToken = await cred.user.getIdToken();
     currentUser = { uid: cred.user.uid, email: cred.user.email, role: 'admin' };
     
+    // Save to localStorage
+    localStorage.setItem('familyId', familyId);
+    localStorage.setItem('userRole', 'admin');
+    localStorage.setItem('userEmail', email);
+    
     // Bootstrap if needed
     try {
       logEvent('admin_bootstrap_attempt', { uid: cred.user.uid });
@@ -1080,6 +1350,7 @@ async function loginAdmin(){
       familyId 
     });
     setStatus("Admin logged in");
+    hideAuthUI();
     await refreshCatalog();
     await refreshState();
   } catch (e) {
@@ -1152,6 +1423,12 @@ async function loginKid(){
       // Already registered or other error - continue
     }
 
+    // Save to localStorage
+    localStorage.setItem('familyId', familyId);
+    localStorage.setItem('userRole', 'kid');
+    localStorage.setItem('kidName', name);
+    localStorage.setItem('userEmail', email);
+    
     logEvent('kid_login_success', { 
       uid: cred.user.uid, 
       email, 
@@ -1160,6 +1437,7 @@ async function loginKid(){
       familyId 
     });
     setStatus("Kid logged in");
+    hideAuthUI();
     await refreshCatalog();
     await refreshState();
   } catch (e) {
