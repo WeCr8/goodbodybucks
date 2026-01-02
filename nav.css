@@ -1,0 +1,189 @@
+/* Navigation Component Styles */
+:root {
+    --nav-primary: #34d399;
+    --nav-secondary: #60a5fa;
+    --nav-dark-bg: #0b0f14;
+    --nav-card-bg: #121823;
+    --nav-border: #223146;
+    --nav-text-light: #eaf2ff;
+    --nav-text-muted: #8aa0b6;
+}
+
+/* Landing Page Navigation */
+.landing-navbar {
+    background: rgba(18, 24, 35, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--nav-border);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.landing-navbar.scrolled {
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+}
+
+.landing-navbar .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.landing-navbar .navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--nav-primary) !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.landing-navbar .navbar-brand:hover {
+    color: #22c088 !important;
+}
+
+.landing-navbar .navbar-brand img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.landing-navbar .nav-link {
+    color: var(--nav-text-muted) !important;
+    font-weight: 500;
+    transition: color 0.3s;
+    padding: 8px 16px !important;
+}
+
+.landing-navbar .nav-link:hover {
+    color: var(--nav-primary) !important;
+}
+
+.landing-navbar .btn-nav-primary {
+    background: var(--nav-primary);
+    border: none;
+    color: var(--nav-dark-bg);
+    font-weight: 600;
+    padding: 10px 24px;
+    border-radius: 10px;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.landing-navbar .btn-nav-primary:hover {
+    background: #22c088;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(52, 211, 153, 0.3);
+}
+
+/* App Navigation */
+.app-nav {
+    background: rgba(18, 24, 35, 0.95);
+    border-bottom: 1px solid var(--nav-border);
+    padding: 12px 0;
+    margin-bottom: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+}
+
+.app-nav .nav-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.app-nav .nav-brand {
+    font-weight: 600;
+    color: var(--nav-primary);
+    text-decoration: none;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+}
+
+.app-nav .nav-brand:hover {
+    color: #22c088;
+}
+
+.app-nav .nav-brand svg {
+    transition: transform 0.3s;
+}
+
+.app-nav .nav-brand:hover svg {
+    transform: translateX(-3px);
+}
+
+.app-nav .nav-links {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.app-nav .nav-link {
+    color: var(--nav-text-muted);
+    text-decoration: none;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.app-nav .nav-link:hover {
+    color: var(--nav-text-light);
+    background: rgba(52, 211, 153, 0.1);
+}
+
+.app-nav .nav-user-info {
+    color: var(--nav-text-muted);
+    font-size: 12px;
+    padding: 4px 12px;
+    background: rgba(52, 211, 153, 0.05);
+    border-radius: 12px;
+    border: 1px solid var(--nav-border);
+}
+
+.app-nav .nav-user-role {
+    color: var(--nav-primary);
+    font-weight: 600;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .landing-navbar .navbar-brand {
+        font-size: 1.2rem;
+    }
+    
+    .landing-navbar .navbar-brand img {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .app-nav .nav-content {
+        justify-content: center;
+    }
+    
+    .app-nav .nav-brand {
+        font-size: 14px;
+    }
+    
+    .app-nav .nav-links {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
