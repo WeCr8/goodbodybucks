@@ -1,0 +1,432 @@
+<!-- 
+  FIREBASE AUTH IMPROVEMENTS
+  This file contains improved authentication functions to replace in index.html
+-->
+
+<script>
+// ============================================================================
+// IMPROVED FIREBASE AUTHENTICATION
+// ============================================================================
+
+// Global state
+let currentUser = null;
+let currentFamilyId = null;
+let currentRole = null;
+let idToken = null;
+
+// ============================================================================
+// AUTH STATE MANAGEMENT
+// ============================================================================
+
+/**
+ * Initialize auth state listener
+ * This runs once when the page loads and handles session persistence
+ */
+function initializeAuth() {
+  console.log('[AUTH] Initializing Firebase Auth listener...');
+  
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      console.log('[AUTH] User signed in:', user.email);
+      currentUser = user;
+      
+      // Get fresh ID token
+      try {
+        idToken = await user.getIdToken(true);
+        console.log('[AUTH] ID token refreshed');
+        
+        // Try to restore session from localStorage
+        const savedFamilyId = localStorage.getItem('gb_family_id');
+        const savedRole = localStorage.getItem('gb_user_role');
+        
+        if (savedFamilyId && savedRole) {
+          console.log('[AUTH] Restoring session:', { familyId: savedFamilyId, role: savedRole });
+          currentFamilyId = savedFamilyId;
+          currentRole = savedRole;
+          
+          // Update UI
+          document.getElementById('familyId').value = savedFamilyId;
+          setStatus(`Welcome back! Logged in as ${savedRole}`);
+          
+          // Refresh state
+          await refreshState();
+        }
+      } catch (error) {
+        console.error('[AUTH] Error getting ID token:', error);
+      }
+    } else {
+      console.log('[AUTH] User signed out');
+      currentUser = null;
+      currentFamilyId = null;
+      currentRole = null;
+      idToken = null;
+      
+      // Clear saved session
+      localStorage.removeItem('gb_family_id');
+      localStorage.removeItem('gb_user_role');
+    }
+  });
+}
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Get current family ID from input or state
+ */
+function getFamilyId() {
+  const input = document.getElementById('familyId').value.trim();
+  return input || currentFamilyId;
+}
+
+/**
+ * Save session to localStorage
+ */
+function saveSession(familyId, role) {
+  localStorage.setItem('gb_family_id', familyId);
+  localStorage.setItem('gb_user_role', role);
+  currentFamilyId = familyId;
+  currentRole = role;
+}
+
+/**
+ * Clear session from localStorage
+ */
+function clearSession() {
+  localStorage.removeItem('gb_family_id');
+  localStorage.removeItem('gb_user_role');
+  currentFamilyId = null;
+  currentRole = null;
+}
+
+/**
+ * Get friendly error message from Firebase error code
+ */
+function getAuthErrorMessage(errorCode) {
+  const errorMessages = {
+    'auth/invalid-email': 'Invalid email address format',
+    'auth/user-disabled': 'This account has been disabled',
+    'auth/user-not-found': 'No account found with this email',
+    'auth/wrong-password': 'Incorrect password',
+    'auth/invalid-credential': 'Invalid email or password',
+    'auth/email-already-in-use': 'An account with this email already exists',
+    'auth/weak-password': 'Password must be at least 6 characters',
+    'auth/operation-not-allowed': 'Email/password accounts are not enabled',
+    'auth/too-many-requests': 'Too many failed attempts. Please try again later',
+    'auth/network-request-failed': 'Network error. Please check your connection'
+  };
+  
+  return errorMessages[errorCode] || 'Authentication error occurred';
+}
+
+/**
+ * Show loading state
+ */
+function setLoading(isLoading, message = 'Loading...') {
+  const statusEl = document.getElementById('status');
+  if (isLoading) {
+    statusEl.textContent = message;
+    statusEl.className = 'pill';
+    statusEl.style.color = '#60a5fa';
+  }
+}
+
+// ============================================================================
+// ADMIN LOGIN
+// ============================================================================
+
+async function loginAdmin() {
+  console.log('[AUTH] Admin login attempt');
+  logClick('loginAdmin', 'admin_login_attempt');
+  
+  try {
+    // Get and validate inputs
+    const familyId = getFamilyId();
+    if (!familyId) {
+      setStatus("Please enter a Family ID");
+      return;
+    }
+    
+    const email = document.getElementById('adminEmail').value.trim();
+    const password = document.getElementById('adminPass').value;
+    
+    if (!email || !password) {
+      setStatus("Please enter email and password");
+      return;
+    }
+    
+    // Validate password length
+    if (password.length < 6) {
+      setStatus("Password must be at least 6 characters");
+      return;
+    }
+    
+    setLoading(true, 'Signing in...');
+    
+    // Try to sign in
+    let userCredential;
+    let isNewAccount = false;
+    
+    try {
+      console.log('[AUTH] Attempting sign in with email:', email);
+      userCredential = await auth.signInWithEmailAndPassword(email, password);
+      console.log('[AUTH] Sign in successful');
+      logEvent('admin_signin_success', { email, familyId });
+    } catch (signInError) {
+      const errorCode = signInError.code;
+      console.log('[AUTH] Sign in failed:', errorCode);
+      
+      // If user not found, try to create account (bootstrap)
+      if (errorCode === 'auth/user-not-found' || errorCode === 'auth/invalid-credential') {
+        try {
+          console.log('[AUTH] Attempting to create new admin account');
+          setLoading(true, 'Creating account...');
+          userCredential = await auth.createUserWithEmailAndPassword(email, password);
+          isNewAccount = true;
+          console.log('[AUTH] Account created successfully');
+          logEvent('admin_account_created', { email, familyId });
+        } catch (createError) {
+          console.error('[AUTH] Account creation failed:', createError);
+          logError('admin_account_creation', createError);
+          setStatus('Error: ' + getAuthErrorMessage(createError.code));
+          return;
+        }
+      } else {
+        // Other sign-in errors
+        console.error('[AUTH] Sign in error:', signInError);
+        logError('admin_signin', signInError);
+        setStatus('Error: ' + getAuthErrorMessage(errorCode));
+        return;
+      }
+    }
+    
+    // Get ID token
+    const user = userCredential.user;
+    idToken = await user.getIdToken();
+    console.log('[AUTH] ID token obtained');
+    
+    // Call backend to bootstrap/verify admin
+    setLoading(true, 'Setting up account...');
+    const response = await fetch(`${API_BASE}/api/bootstrap`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`,
+        'X-Family-Id': familyId
+      },
+      body: JSON.stringify({
+        family_id: familyId,
+        role: 'admin',
+        name: email.split('@')[0],
+        is_new_firebase_account: isNewAccount
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (!data.ok) {
+      console.error('[AUTH] Bootstrap failed:', data.error);
+      setStatus('Error: ' + (data.error || 'Failed to setup account'));
+      await auth.signOut();
+      return;
+    }
+    
+    // Success!
+    console.log('[AUTH] Admin login complete');
+    logEvent('admin_login_complete', { familyId, isNewAccount });
+    
+    saveSession(familyId, 'admin');
+    setStatus(isNewAccount ? 'Admin account created! Welcome!' : 'Logged in as Admin');
+    
+    // Refresh state
+    await refreshState();
+    
+  } catch (error) {
+    console.error('[AUTH] Unexpected error:', error);
+    logError('admin_login', error);
+    setStatus('Error: ' + error.message);
+  }
+}
+
+// ============================================================================
+// KID LOGIN
+// ============================================================================
+
+async function loginKid() {
+  console.log('[AUTH] Kid login attempt');
+  logClick('loginKid', 'kid_login_attempt');
+  
+  try {
+    // Get and validate inputs
+    const familyId = getFamilyId();
+    if (!familyId) {
+      setStatus("Please enter a Family ID");
+      return;
+    }
+    
+    const kidName = document.getElementById('kidName').value.trim().toLowerCase().replace(/\s+/g, '');
+    const pin = document.getElementById('kidPin').value;
+    
+    if (!kidName || !pin) {
+      setStatus("Please enter name and PIN");
+      return;
+    }
+    
+    // Validate PIN length (Firebase requires 6+ characters)
+    if (pin.length < 6) {
+      setStatus("PIN must be at least 6 characters");
+      return;
+    }
+    
+    // Create derived email
+    const email = `${kidName}.${familyId}@gbucks.local`;
+    console.log('[AUTH] Kid login with derived email:', email);
+    
+    setLoading(true, 'Signing in...');
+    
+    // Try to sign in
+    let userCredential;
+    let isNewAccount = false;
+    
+    try {
+      console.log('[AUTH] Attempting kid sign in');
+      userCredential = await auth.signInWithEmailAndPassword(email, pin);
+      console.log('[AUTH] Kid sign in successful');
+      logEvent('kid_signin_success', { kidName, familyId });
+    } catch (signInError) {
+      const errorCode = signInError.code;
+      console.log('[AUTH] Kid sign in failed:', errorCode);
+      
+      // If user not found, try to create account
+      if (errorCode === 'auth/user-not-found' || errorCode === 'auth/invalid-credential') {
+        try {
+          console.log('[AUTH] Attempting to create new kid account');
+          setLoading(true, 'Creating kid account...');
+          userCredential = await auth.createUserWithEmailAndPassword(email, pin);
+          isNewAccount = true;
+          console.log('[AUTH] Kid account created successfully');
+          logEvent('kid_account_created', { kidName, familyId });
+        } catch (createError) {
+          console.error('[AUTH] Kid account creation failed:', createError);
+          logError('kid_account_creation', createError);
+          setStatus('Error: ' + getAuthErrorMessage(createError.code));
+          return;
+        }
+      } else {
+        // Other sign-in errors
+        console.error('[AUTH] Kid sign in error:', signInError);
+        logError('kid_signin', signInError);
+        setStatus('Error: ' + getAuthErrorMessage(errorCode));
+        return;
+      }
+    }
+    
+    // Get ID token
+    const user = userCredential.user;
+    idToken = await user.getIdToken();
+    console.log('[AUTH] ID token obtained for kid');
+    
+    // Call backend to bootstrap/verify kid
+    setLoading(true, 'Setting up account...');
+    const response = await fetch(`${API_BASE}/api/bootstrap`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`,
+        'X-Family-Id': familyId
+      },
+      body: JSON.stringify({
+        family_id: familyId,
+        role: 'kid',
+        name: kidName,
+        is_new_firebase_account: isNewAccount
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (!data.ok) {
+      console.error('[AUTH] Kid bootstrap failed:', data.error);
+      setStatus('Error: ' + (data.error || 'Failed to setup kid account'));
+      await auth.signOut();
+      return;
+    }
+    
+    // Success!
+    console.log('[AUTH] Kid login complete');
+    logEvent('kid_login_complete', { kidName, familyId, isNewAccount });
+    
+    saveSession(familyId, 'kid');
+    setStatus(isNewAccount ? `Kid account created for ${kidName}!` : `Logged in as ${kidName}`);
+    
+    // Refresh state
+    await refreshState();
+    
+  } catch (error) {
+    console.error('[AUTH] Unexpected kid login error:', error);
+    logError('kid_login', error);
+    setStatus('Error: ' + error.message);
+  }
+}
+
+// ============================================================================
+// LOGOUT
+// ============================================================================
+
+async function logout() {
+  console.log('[AUTH] Logging out');
+  logEvent('logout', { familyId: currentFamilyId, role: currentRole });
+  
+  try {
+    await auth.signOut();
+    clearSession();
+    setStatus('Logged out successfully');
+    
+    // Clear UI
+    document.getElementById('kids').innerHTML = '';
+    document.getElementById('kidWallet').classList.add('hidden');
+    document.getElementById('historyView').classList.add('hidden');
+    
+    console.log('[AUTH] Logout complete');
+  } catch (error) {
+    console.error('[AUTH] Logout error:', error);
+    setStatus('Error logging out: ' + error.message);
+  }
+}
+
+// ============================================================================
+// TOKEN REFRESH
+// ============================================================================
+
+/**
+ * Ensure we have a fresh ID token
+ * Call this before making API requests
+ */
+async function ensureFreshToken() {
+  if (!currentUser) {
+    throw new Error('Not authenticated');
+  }
+  
+  try {
+    // Force refresh if token is older than 50 minutes
+    idToken = await currentUser.getIdToken(true);
+    return idToken;
+  } catch (error) {
+    console.error('[AUTH] Token refresh failed:', error);
+    throw error;
+  }
+}
+
+// ============================================================================
+// INITIALIZATION
+// ============================================================================
+
+// Initialize auth when page loads
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('[AUTH] Page loaded, initializing auth...');
+  initializeAuth();
+});
+
+</script>
+
