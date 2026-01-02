@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Landing - GoodbodyBucks</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui;
+            background: #0b0f14;
+            color: #eaf2ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            padding: 40px;
+        }
+        h1 {
+            color: #34d399;
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 1.2rem;
+            color: #8aa0b6;
+            margin-bottom: 30px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: #34d399;
+            color: #0b0f14;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #22c088;
+            transform: translateY(-2px);
+        }
+        .status {
+            margin-top: 40px;
+            padding: 20px;
+            background: #121823;
+            border: 1px solid #223146;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 Landing Page Test</h1>
+        <p>This is the LANDING PAGE. If you see this, the landing page is loading correctly!</p>
+        <a href="/app" class="btn">Launch App →</a>
+        
+        <div class="status">
+            <p style="margin: 0; font-size: 0.9rem;">
+                <strong>Current Page:</strong> Landing Page (Root URL)<br>
+                <strong>URL:</strong> <span id="currentUrl"></span><br>
+                <strong>Time:</strong> <span id="currentTime"></span>
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('currentUrl').textContent = window.location.href;
+        document.getElementById('currentTime').textContent = new Date().toLocaleString();
+        console.log('[LANDING PAGE] Loaded successfully at:', window.location.href);
+        console.log('[LANDING PAGE] This is the landing page, not the app');
+    </script>
+</body>
+</html>
+

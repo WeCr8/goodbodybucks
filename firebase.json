@@ -32,6 +32,10 @@
     ],
     "rewrites": [
       {
+        "source": "/test-landing",
+        "destination": "/test-landing.html"
+      },
+      {
         "source": "/",
         "destination": "/landing.html"
       },
