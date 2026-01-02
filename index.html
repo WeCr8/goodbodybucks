@@ -1,2628 +1,1158 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>GB$ Family Wallet</title>
-
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-
-<!-- Navigation Component CSS -->
-<link rel="stylesheet" href="/nav.css">
-
-<style>
-  body { margin:0; font-family:system-ui; background:#0b0f14; color:#eaf2ff; }
-  .wrap { max-width:1100px; margin:auto; padding:16px; }
-  .card { background:#121823; border:1px solid #223146; border-radius:14px; padding:14px; margin-bottom:12px; overflow:hidden; }
-  h1,h2,h3 { margin:6px 0; overflow:hidden; text-overflow:ellipsis; }
-  label { font-size:12px; color:#8aa0b6; display:block; margin-top:10px; overflow:hidden; text-overflow:ellipsis; }
-  input,select,textarea,button {
-    width:100%; padding:10px; border-radius:10px;
-    border:1px solid #223146; background:#0d121b; color:#eaf2ff;
-    box-sizing:border-box; max-width:100%;
-  }
-  input, select { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  textarea { overflow-y:auto; resize:vertical; min-height:60px; max-height:200px; word-wrap:break-word; }
-  button { cursor:pointer; font-weight:600; margin-top:8px; overflow:hidden; text-overflow:ellipsis; }
-  .row { display:flex; gap:10px; overflow:hidden; }
-  .row > * { flex:1; min-width:0; overflow:hidden; }
-  .hidden { display:none; }
-  .kid { background:#0d121b; border-radius:12px; padding:10px; margin-bottom:8px; overflow:hidden; }
-  .pill { font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid #223146; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%; display:inline-block; }
-  .ok { color:#34d399; }
-  .bad { color:#fb7185; }
-  .wallet { background:linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%); border:2px solid #3a5f8f; border-radius:20px; padding:24px; margin:16px 0; text-align:center; }
-  .wallet-title { font-size:14px; color:#8aa0b6; margin-bottom:12px; text-transform:uppercase; letter-spacing:1px; }
-  .wallet-balance { font-size:48px; font-weight:700; color:#34d399; margin:8px 0; text-shadow:0 2px 8px rgba(52,211,153,0.3); }
-  .wallet-minutes { font-size:32px; font-weight:600; color:#60a5fa; margin:8px 0; }
-  .wallet-label { font-size:12px; color:#8aa0b6; margin-top:4px; }
-  .wallet-status { margin-top:12px; padding:8px; border-radius:8px; background:rgba(0,0,0,0.2); }
-  .wallet-locked { background:rgba(251,113,133,0.2); border:1px solid #fb7185; }
-  .wallet-active { background:rgba(52,211,153,0.2); border:1px solid #34d399; }
-  .logo-header { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
-  .logo-header img { width:64px; height:64px; border-radius:50%; border:2px solid #34d399; box-shadow:0 4px 12px rgba(52,211,153,0.3); }
-  .wallet-logo { width:120px; height:120px; margin:0 auto 16px; border-radius:50%; border:3px solid #34d399; box-shadow:0 6px 20px rgba(52,211,153,0.4); display:block; }
-  .menu-section { margin:20px 0; }
-  .menu-image { width:100%; max-width:600px; border-radius:12px; border:2px solid #223146; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; }
-  .menu-image:hover { transform:scale(1.02); box-shadow:0 8px 24px rgba(52,211,153,0.3); }
-  .menu-toggle { background:#223146; color:#8aa0b6; padding:8px 12px; border-radius:8px; font-size:12px; cursor:pointer; display:inline-block; margin-bottom:8px; }
-  .menu-toggle:hover { background:#2a3a52; color:#eaf2ff; }
-  .menu-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-top:16px; }
-  .menu-card { background:#0d121b; border:1px solid #223146; border-radius:12px; padding:12px; text-align:center; overflow:hidden; }
-  .menu-card img { width:100%; border-radius:8px; margin-bottom:8px; max-width:100%; height:auto; }
-  .menu-card-title { font-size:14px; font-weight:600; color:#eaf2ff; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .menu-card-price { font-size:12px; color:#34d399; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:1000; }
-  .modal { background:#121823; border:2px solid #34d399; border-radius:16px; padding:24px; max-width:500px; width:90%; box-shadow:0 8px 32px rgba(52,211,153,0.3); overflow:hidden; box-sizing:border-box; }
-  .modal-header { font-size:20px; font-weight:700; color:#34d399; margin-bottom:16px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .modal-content { margin:16px 0; overflow:hidden; }
-  .modal-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #223146; overflow:hidden; gap:8px; }
-  .modal-row:last-child { border-bottom:none; font-weight:600; font-size:16px; }
-  .modal-label { color:#8aa0b6; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex-shrink:0; max-width:50%; }
-  .modal-value { color:#eaf2ff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:right; }
-  .modal-value.positive { color:#34d399; }
-  .modal-value.negative { color:#fb7185; }
-  .modal-actions { display:flex; gap:12px; margin-top:20px; }
-  .modal-actions button { flex:1; padding:12px; font-weight:600; border-radius:10px; cursor:pointer; }
-  .modal-cancel { background:#223146; color:#8aa0b6; border:1px solid #223146; }
-  .modal-cancel:hover { background:#2a3a52; color:#eaf2ff; }
-  .modal-confirm { background:#34d399; color:#0b0f14; border:1px solid #34d399; }
-  .modal-confirm:hover { background:#22c088; }
-  .modal-menu-section { max-height:300px; overflow-y:auto; margin-top:16px; padding-top:16px; border-top:1px solid #223146; }
-  .modal-menu-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:8px; margin-top:12px; }
-  .modal-menu-item { background:#0d121b; border:2px solid #223146; border-radius:8px; padding:8px; text-align:center; cursor:pointer; transition:all 0.2s; overflow:hidden; }
-  .modal-menu-item:hover { border-color:#34d399; transform:scale(1.05); }
-  .modal-menu-item.selected { border-color:#34d399; background:rgba(52,211,153,0.1); }
-  .modal-menu-item img { width:100%; border-radius:4px; margin-bottom:4px; max-width:100%; height:auto; }
-  .modal-menu-item-title { font-size:11px; color:#eaf2ff; margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .modal-menu-item-price { font-size:10px; color:#34d399; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:1000; }
-  .modal { background:#121823; border:2px solid #34d399; border-radius:16px; padding:24px; max-width:500px; width:90%; box-shadow:0 8px 32px rgba(52,211,153,0.3); overflow:hidden; box-sizing:border-box; }
-  .modal-header { font-size:20px; font-weight:700; color:#34d399; margin-bottom:16px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .modal-content { margin:16px 0; overflow:hidden; }
-  .modal-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #223146; overflow:hidden; gap:8px; }
-  .modal-row:last-child { border-bottom:none; font-weight:600; font-size:16px; }
-  .modal-label { color:#8aa0b6; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex-shrink:0; max-width:50%; }
-  .modal-value { color:#eaf2ff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:right; }
-  .modal-value.positive { color:#34d399; }
-  .modal-value.negative { color:#fb7185; }
-  .modal-actions { display:flex; gap:12px; margin-top:20px; }
-  .modal-actions button { flex:1; padding:12px; font-weight:600; border-radius:10px; cursor:pointer; }
-  .modal-cancel { background:#223146; color:#8aa0b6; border:1px solid #223146; }
-  .modal-cancel:hover { background:#2a3a52; color:#eaf2ff; }
-  .modal-confirm { background:#34d399; color:#0b0f14; border:1px solid #34d399; }
-  .modal-confirm:hover { background:#22c088; }
-  
-  /* Wallet Modal Styles */
-  .wallet-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.85);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-    backdrop-filter: blur(4px);
-  }
-  
-  .wallet-modal {
-    background: linear-gradient(135deg, #121823 0%, #1a2332 100%);
-    border: 2px solid #34d399;
-    border-radius: 20px;
-    padding: 0;
-    max-width: 600px;
-    width: 90%;
-    max-height: 90vh;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(52, 211, 153, 0.4);
-    animation: slideIn 0.3s ease-out;
-    box-sizing: border-box;
-  }
-  
-  @keyframes slideIn {
-    from {
-      transform: translateY(-50px);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-  
-  .wallet-modal-header {
-    background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
-    padding: 24px;
-    border-bottom: 2px solid #34d399;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .wallet-modal-close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid #223146;
-    color: #8aa0b6;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-  }
-  
-  .wallet-modal-close:hover {
-    background: #fb7185;
-    color: #fff;
-    border-color: #fb7185;
-  }
-  
-  .wallet-modal-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: #34d399;
-    margin: 0 0 8px 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  
-  .wallet-modal-subtitle {
-    font-size: 14px;
-    color: #8aa0b6;
-    margin: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  
-  .wallet-modal-body {
-    padding: 24px;
-    max-height: calc(90vh - 200px);
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-  
-  .wallet-summary {
-    background: linear-gradient(135deg, #0d121b 0%, #121823 100%);
-    border: 1px solid #223146;
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 24px;
-    overflow: hidden;
-  }
-  
-  .wallet-stat {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #223146;
-    overflow: hidden;
-    gap: 8px;
-  }
-  
-  .wallet-stat:last-child {
-    border-bottom: none;
-  }
-  
-  .wallet-stat-label {
-    font-size: 14px;
-    color: #8aa0b6;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  
-  .wallet-stat-value {
-    font-size: 28px;
-    font-weight: 700;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  
-  .wallet-stat-value.balance {
-    color: #34d399;
-    text-shadow: 0 2px 8px rgba(52, 211, 153, 0.3);
-  }
-  
-  .wallet-stat-value.minutes {
-    color: #60a5fa;
-    text-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
-  }
-  
-  .wallet-stat-sublabel {
-    font-size: 11px;
-    color: #8aa0b6;
-    margin-top: 2px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  
-  .wallet-status-badge {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
-  }
-  
-  .wallet-status-badge.active {
-    background: rgba(52, 211, 153, 0.2);
-    color: #34d399;
-    border: 1px solid #34d399;
-  }
-  
-  .wallet-status-badge.locked {
-    background: rgba(251, 113, 133, 0.2);
-    color: #fb7185;
-    border: 1px solid #fb7185;
-  }
-  
-  .wallet-section-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #eaf2ff;
-    margin: 24px 0 12px 0;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #223146;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  
-  .transaction-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .transaction-item {
-    background: #0d121b;
-    border: 1px solid #223146;
-    border-radius: 10px;
-    padding: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: all 0.2s;
-    overflow: hidden;
-    gap: 8px;
-  }
-  
-  .transaction-item:hover {
-    border-color: #34d399;
-    background: rgba(52, 211, 153, 0.05);
-  }
-  
-  .transaction-info {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-  }
-  
-  .transaction-label {
-    font-size: 14px;
-    color: #eaf2ff;
-    font-weight: 500;
-    margin-bottom: 4px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  
-  .transaction-details {
-    font-size: 11px;
-    color: #8aa0b6;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  
-  .transaction-amount {
-    font-size: 18px;
-    font-weight: 700;
-    text-align: right;
-  }
-  
-  .transaction-amount.positive {
-    color: #34d399;
-  }
-  
-  .transaction-amount.negative {
-    color: #fb7185;
-  }
-  
-  .transaction-type {
-    font-size: 10px;
-    color: #8aa0b6;
-    text-align: right;
-    margin-top: 2px;
-  }
-  
-  .wallet-modal-footer {
-    padding: 16px 24px;
-    border-top: 1px solid #223146;
-    display: flex;
-    gap: 12px;
-  }
-  
-  .wallet-modal-button {
-    flex: 1;
-    padding: 12px;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .wallet-modal-button.primary {
-    background: #34d399;
-    color: #0b0f14;
-    border: 1px solid #34d399;
-  }
-  
-  .wallet-modal-button.primary:hover {
-    background: #22c088;
-  }
-  
-  .wallet-modal-button.secondary {
-    background: #223146;
-    color: #8aa0b6;
-    border: 1px solid #223146;
-  }
-  
-  .wallet-modal-button.secondary:hover {
-    background: #2a3a52;
-    color: #eaf2ff;
-  }
-  
-  .empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: #8aa0b6;
-  }
-  
-  .empty-state-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
-  }
-  
-  /* Consequence Card Styles */
-  .consequence-card {
-    background: #0d121b;
-    border: 2px solid #223146;
-    border-radius: 12px;
-    padding: 12px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .consequence-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 24px rgba(52, 211, 153, 0.3);
-  }
-  
-  .consequence-card.time-consequence {
-    border-color: #60a5fa;
-  }
-  
-  .consequence-card.time-consequence:hover {
-    border-color: #3b82f6;
-    background: rgba(96, 165, 250, 0.1);
-    box-shadow: 0 8px 24px rgba(96, 165, 250, 0.4);
-  }
-  
-  .consequence-card.money-consequence {
-    border-color: #fb7185;
-  }
-  
-  .consequence-card.money-consequence:hover {
-    border-color: #f43f5e;
-    background: rgba(251, 113, 133, 0.1);
-    box-shadow: 0 8px 24px rgba(251, 113, 133, 0.4);
-  }
-  
-  .consequence-card-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: #eaf2ff;
-    margin-bottom: 6px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  
-  .consequence-card-effect {
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 4px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  
-  .admin-section-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 20px 0 12px 0;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #223146;
-    overflow: hidden;
-  }
-  
-  .admin-section-header h3 {
-    margin: 0;
-    font-size: 18px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoodbodyBucks - Teaching Real-World Skills Through Everyday Life</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Navigation Component CSS -->
+    <link rel="stylesheet" href="/nav.css">
+    
+    <style>
+        :root {
+            --primary: #34d399;
+            --secondary: #60a5fa;
+            --dark-bg: #0b0f14;
+            --card-bg: #121823;
+            --card-border: #223146;
+            --text-light: #eaf2ff;
+            --text-muted: #8aa0b6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 50%, #1e3a5f 100%);
+            padding: 100px 0 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(52, 211, 153, 0.1), transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(96, 165, 250, 0.1), transparent 50%);
+            pointer-events: none;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 24px;
+            line-height: 1.2;
+        }
+        
+        .hero .highlight {
+            color: var(--primary);
+        }
+        
+        .hero p.lead {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+        
+        .hero-coin {
+            width: 150px;
+            height: 150px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        /* Section Styles */
+        section {
+            padding: 80px 0;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 60px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Cards */
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 32px;
+            height: 100%;
+            transition: all 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 12px 24px rgba(52, 211, 153, 0.2);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-light);
+        }
+        
+        .feature-card p {
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+        
+        /* Legacy Section */
+        .legacy-section {
+            background: var(--card-bg);
+            border-top: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
+        }
+        
+        .legacy-image-container {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 3px solid var(--primary);
+        }
+        
+        .legacy-image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .legacy-caption {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
+            padding: 20px;
+            text-align: center;
+            font-style: italic;
+            color: var(--text-muted);
+            border-top: 2px solid var(--primary);
+        }
+        
+        /* Value Props */
+        .value-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .value-list li {
+            padding: 12px 0;
+            font-size: 1.1rem;
+            position: relative;
+            padding-left: 40px;
+        }
+        
+        .value-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        /* Interface Preview */
+        .interface-preview {
+            background: var(--card-bg);
+            border-top: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
+            padding: 80px 0;
+        }
+        
+        .preview-card {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
+            border: 2px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px;
+            height: 100%;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .preview-card::after {
+            content: '👁️ Click to view';
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            background: var(--primary);
+            color: var(--dark-bg);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+        }
+        
+        .preview-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(52, 211, 153, 0.3);
+        }
+        
+        .preview-card:hover::after {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .preview-card img {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 2px solid var(--card-border);
+        }
+        
+        .preview-card h3 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+        
+        .preview-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 0;
+        }
+        
+        /* Demo Wallet */
+        .demo-wallet {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
+            border: 3px solid var(--primary);
+            border-radius: 24px;
+            padding: 32px;
+            text-align: center;
+            margin: 40px 0;
+            box-shadow: 0 12px 40px rgba(52, 211, 153, 0.3);
+        }
+        
+        .demo-wallet-logo {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            box-shadow: 0 6px 20px rgba(52, 211, 153, 0.4);
+        }
+        
+        .demo-wallet-title {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+        
+        .demo-wallet-balance {
+            font-size: 56px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 12px 0;
+            text-shadow: 0 2px 8px rgba(52, 211, 153, 0.3);
+        }
+        
+        .demo-wallet-minutes {
+            font-size: 36px;
+            font-weight: 600;
+            color: var(--secondary);
+            margin: 12px 0;
+        }
+        
+        .demo-wallet-label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        
+        .demo-wallet-status {
+            margin-top: 20px;
+            padding: 12px;
+            background: rgba(52, 211, 153, 0.2);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        /* Modal Preview */
+        .modal-preview {
+            background: var(--card-bg);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px 0;
+            box-shadow: 0 8px 32px rgba(52, 211, 153, 0.3);
+        }
+        
+        .modal-preview-header {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .modal-preview-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--card-border);
+        }
+        
+        .modal-preview-item:last-child {
+            border-bottom: none;
+        }
+        
+        .modal-preview-label {
+            color: var(--text-muted);
+        }
+        
+        .modal-preview-value {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        /* Interactive Demo Modal */
+        .demo-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        
+        .demo-modal-overlay.active {
+            display: flex;
+        }
+        
+        .demo-modal {
+            background: linear-gradient(135deg, #121823 0%, #1a2332 100%);
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(52, 211, 153, 0.4);
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .demo-modal-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
+            padding: 24px;
+            border-bottom: 2px solid var(--primary);
+            text-align: center;
+            position: relative;
+        }
+        
+        .demo-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .demo-modal-close:hover {
+            background: rgba(251, 113, 133, 0.3);
+            border-color: #fb7185;
+            color: #fb7185;
+        }
+        
+        .demo-modal-body {
+            padding: 32px;
+        }
+        
+        .demo-modal img {
+            width: 100%;
+            border-radius: 12px;
+            border: 2px solid var(--card-border);
+            margin-bottom: 20px;
+        }
+        
+        .demo-cta {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid var(--card-border);
+        }
+        
+        .btn-demo {
+            display: inline-block;
+            padding: 12px 32px;
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .btn-demo:hover {
+            background: rgba(52, 211, 153, 0.1);
+            transform: scale(1.05);
+        }
+        
+        /* How It Works */
+        .step-card {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
+            border: 2px solid var(--card-border);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            height: 100%;
+        }
+        
+        .step-number {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: var(--dark-bg);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(52, 211, 153, 0.4);
+        }
+        
+        .step-card i {
+            font-size: 3rem;
+            color: var(--secondary);
+            margin-bottom: 20px;
+        }
+        
+        .step-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 16px;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
+            padding: 80px 0;
+            text-align: center;
+        }
+        
+        .cta-section h2 {
+            font-size: 3rem;
+            margin-bottom: 24px;
+        }
+        
+        .cta-section p {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+        
+        .btn-hero {
+            font-size: 1.2rem;
+            padding: 16px 48px;
+            background: var(--primary);
+            color: var(--dark-bg);
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+        
+        .btn-hero:hover {
+            background: #22c088;
+            transform: scale(1.05);
+            box-shadow: 0 12px 32px rgba(52, 211, 153, 0.4);
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--card-bg);
+            border-top: 1px solid var(--card-border);
+            padding: 40px 0;
+            text-align: center;
+            color: var(--text-muted);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p.lead {
+                font-size: 1.2rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .hero-coin {
+                width: 100px;
+                height: 100px;
+                margin-top: 30px;
+            }
+        }
+    </style>
 </head>
-
 <body>
-<!-- App Navigation -->
-<nav class="app-nav">
-  <div class="nav-content">
-    <a href="/" class="nav-brand">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M19 12H5M12 19l-7-7 7-7"/>
-      </svg>
-      About GoodbodyBucks
-    </a>
-    <div class="nav-links">
-      <span id="navUserInfo" style="color: #8aa0b6; font-size: 12px;"></span>
-    </div>
-  </div>
-</nav>
 
-<div class="wrap">
-  <div class="logo-header">
-    <div>
-      <h1 style="margin:0; display:flex; align-items:center; gap:8px;">
-        <img src="/images/gbucks-coin.png" alt="GB$ Logo" style="width:32px; height:32px; vertical-align:middle;" 
-             onload="console.log('[IMAGE] ✅ Loaded: gbucks-coin.png');" 
-             onerror="console.error('[IMAGE] ❌ Failed to load: gbucks-coin.png from', this.src); this.style.display='none';"/>
-        GB$ Family Wallet
-      </h1>
-      <p style="color:#8aa0b6; font-size:14px; margin:0;">Earn, Spend, Learn!</p>
-    </div>
-  </div>
-
-<div class="card">
-<h2>Family Setup (one-time)</h2>
-<form onsubmit="event.preventDefault(); setupFamily();">
-<label>Family Name</label>
-<input id="familyName" value="Goodbody" required/>
-<button type="submit">Create Family</button>
-</form>
-<div id="setupResult" class="pill"></div>
-</div>
-
-<div class="card">
-<h2>Login</h2>
-
-<label>Family ID</label>
-<input id="familyId" required/>
-
-<div class="row">
-  <button type="button" onclick="showAdmin()">Admin</button>
-  <button type="button" onclick="showKid()">Kid</button>
-</div>
-
-<div id="adminBox" class="hidden">
-  <form onsubmit="event.preventDefault(); loginAdmin();">
-    <label>Admin Email</label>
-    <input id="adminEmail" type="email" autocomplete="email" required/>
-    <label>Password</label>
-    <input id="adminPass" type="password" autocomplete="current-password" required minlength="6"/>
-    <button type="submit">Login Admin</button>
-  </form>
-</div>
-
-<div id="kidBox" class="hidden">
-  <form onsubmit="event.preventDefault(); loginKid();">
-    <label>Kid Name</label>
-    <input id="kidName" autocomplete="username" required/>
-    <label>PIN (min 6 characters)</label>
-    <input id="kidPin" type="password" autocomplete="current-password" required minlength="6" placeholder="At least 6 characters"/>
-    <button type="submit">Login Kid</button>
-  </form>
-</div>
-
-<div id="status" class="pill"></div>
-</div>
-
-<div class="card">
-<h2>Dashboard</h2>
-<button onclick="refreshState()">Refresh</button>
-<div id="kids"></div>
-</div>
-
-<div id="kidWallet" class="card hidden">
-<h2>My Wallet</h2>
-<div id="walletDisplay"></div>
-</div>
-
-<div id="historyView" class="card hidden"></div>
-
-<!-- Purchase Confirmation Modal -->
-<div id="purchaseModal" class="modal-overlay hidden" style="display:none !important;" onclick="if(event.target.id === 'purchaseModal') closePurchaseModal();">
-  <div class="modal" onclick="event.stopPropagation();" style="max-width:700px; max-height:90vh; overflow-y:auto;">
-    <div class="modal-header" id="modalTitle">Confirm Purchase</div>
-    <div class="modal-content">
-      <!-- Menu Image Display -->
-      <div id="modalMenuImage" style="margin-bottom:16px; text-align:center;">
-        <img id="modalMenuImageSrc" src="" alt="Menu" style="max-width:100%; max-height:200px; border-radius:12px; border:2px solid #223146;" 
-             onload="console.log('[IMAGE] ✅ Loaded modal menu image');"
-             onerror="console.error('[IMAGE] ❌ Failed to load modal menu image:', this.src); this.style.display='none';"/>
-      </div>
-      
-      <div class="modal-row">
-        <span class="modal-label">Item:</span>
-        <span class="modal-value" id="modalItemName">-</span>
-      </div>
-      <div class="modal-row">
-        <span class="modal-label">Cost:</span>
-        <span class="modal-value negative" id="modalCost">-</span>
-      </div>
-      <div class="modal-row">
-        <span class="modal-label">Current Balance:</span>
-        <span class="modal-value positive" id="modalCurrentBalance">-</span>
-      </div>
-      <div class="modal-row">
-        <span class="modal-label">New Balance:</span>
-        <span class="modal-value" id="modalNewBalance">-</span>
-      </div>
-      <div id="modalExtraInfo" style="margin-top:12px; padding-top:12px; border-top:1px solid #223146; color:#8aa0b6; font-size:12px;"></div>
-      
-      <!-- Menu Options -->
-      <div class="modal-menu-section">
-        <div style="color:#8aa0b6; font-size:12px; margin-bottom:8px;">Select a different option:</div>
-        <div id="modalMenuGrid" class="modal-menu-grid"></div>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="modal-cancel" onclick="closePurchaseModal()">Cancel</button>
-      <button class="modal-confirm" onclick="confirmPurchase()">Confirm Purchase</button>
-    </div>
-  </div>
-</div>
-
-<div class="card">
-<h2>Kid Actions</h2>
-
-<!-- Visual Menu Toggle -->
-<div style="margin-bottom:16px;">
-  <span class="menu-toggle" onclick="toggleMenuView()" id="menuViewToggle">📋 Hide Visual Menus</span>
-</div>
-
-<!-- Visual Menu Display -->
-<div id="visualMenus">
-  <div class="menu-section">
-    <h3>🍕 Food Menu</h3>
-    <img src="/images/food/food_menu.png" alt="Food Menu" class="menu-image" onclick="showFoodMenu()"
-         onload="console.log('[IMAGE] ✅ Loaded: food/food_menu.png');"
-         onerror="console.error('[IMAGE] ❌ Failed to load: food/food_menu.png from', this.src);"/>
-    <div id="foodMenuGrid" class="menu-grid"></div>
-  </div>
-  
-  <div class="menu-section">
-    <h3>🎮 Screen Time Menu</h3>
-    <img src="/images/tablet_time/gaming_menu.png" alt="Screen Time Menu" class="menu-image" onclick="showScreenMenu()"
-         onload="console.log('[IMAGE] ✅ Loaded: tablet_time/gaming_menu.png');"
-         onerror="console.error('[IMAGE] ❌ Failed to load: tablet_time/gaming_menu.png from', this.src);"/>
-    <div id="screenMenuGrid" class="menu-grid"></div>
-  </div>
-  
-  <div class="menu-section">
-    <h3>📚 Learning Rewards</h3>
-    <img src="/images/learning/learning_menu.png" alt="Learning Menu" class="menu-image" onclick="showLearningMenu()"
-         onload="console.log('[IMAGE] ✅ Loaded: learning/learning_menu.png');"
-         onerror="console.error('[IMAGE] ❌ Failed to load: learning/learning_menu.png from', this.src);"/>
-    <div id="learningMenuGrid" class="menu-grid"></div>
-  </div>
-</div>
-
-<!-- Traditional Dropdowns (fallback) -->
-<div id="dropdownMenus" class="hidden">
-  <label>Screen Package</label>
-  <select id="screenPkg"></select>
-  <button onclick="buyScreen()">Buy Screen Time</button>
-
-  <label>Food Item</label>
-  <select id="foodItem"></select>
-  <img id="foodPreview" src="" style="max-width:200px; max-height:200px; display:none; margin-top:8px; border-radius:8px; border:1px solid #223146;" alt="Food preview"/>
-  <button onclick="buyFood()">Buy Food</button>
-</div>
-
-<label>Timer Mode</label>
-<select id="mode">
-  <option value="tablet">Tablet</option>
-  <option value="game">Game</option>
-</select>
-<button onclick="startSession()">Start Session</button>
-<button onclick="stopSession()">Stop Session</button>
-</div>
-
-<div class="card">
-<h2>Admin Controls</h2>
-
-<!-- Admin Menu Reference -->
-<div style="margin-bottom:16px;">
-  <span class="menu-toggle" onclick="toggleAdminMenuView()" id="adminMenuViewToggle">📋 Show Menu Reference</span>
-</div>
-
-<div id="adminVisualMenus" class="hidden">
-  <div class="menu-section">
-    <h3>🍕 Food Menu</h3>
-    <img src="/images/food/food_menu.png" alt="Food Menu" class="menu-image" onclick="showAdminFoodMenu()"/>
-    <div id="adminFoodMenuGrid" class="menu-grid hidden"></div>
-  </div>
-  
-  <div class="menu-section">
-    <h3>🎮 Screen Time Menu</h3>
-    <img src="/images/tablet_time/gaming_menu.png" alt="Screen Time Menu" class="menu-image" onclick="showAdminScreenMenu()"
-         onload="console.log('[IMAGE] ✅ Loaded admin: tablet_time/gaming_menu.png');"
-         onerror="console.error('[IMAGE] ❌ Failed to load admin: tablet_time/gaming_menu.png from', this.src);"/>
-    <div id="adminScreenMenuGrid" class="menu-grid hidden"></div>
-  </div>
-  
-  <div class="menu-section">
-    <h3>📚 Learning Rewards</h3>
-    <img src="/images/learning/learning_menu.png" alt="Learning Menu" class="menu-image" onclick="showAdminLearningMenu()"
-         onload="console.log('[IMAGE] ✅ Loaded admin: learning/learning_menu.png');"
-         onerror="console.error('[IMAGE] ❌ Failed to load admin: learning/learning_menu.png from', this.src);"/>
-    <div id="adminLearningMenuGrid" class="menu-grid hidden"></div>
-  </div>
-</div>
-
-<div class="admin-section-header">
-  <h3 style="color:#60a5fa;">💰 Daily Allotment</h3>
-</div>
-<label>Allotment JSON (kid name → GB$ amount)</label>
-<textarea id="allotment">{ "Miles": 12, "Sabrina": 15 }</textarea>
-<button onclick="dailyAllotment()">Apply Daily Allotment</button>
-
-<div class="admin-section-header">
-  <h3 style="color:#fbbf24;">🏦 Savings Settings</h3>
-</div>
-<p style="font-size:12px; color:#8aa0b6; margin:8px 0;">Configure automatic savings from daily allotments</p>
-<label>Enable Automatic Savings</label>
-<div style="display:flex; gap:8px; margin-bottom:12px;">
-  <input type="checkbox" id="savingsEnabled" style="width:auto;"/>
-  <label for="savingsEnabled" style="margin:0; color:#eaf2ff;">Automatically split allotments into spending and savings</label>
-</div>
-<label>Default Savings Percentage (0-100%)</label>
-<input type="number" id="savingsPercentage" min="0" max="100" value="10" placeholder="e.g., 10 for 10%"/>
-<button onclick="updateSavingsSettings()">Update Savings Settings</button>
-
-<div style="margin-top:16px; padding:12px; background:#0d121b; border-radius:8px; border:1px solid #223146;">
-  <h4 style="color:#8aa0b6; font-size:14px; margin:0 0 8px 0;">💸 Transfer Between Wallets</h4>
-  <label>Select Kid</label>
-  <select id="transferKid"></select>
-  <label>Amount (GB$)</label>
-  <input type="number" id="transferAmount" min="0" step="0.25" placeholder="e.g., 5.00"/>
-  <div style="display:flex; gap:8px; margin-top:8px;">
-    <button onclick="transferToSavings()" style="flex:1; background:#fbbf24; color:#0b0f14;">💰→🏦 To Savings</button>
-    <button onclick="transferToSpending()" style="flex:1; background:#60a5fa; color:#0b0f14;">🏦→💰 To Spending</button>
-  </div>
-</div>
-
-<div class="admin-section-header">
-  <h3 style="color:#34d399;">⭐ Rewards</h3>
-</div>
-<label>Select Kid</label>
-<select id="rewardKid"></select>
-<label>Reward Action</label>
-<select id="rewardAction"></select>
-<button onclick="rewardKid()">Give Reward</button>
-
-<div class="admin-section-header">
-  <h3 style="color:#fb7185;">⚠️ Consequences</h3>
-</div>
-<p style="font-size:12px; color:#8aa0b6; margin:8px 0;">Quick and easy consequence management - select kid, then click any consequence to apply</p>
-
-<!-- Kid Selection for Consequences -->
-<label>Select Kid</label>
-<select id="consequenceKid" onchange="updateConsequenceKidSelection()"></select>
-
-<!-- Visual Consequence Menus -->
-<div style="margin-top:16px;">
-  <div class="menu-section">
-    <h4 style="color:#60a5fa;">⏱️ Time Consequences</h4>
-    <img src="/images/consequences/consequences_menu_time.png" alt="Time Consequences Menu" 
-         class="menu-image" 
-         style="max-width:500px; cursor:default;"
-         onload="console.log('[IMAGE] ✅ Loaded: consequences/consequences_menu_time.png');"
-         onerror="console.error('[IMAGE] ❌ Failed to load: consequences/consequences_menu_time.png from', this.src); this.style.display='none';"/>
-    <div id="timeConsequenceGrid" class="menu-grid"></div>
-  </div>
-  
-  <div class="menu-section">
-    <h4 style="color:#34d399;">💰 Money Consequences</h4>
-    <img src="/images/consequences/consequences_menu_money.png" alt="Money Consequences Menu" 
-         class="menu-image" 
-         style="max-width:500px; cursor:default;"
-         onload="console.log('[IMAGE] ✅ Loaded: consequences/consequences_menu_money.png');"
-         onerror="console.error('[IMAGE] ❌ Failed to load: consequences/consequences_menu_money.png from', this.src); this.style.display='none';"/>
-    <div id="moneyConsequenceGrid" class="menu-grid"></div>
-  </div>
-</div>
-
-<!-- Optional Note for Consequences -->
-<div style="margin-top:16px;">
-  <label>Optional Note (for tracking reasons)</label>
-  <input id="consequenceNote" placeholder="e.g., 'Didn't clean room'" maxlength="120"/>
-</div>
-
-<!-- Legacy fallback controls (hidden by default) -->
-<div id="legacyConsequenceControls" class="hidden">
-  <label>Time Consequence</label>
-  <input id="timeKid"/>
-  <select id="timeConsequence"></select>
-  <button onclick="timePunish()">Apply</button>
-
-  <label>Money Consequence</label>
-  <input id="moneyKid"/>
-  <select id="moneyConsequence"></select>
-  <button onclick="moneyPunish()">Apply</button>
-</div>
-</div>
-
-<div class="card">
-<h2>Member Management</h2>
-
-<label>Add Member</label>
-<div class="row">
-  <input id="addMemberName" placeholder="Name"/>
-  <select id="addMemberRole">
-    <option value="kid">Kid</option>
-    <option value="admin">Admin</option>
-  </select>
-</div>
-<input id="addMemberUid" placeholder="Firebase UID (optional - leave blank to lookup by name)"/>
-<button onclick="addMember()">Add Member</button>
-
-<label>Remove Member</label>
-<input id="removeMemberUid" placeholder="Firebase UID or Kid Name"/>
-<button onclick="removeMember()">Remove Member</button>
-
-<label>Reset Kid Values</label>
-<input id="resetKidUid" placeholder="Firebase UID or Kid Name"/>
-<div class="row">
-  <input id="resetBalance" type="number" step="0.01" placeholder="Balance (default: 0)" style="flex:1;"/>
-  <input id="resetMinutes" type="number" placeholder="Minutes (default: 0)" style="flex:1;"/>
-</div>
-<label style="margin-top:8px;">
-  <input type="checkbox" id="resetLocked"/> Lock screens
-</label>
-<button onclick="resetKid()">Reset Kid</button>
-</div>
-</div>
-
-<script>
-/* ---------------- FIREBASE CONFIG ---------------- */
-const firebaseConfig = {
-  apiKey: "AIzaSyB2I-KBIn2Y1tN9_NmfPdidvRRLyLKmAIg",
-  authDomain: "goodbodybucks.firebaseapp.com",
-  projectId: "goodbodybucks"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-
-// Enable Firebase auth persistence
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-  .then(() => {
-    console.log('[GB$] ✅ Auth persistence enabled');
-  })
-  .catch((error) => {
-    console.error('[GB$] ❌ Auth persistence error:', error);
-  });
-
-/* ---------------- STATE ---------------- */
-let familyId = localStorage.getItem('familyId') || "";
-let idToken = "";
-let currentUser = null; // Track current user info
-let isAuthInitialized = false;
-
-// API base URL - use same origin to avoid CORS issues
-const API_BASE = window.location.origin; // Always use same origin (works for localhost, 127.0.0.1, and production)
-console.log('[GB$] API Base URL:', API_BASE);
-console.log('[GB$] Current URL:', window.location.href);
-
-console.log('[GB$] 🖼️ Image Loading Debug Enabled');
-console.log('[GB$] API Base URL:', API_BASE);
-console.log('[GB$] Current URL:', window.location.href);
-console.log('[GB$] Testing image availability...');
-
-// Test image loading on page load
-window.addEventListener('load', function() {
-  console.log('[GB$] 📋 Page loaded, checking image availability...');
-  const testImages = [
-    '/images/gbucks-coin.png',
-    '/images/food/food_menu.png',
-    '/images/tablet_time/gaming_menu.png',
-    '/images/learning/learning_menu.png'
-  ];
-  
-  console.log('[GB$] Testing', testImages.length, 'images...');
-  
-  testImages.forEach(imgPath => {
-    const fullUrl = API_BASE + imgPath;
-    console.log('[IMAGE TEST] Testing:', fullUrl);
-    
-    const testImg = new Image();
-    testImg.onload = () => console.log(`[IMAGE TEST] ✅ ${imgPath} - Available at ${fullUrl}`);
-    testImg.onerror = () => console.error(`[IMAGE TEST] ❌ ${imgPath} - NOT FOUND (404) at ${fullUrl}`);
-    testImg.src = fullUrl;
-  });
-  
-  // Also test direct fetch
-  setTimeout(() => {
-    console.log('[GB$] Testing with fetch API...');
-    testImages.forEach(async imgPath => {
-      const fullUrl = API_BASE + imgPath;
-      try {
-        const response = await fetch(fullUrl, { method: 'HEAD' });
-        if (response.ok) {
-          console.log(`[IMAGE FETCH] ✅ ${imgPath} - Status: ${response.status} OK`);
-        } else {
-          console.error(`[IMAGE FETCH] ❌ ${imgPath} - Status: ${response.status} ${response.statusText}`);
-        }
-      } catch (e) {
-        console.error(`[IMAGE FETCH] ❌ ${imgPath} - Error:`, e.message, 'URL:', fullUrl);
-      }
-    });
-  }, 500);
-});
-
-/* ---------------- AUTH STATE LISTENER ---------------- */
-auth.onAuthStateChanged(async (user) => {
-  console.log('[GB$] 🔐 Auth state changed:', user ? user.email : 'logged out');
-  
-  if (user) {
-    // User is signed in
-    try {
-      idToken = await user.getIdToken();
-      
-      // Try to get stored familyId
-      const storedFamilyId = localStorage.getItem('familyId');
-      const storedRole = localStorage.getItem('userRole');
-      
-      if (storedFamilyId) {
-        familyId = storedFamilyId;
-        document.getElementById("familyId").value = familyId;
-      }
-      
-      currentUser = { 
-        uid: user.uid, 
-        email: user.email, 
-        role: storedRole || 'admin' 
-      };
-      
-      // Hide auth UI, show dashboard
-      hideAuthUI();
-      
-      // If we have familyId, load the dashboard
-      if (familyId) {
-        console.log('[GB$] ✅ Auto-login successful');
-        logEvent('auto_login_success', { email: user.email, familyId });
-        await refreshCatalog();
-        await refreshState();
-      } else {
-        // Show onboarding if no family
-        console.log('[GB$] 📝 New user - showing onboarding');
-        showOnboarding();
-      }
-    } catch (error) {
-      console.error('[GB$] ❌ Auth state error:', error);
-      logError('auth_state_change', error);
-    }
-  } else {
-    // User is signed out
-    currentUser = null;
-    idToken = "";
-    showAuthUI();
-  }
-  
-  isAuthInitialized = true;
-});
-
-/* ---------------- USER JOURNEY LOGGING ---------------- */
-function logEvent(eventType, details = {}) {
-  const timestamp = new Date().toISOString();
-  const logEntry = {
-    timestamp,
-    event: eventType,
-    familyId: familyId || 'none',
-    userId: currentUser?.uid || 'anonymous',
-    userRole: currentUser?.role || 'none',
-    ...details
-  };
-  console.log(`[GB$ Journey] ${eventType}`, logEntry);
-  return logEntry;
-}
-
-function logClick(elementId, action, details = {}) {
-  logEvent('click', { element: elementId, action, ...details });
-}
-
-function logTransaction(type, details) {
-  logEvent('transaction', { transactionType: type, ...details });
-}
-
-function logError(context, error) {
-  logEvent('error', { context, error: error.message, errorCode: error.code });
-}
-
-/* ---------------- UI HELPERS ---------------- */
-function hideAuthUI() {
-  const authCards = document.querySelectorAll('.card');
-  if (authCards.length >= 2) {
-    authCards[0].style.display = 'none'; // Family setup card
-    authCards[1].style.display = 'none'; // Login card
-  }
-  // Show logout button
-  updateNavbar();
-}
-
-function showAuthUI() {
-  const authCards = document.querySelectorAll('.card');
-  if (authCards.length >= 2) {
-    authCards[0].style.display = 'block'; // Family setup card
-    authCards[1].style.display = 'block'; // Login card
-  }
-  // Hide dashboard elements
-  const dashboardCards = document.querySelectorAll('.card');
-  dashboardCards.forEach((card, index) => {
-    if (index >= 2) card.style.display = 'none';
-  });
-}
-
-function updateNavbar() {
-  const navUserInfo = document.getElementById('navUserInfo');
-  if (navUserInfo && currentUser) {
-    const logoutBtn = `<button onclick="logout()" style="padding:6px 12px;width:auto;background:#fb7185;border:1px solid #f43f5e;">Logout</button>`;
-    navUserInfo.innerHTML = `<span style="color:#34d399;margin-right:10px;">${currentUser.email}</span>${logoutBtn}`;
-  }
-}
-
-async function logout() {
-  logEvent('logout', { email: currentUser?.email });
-  try {
-    await auth.signOut();
-    localStorage.clear();
-    familyId = "";
-    idToken = "";
-    currentUser = null;
-    setStatus("Logged out");
-    location.reload();
-  } catch (error) {
-    logError('logout', error);
-    setStatus("Error logging out: " + error.message);
-  }
-}
-
-function showOnboarding() {
-  // Hide other UI
-  hideAuthUI();
-  
-  // Create onboarding wizard
-  const wrap = document.querySelector('.wrap');
-  const onboardingHTML = `
-    <div class="card" id="onboardingWizard" style="max-width:600px;margin:40px auto;">
-      <h2 style="text-align:center;color:#34d399;">Welcome to GoodbodyBucks! 🎉</h2>
-      <p style="text-align:center;color:#8aa0b6;margin-bottom:30px;">Let's set up your family in 3 easy steps</p>
-      
-      <div id="onboardingStep1">
-        <h3 style="color:#60a5fa;">Step 1: Create Your Family</h3>
-        <p style="color:#8aa0b6;font-size:14px;">Choose a name for your family (you can change this later)</p>
-        <form onsubmit="event.preventDefault(); onboardingCreateFamily();">
-          <label>Family Name</label>
-          <input id="onboardingFamilyName" value="The ${currentUser?.email?.split('@')[0] || 'Smith'} Family" required/>
-          <button type="submit" style="background:#34d399;border:1px solid #22c088;">Create Family →</button>
-        </form>
-        <div id="onboardingStatus" style="margin-top:10px;color:#60a5fa;"></div>
-      </div>
-      
-      <div id="onboardingStep2" class="hidden">
-        <h3 style="color:#60a5fa;">Step 2: Add Family Members</h3>
-        <p style="color:#8aa0b6;font-size:14px;">Add kids to your family (you can add more later)</p>
-        <form onsubmit="event.preventDefault(); onboardingAddKid();">
-          <label>Kid's Name</label>
-          <input id="onboardingKidName" placeholder="e.g., Emma" required/>
-          <label>Starting GB$ Balance</label>
-          <input id="onboardingKidBalance" type="number" value="100" min="0"/>
-          <label>Starting Screen Time (minutes)</label>
-          <input id="onboardingKidTime" type="number" value="60" min="0"/>
-          <button type="submit" style="background:#34d399;border:1px solid #22c088;">Add Kid</button>
-        </form>
-        <div id="onboardingKidsList" style="margin-top:15px;"></div>
-        <button onclick="onboardingSkipKids()" style="background:#0d121b;border:1px solid #223146;margin-top:10px;">Skip for Now</button>
-        <button onclick="onboardingFinish()" style="background:#60a5fa;border:1px solid #3b82f6;margin-top:10px;">Continue to Dashboard →</button>
-      </div>
-      
-      <div id="onboardingStep3" class="hidden">
-        <h3 style="color:#34d399;text-align:center;">✅ All Set!</h3>
-        <p style="text-align:center;color:#8aa0b6;margin:20px 0;">Your family is ready to start using GoodbodyBucks!</p>
-        <button onclick="onboardingFinish()" style="background:#34d399;border:1px solid #22c088;">Go to Dashboard →</button>
-      </div>
-    </div>
-  `;
-  
-  // Insert at beginning of wrap
-  const onboardingDiv = document.createElement('div');
-  onboardingDiv.innerHTML = onboardingHTML;
-  wrap.insertBefore(onboardingDiv.firstElementChild, wrap.firstChild);
-}
-
-async function onboardingCreateFamily() {
-  const name = document.getElementById('onboardingFamilyName').value;
-  const statusEl = document.getElementById('onboardingStatus');
-  
-  try {
-    statusEl.textContent = 'Creating family...';
-    
-    const url = API_BASE + "/api/setup_family";
-    const res = await fetch(url, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({ family_name:name })
-    });
-    
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error);
-    
-    familyId = data.family_id;
-    localStorage.setItem('familyId', familyId);
-    localStorage.setItem('familyName', name);
-    
-    logEvent('onboarding_family_created', { familyId, familyName: name });
-    statusEl.textContent = '✅ Family created!';
-    
-    // Move to step 2
-    setTimeout(() => {
-      document.getElementById('onboardingStep1').classList.add('hidden');
-      document.getElementById('onboardingStep2').classList.remove('hidden');
-    }, 500);
-  } catch(e) {
-    logError('onboardingCreateFamily', e);
-    statusEl.textContent = '❌ Error: ' + e.message;
-  }
-}
-
-let onboardingKidsAdded = 0;
-async function onboardingAddKid() {
-  const name = document.getElementById('onboardingKidName').value;
-  const balance = parseInt(document.getElementById('onboardingKidBalance').value) || 0;
-  const time = parseInt(document.getElementById('onboardingKidTime').value) || 0;
-  const listEl = document.getElementById('onboardingKidsList');
-  
-  try {
-    listEl.innerHTML += `<div style="color:#8aa0b6;">Adding ${name}...</div>`;
-    
-    // Create kid account
-    const email = `${name.toLowerCase().replace(/\s+/g,'')}@${familyId}.goodbody.local`;
-    const pin = Math.random().toString(36).slice(-8);
-    
-    await auth.createUserWithEmailAndPassword(email, pin);
-    await api("/api/bootstrap", "POST", { name, role: "kid" });
-    
-    // Add initial balance
-    if (balance > 0) {
-      await api("/api/add_gbucks", "POST", { kid_name: name, amount: balance, reason: "Welcome bonus!" });
-    }
-    if (time > 0) {
-      await api("/api/add_time", "POST", { kid_name: name, minutes: time, reason: "Welcome bonus!" });
-    }
-    
-    onboardingKidsAdded++;
-    listEl.innerHTML += `<div style="color:#34d399;padding:8px;background:#0d121b;border-radius:8px;margin-top:5px;">✅ ${name} added (GB$${balance}, ${time} min)</div>`;
-    
-    // Clear form
-    document.getElementById('onboardingKidName').value = '';
-    document.getElementById('onboardingKidBalance').value = '100';
-    document.getElementById('onboardingKidTime').value = '60';
-    
-    logEvent('onboarding_kid_added', { kidName: name, balance, time });
-  } catch(e) {
-    logError('onboardingAddKid', e);
-    listEl.innerHTML += `<div style="color:#fb7185;">❌ Error adding ${name}: ${e.message}</div>`;
-  }
-}
-
-function onboardingSkipKids() {
-  logEvent('onboarding_kids_skipped');
-  onboardingFinish();
-}
-
-async function onboardingFinish() {
-  logEvent('onboarding_completed', { kidsAdded: onboardingKidsAdded });
-  
-  // Remove onboarding wizard
-  const wizard = document.getElementById('onboardingWizard');
-  if (wizard) wizard.remove();
-  
-  // Show dashboard
-  showAuthUI();
-  hideAuthUI();
-  await refreshCatalog();
-  await refreshState();
-  
-  setStatus(`Welcome! Your family is ready. ${onboardingKidsAdded > 0 ? `${onboardingKidsAdded} kid(s) added.` : ''}`);
-}
-
-/* ---------------- HELPERS ---------------- */
-async function api(path, method="GET", body=null) {
-  const url = path.startsWith('http') ? path : API_BASE + path;
-  const res = await fetch(url, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + idToken,
-      "X-Family-Id": familyId
-    },
-    body: body ? JSON.stringify(body) : null
-  });
-  const data = await res.json();
-  if (!data.ok) throw new Error(data.error);
-  return data;
-}
-
-function setStatus(msg){ document.getElementById("status").textContent = msg; }
-
-/* ---------------- SETUP ---------------- */
-async function setupFamily(){
-  logClick('setupFamily', 'create_family');
-  try {
-    const name = document.getElementById("familyName").value;
-    if (!name) {
-      logError('setupFamily', new Error('Family name required'));
-      setStatus("Error: Family name required");
-      return;
-    }
-    logEvent('family_setup_start', { familyName: name });
-    
-    const url = API_BASE + "/api/setup_family";
-    const res = await fetch(url, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({ family_name:name })
-    });
-    
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({error: `HTTP ${res.status}`}));
-      const error = new Error(errorData.error || `Server error: ${res.status}`);
-      logError('setupFamily', error);
-      throw error;
-    }
-    
-    const data = await res.json();
-    if (!data.ok) {
-      const error = new Error(data.error);
-      logError('setupFamily', error);
-      throw error;
-    }
-    
-    familyId = data.family_id;
-    document.getElementById("familyId").value = familyId;
-    
-    // Save to localStorage
-    localStorage.setItem('familyId', familyId);
-    localStorage.setItem('familyName', name);
-    
-    logEvent('family_setup_success', { familyId, familyName: name });
-    setStatus("Family created: " + familyId);
-  } catch(e) {
-    logError('setupFamily', e);
-    setStatus("Error: " + e.message);
-    console.error("Setup family error:", e);
-  }
-}
-
-/* ---------------- LOGIN ---------------- */
-function showAdmin(){
-  logClick('showAdmin', 'login_mode_switch', { mode: 'admin' });
-  document.getElementById("adminBox").classList.remove("hidden");
-  document.getElementById("kidBox").classList.add("hidden");
-}
-function showKid(){
-  logClick('showKid', 'login_mode_switch', { mode: 'kid' });
-  document.getElementById("kidBox").classList.remove("hidden");
-  document.getElementById("adminBox").classList.add("hidden");
-}
-
-async function loginAdmin(){
-  logClick('loginAdmin', 'admin_login_attempt');
-  try {
-    familyId = familyIdInput();
-    if (!familyId) {
-      setStatus("Enter Family ID");
-      return;
-    }
-    const email = document.getElementById("adminEmail").value.trim();
-    const pass = document.getElementById("adminPass").value;
-    
-    logEvent('admin_login_start', { email, familyId, hasPassword: !!pass });
-    
-    if (!email || !pass) {
-      logError('loginAdmin', new Error('Email and password required'));
-      setStatus("Error: Email and password required");
-      return;
-    }
-    
-    // Validate password length (Firebase requires 6+ characters)
-    if (pass.length < 6) {
-      logError('loginAdmin', new Error('Password too short'));
-      setStatus("Error: Password must be at least 6 characters");
-      return;
-    }
-    
-    let cred;
-    let accountCreated = false;
-    try {
-      // Try to sign in
-      logEvent('admin_auth_attempt', { method: 'signin' });
-      cred = await auth.signInWithEmailAndPassword(email, pass);
-      logEvent('admin_auth_success', { method: 'signin' });
-    } catch (signInError) {
-      const errorCode = signInError.code || '';
-      const errorMessage = signInError.message || 'Unknown error';
-      logError('admin_auth_signin', signInError);
-      
-      // If user doesn't exist, try to create
-      if (errorCode === 'auth/user-not-found' || errorCode === 'auth/invalid-credential' || errorCode === 'auth/wrong-password') {
-        setStatus("Account not found or wrong password. Creating account...");
-        logEvent('admin_account_creation_attempt', { email });
-        try {
-          // Create the account
-          cred = await auth.createUserWithEmailAndPassword(email, pass);
-          accountCreated = true;
-          logEvent('admin_account_created', { email });
-          setStatus("Account created! Logging in...");
-        } catch (createError) {
-          const createCode = createError.code || '';
-          logError('admin_account_creation', createError);
-          if (createCode === 'auth/email-already-in-use') {
-            setStatus("Error: Email exists. Password may be wrong. Use Firebase Console to reset.");
-          } else if (createCode === 'auth/weak-password') {
-            setStatus("Error: Password must be at least 6 characters");
-          } else {
-            setStatus("Error: " + (createError.message || createCode));
-          }
-          console.error("Create account error:", createError);
-          return;
-        }
-      } else {
-        setStatus("Error: " + errorMessage + " (Code: " + errorCode + ")");
-        console.error("Sign in error:", signInError);
-        return;
-      }
-    }
-    
-    idToken = await cred.user.getIdToken();
-    currentUser = { uid: cred.user.uid, email: cred.user.email, role: 'admin' };
-    
-    // Save to localStorage
-    localStorage.setItem('familyId', familyId);
-    localStorage.setItem('userRole', 'admin');
-    localStorage.setItem('userEmail', email);
-    
-    // Bootstrap if needed
-    try {
-      logEvent('admin_bootstrap_attempt', { uid: cred.user.uid });
-      await api("/api/bootstrap", "POST", { name: email.split("@")[0], role: "admin" });
-      logEvent('admin_bootstrap_success', { uid: cred.user.uid });
-    } catch (e) {
-      logEvent('admin_bootstrap_skipped', { reason: e.message });
-      // Already registered or other error - continue
-    }
-    
-    logEvent('admin_login_success', { 
-      uid: cred.user.uid, 
-      email, 
-      accountCreated,
-      familyId 
-    });
-    setStatus("Admin logged in");
-    hideAuthUI();
-    await refreshCatalog();
-    await refreshState();
-  } catch (e) {
-    logError('loginAdmin', e);
-    setStatus("Error: " + e.message);
-    console.error("Login error:", e);
-  }
-}
-
-async function loginKid(){
-  try {
-    familyId = familyIdInput();
-    if (!familyId) {
-      setStatus("Enter Family ID");
-      return;
-    }
-    const name = document.getElementById("kidName").value.toLowerCase().replace(/\s+/g,"");
-    const email = `${name}.${familyId}@gbucks.local`;
-    const pin = document.getElementById("kidPin").value;
-
-    // Validate PIN length (Firebase requires 6+ characters)
-    if (pin.length < 6) {
-      setStatus("Error: PIN must be at least 6 characters (Firebase requirement)");
-      return;
-    }
-    
-    let cred;
-    let accountCreated = false;
-    try {
-      logEvent('kid_auth_attempt', { method: 'signin', email });
-      cred = await auth.signInWithEmailAndPassword(email, pin);
-      logEvent('kid_auth_success', { method: 'signin' });
-    } catch (signInError) {
-      const errorCode = signInError.code || '';
-      logError('kid_auth_signin', signInError);
-      if (errorCode === 'auth/user-not-found' || errorCode === 'auth/invalid-credential' || errorCode === 'auth/wrong-password') {
-        try {
-          logEvent('kid_account_creation_attempt', { email, kidName: name });
-          cred = await auth.createUserWithEmailAndPassword(email, pin);
-          accountCreated = true;
-          logEvent('kid_account_created', { email, kidName: name });
-          setStatus("Kid account created!");
-        } catch (createError) {
-          const createCode = createError.code || '';
-          logError('kid_account_creation', createError);
-          if (createCode === 'auth/weak-password') {
-            setStatus("Error: PIN must be at least 6 characters");
-          } else {
-            setStatus("Error: " + (createError.message || createCode));
-          }
-          console.error("Create kid account error:", createError);
-          return;
-        }
-      } else {
-        setStatus("Error: " + (signInError.message || errorCode));
-        console.error("Kid sign in error:", signInError);
-        return;
-      }
-    }
-    idToken = await cred.user.getIdToken();
-    currentUser = { uid: cred.user.uid, email: cred.user.email, role: 'kid', name: name };
-    
-    // Bootstrap - auto-register kid
-    try {
-      logEvent('kid_bootstrap_attempt', { uid: cred.user.uid, kidName: name });
-      await api("/api/bootstrap", "POST", { name: name.charAt(0).toUpperCase() + name.slice(1), role: "kid" });
-      logEvent('kid_bootstrap_success', { uid: cred.user.uid });
-    } catch (e) {
-      logEvent('kid_bootstrap_skipped', { reason: e.message });
-      // Already registered or other error - continue
-    }
-
-    // Save to localStorage
-    localStorage.setItem('familyId', familyId);
-    localStorage.setItem('userRole', 'kid');
-    localStorage.setItem('kidName', name);
-    localStorage.setItem('userEmail', email);
-    
-    logEvent('kid_login_success', { 
-      uid: cred.user.uid, 
-      email, 
-      kidName: name,
-      accountCreated,
-      familyId 
-    });
-    setStatus("Kid logged in");
-    hideAuthUI();
-    await refreshCatalog();
-    await refreshState();
-  } catch (e) {
-    logError('loginKid', e);
-    setStatus("Error: " + e.message);
-    console.error("Kid login error:", e);
-  }
-}
-
-function familyIdInput(){
-  return document.getElementById("familyId").value.trim();
-}
-
-/* ---------------- DATA ---------------- */
-let catalogData = null;
-
-async function refreshCatalog(){
-  logEvent('catalog_refresh_start');
-  try {
-    const cfg = (await api("/api/catalog")).config;
-    catalogData = cfg;
-    logEvent('catalog_refresh_success', { 
-      screenPackages: cfg.screen?.length || 0,
-      foodItems: cfg.food?.length || 0,
-      rewards: cfg.rewards?.length || 0
-    });
-    
-    // Populate dropdowns (fallback)
-    document.getElementById("screenPkg").innerHTML = cfg.screen.map(x=>`<option value="${x.id}">${x.label} (${x.cost_gb} GB$)</option>`).join("");
-    document.getElementById("foodItem").innerHTML = cfg.food.map(x=>{
-      const imgUrl = x.image_url || '/images/food/placeholder.jpg';
-      return `<option value="${x.id}" data-image="${imgUrl}">${x.label} (${x.cost_gb} GB$)</option>`;
-    }).join("");
-    document.getElementById("rewardAction").innerHTML = cfg.rewards.map(x=>`<option value="${x.id}">${x.label} (+${x.delta_gb} GB$)</option>`).join("");
-    document.getElementById("timeConsequence").innerHTML = cfg.time_consequences.map(x=>`<option value="${x.id}">${x.label}</option>`).join("");
-    document.getElementById("moneyConsequence").innerHTML = cfg.money_consequences.map(x=>`<option value="${x.id}">${x.label}</option>`).join("");
-    
-    // Build visual menu grids (visible by default)
-    buildFoodMenuGrid(cfg.food);
-    buildScreenMenuGrid(cfg.screen);
-    buildLearningMenuGrid(cfg.rewards);
-    
-    // Build consequence grids (visual, quick-apply)
-    buildTimeConsequenceGrid(cfg.time_consequences);
-    buildMoneyConsequenceGrid(cfg.money_consequences);
-    
-    // Make menu grids visible after building
-    setTimeout(() => {
-      const foodGrid = document.getElementById("foodMenuGrid");
-      const screenGrid = document.getElementById("screenMenuGrid");
-      const learningGrid = document.getElementById("learningMenuGrid");
-      if (foodGrid && foodGrid.innerHTML) foodGrid.classList.remove("hidden");
-      if (screenGrid && screenGrid.innerHTML) screenGrid.classList.remove("hidden");
-      if (learningGrid && learningGrid.innerHTML) learningGrid.classList.remove("hidden");
-    }, 100);
-    
-    // Update food image preview when selection changes
-    document.getElementById("foodItem").addEventListener("change", function() {
-      const selected = this.options[this.selectedIndex];
-      const imgUrl = selected.getAttribute("data-image");
-      const preview = document.getElementById("foodPreview");
-      if (preview && imgUrl) {
-        logClick('foodItem', 'food_selection_change', { itemId: selected.value, imageUrl: imgUrl });
-        preview.src = API_BASE + imgUrl;
-        preview.style.display = "block";
-      }
-    });
-  } catch(e) {
-    logError('refreshCatalog', e);
-    setStatus("Error loading catalog: " + e.message);
-  }
-}
-
-function buildFoodMenuGrid(foodItems) {
-  const grid = document.getElementById("foodMenuGrid");
-  if (!grid || !foodItems) return;
-  
-  grid.innerHTML = foodItems.map(item => `
-    <div class="menu-card" onclick="selectFoodItem('${item.id}')">
-      <img src="${API_BASE}${item.image_url || '/images/food/placeholder.jpg'}" alt="${item.label}" onerror="this.src='${API_BASE}/images/food/placeholder.jpg'"/>
-      <div class="menu-card-title">${item.label}</div>
-      <div class="menu-card-price">${item.cost_gb} GB$</div>
-    </div>
-  `).join("");
-  
-  // Make grid visible after building
-  grid.classList.remove("hidden");
-}
-
-function buildScreenMenuGrid(screenItems) {
-  const grid = document.getElementById("screenMenuGrid");
-  if (!grid || !screenItems) return;
-  
-  grid.innerHTML = screenItems.map(item => `
-    <div class="menu-card" onclick="selectScreenItem('${item.id}')">
-      <img src="${API_BASE}${item.image_url || '/images/tablet_time/placeholder.jpg'}" alt="${item.label}" onerror="this.src='${API_BASE}/images/tablet_time/placeholder.jpg'"/>
-      <div class="menu-card-title">${item.label}</div>
-      <div class="menu-card-price">${item.cost_gb} GB$ → ${item.minutes} min</div>
-    </div>
-  `).join("");
-  
-  // Make grid visible after building
-  grid.classList.remove("hidden");
-}
-
-function buildLearningMenuGrid(rewardItems) {
-  const grid = document.getElementById("learningMenuGrid");
-  if (!grid || !rewardItems) return;
-  
-  grid.innerHTML = rewardItems.map(item => `
-    <div class="menu-card">
-      <div class="menu-card-title">${item.label}</div>
-      <div class="menu-card-price">+${item.delta_gb} GB$</div>
-    </div>
-  `).join("");
-  
-  // Make grid visible after building
-  grid.classList.remove("hidden");
-}
-
-function buildTimeConsequenceGrid(consequences) {
-  const grid = document.getElementById("timeConsequenceGrid");
-  if (!grid || !consequences) return;
-  
-  grid.innerHTML = consequences.map(item => {
-    let description = "";
-    let effectClass = "";
-    
-    if (item.delta_minutes) {
-      description = `${item.delta_minutes} min`;
-      effectClass = "time-consequence";
-    } else if (item.set_minutes !== undefined) {
-      description = `Set to ${item.set_minutes}`;
-      effectClass = "time-consequence";
-    } else if (item.lock !== undefined) {
-      description = item.lock ? "Lock" : "Unlock";
-      effectClass = "time-consequence";
-    }
-    
-    return `
-      <div class="consequence-card ${effectClass}" onclick="quickApplyTimeConsequence('${item.id}')">
-        <div class="consequence-card-title">${item.label}</div>
-        <div class="consequence-card-effect" style="color:#60a5fa;">${description}</div>
-      </div>
-    `;
-  }).join("");
-  
-  grid.classList.remove("hidden");
-}
-
-function buildMoneyConsequenceGrid(consequences) {
-  const grid = document.getElementById("moneyConsequenceGrid");
-  if (!grid || !consequences) return;
-  
-  grid.innerHTML = consequences.map(item => {
-    const amount = item.delta_gb || 0;
-    return `
-      <div class="consequence-card money-consequence" onclick="quickApplyMoneyConsequence('${item.id}')">
-        <div class="consequence-card-title">${item.label}</div>
-        <div class="consequence-card-effect" style="color:#fb7185;">${amount.toFixed(2)} GB$</div>
-      </div>
-    `;
-  }).join("");
-  
-  grid.classList.remove("hidden");
-}
-
-function toggleMenuView() {
-  const visual = document.getElementById("visualMenus");
-  const dropdown = document.getElementById("dropdownMenus");
-  const toggle = document.getElementById("menuViewToggle");
-  
-  if (visual.classList.contains("hidden")) {
-    visual.classList.remove("hidden");
-    dropdown.classList.add("hidden");
-    toggle.textContent = "📋 Hide Visual Menus";
-    logClick('toggleMenuView', 'show_visual_menus');
-  } else {
-    visual.classList.add("hidden");
-    dropdown.classList.remove("hidden");
-    toggle.textContent = "📋 Show Visual Menus";
-    logClick('toggleMenuView', 'show_dropdown_menus');
-  }
-}
-
-function showFoodMenu() {
-  const grid = document.getElementById("foodMenuGrid");
-  grid.classList.toggle("hidden");
-  logClick('showFoodMenu', 'food_menu_toggle');
-}
-
-function showScreenMenu() {
-  const grid = document.getElementById("screenMenuGrid");
-  grid.classList.toggle("hidden");
-  logClick('showScreenMenu', 'screen_menu_toggle');
-}
-
-function showLearningMenu() {
-  const grid = document.getElementById("learningMenuGrid");
-  grid.classList.toggle("hidden");
-  logClick('showLearningMenu', 'learning_menu_toggle');
-}
-
-function selectFoodItem(itemId) {
-  logClick('selectFoodItem', 'food_item_selected', { itemId });
-  document.getElementById("foodItem").value = itemId;
-  // Trigger buyFood which will show modal
-  buyFood();
-}
-
-function selectScreenItem(itemId) {
-  logClick('selectScreenItem', 'screen_item_selected', { itemId });
-  document.getElementById("screenPkg").value = itemId;
-  // Trigger buyScreen which will show modal
-  buyScreen();
-}
-
-async function refreshState(){
-  logClick('refreshState', 'state_refresh');
-  try {
-    logEvent('state_refresh_start');
-    const data = await api("/api/state");
-    const kidsCount = data.kids?.length || 0;
-    logEvent('state_refresh_success', { kidsCount, kids: data.kids?.map(k => ({ name: k.name, balance: k.balance_gb, minutes: k.minutes })) });
-    
-    // Check if current user is a kid (show their wallet prominently)
-    const isKid = currentUser?.role === 'kid';
-    const currentKid = isKid ? data.kids.find(k => k.kid_user_id === currentUser.uid) : null;
-    
-    let html = '';
-    
-    // Show large wallet for current kid user
-    if (currentKid) {
-      const sessionElapsed = currentKid.session.active && currentKid.session.start_ts 
-        ? Math.floor((Date.now()/1000 - currentKid.session.start_ts) / 60)
-        : 0;
-      
-      html += `
-        <div class="wallet ${currentKid.locked ? 'wallet-locked' : currentKid.session.active ? 'wallet-active' : ''}">
-          <img class="wallet-logo" src="/images/gbucks-coin.png" alt="GB$ Logo" 
-               onload="console.log('[IMAGE] ✅ Loaded wallet logo: gbucks-coin.png');"
-               onerror="console.error('[IMAGE] ❌ Failed to load wallet logo: gbucks-coin.png from', this.src); this.style.display='none';"/>
-          <div class="wallet-title">${currentKid.name}'s Wallet</div>
-          <div class="wallet-balance">GB$ ${currentKid.balance_gb.toFixed(2)}</div>
-          <div class="wallet-label">Total Balance</div>
-          <div style="display: flex; gap: 24px; justify-content: center; margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
-            <div style="text-align: center;">
-              <div style="font-size: 24px; font-weight: 700; color: #60a5fa;">GB$ ${currentKid.spending_balance.toFixed(2)}</div>
-              <div style="font-size: 11px; color: #8aa0b6; margin-top: 4px;">💰 Spending</div>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark landing-navbar">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="/images/gbucks-coin-nav.png" alt="GB$" width="28" height="28" style="max-width: 28px; max-height: 28px;">
+                GoodbodyBucks
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#what-is">What Is It?</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#interface">See It</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#legacy">The Legacy</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#how-it-works">How It Works</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#why">Why It Works</a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <a href="/app" class="btn-nav-primary">Launch App</a>
+                    </li>
+                </ul>
             </div>
-            <div style="text-align: center;">
-              <div style="font-size: 24px; font-weight: 700; color: #fbbf24;">GB$ ${currentKid.savings_balance.toFixed(2)}</div>
-              <div style="font-size: 11px; color: #8aa0b6; margin-top: 4px;">🏦 Savings</div>
-            </div>
-          </div>
-          <div class="wallet-minutes" style="margin-top: 16px;">${currentKid.minutes} min</div>
-          <div class="wallet-label">Screen Time Available</div>
-          <div class="wallet-status">
-            ${currentKid.locked ? '<span class="bad">🔒 SCREENS LOCKED</span>' : ''}
-            ${currentKid.session.active ? `<span class="ok">▶️ ${currentKid.session.mode} session active (${sessionElapsed}m elapsed)</span>` : '<span style="color:#8aa0b6;">⏸️ No active session</span>'}
-          </div>
         </div>
-      `;
-    }
-    
-    // Show all kids for admin, or just current kid's details
-    if (!isKid || currentKid) {
-      html += data.kids.map(k=>{
-        const sessionElapsed = k.session.active && k.session.start_ts 
-          ? Math.floor((Date.now()/1000 - k.session.start_ts) / 60)
-          : 0;
-        return `
-          <div class="kid">
-            <b>${k.name}</b> <span style="font-size:10px; color:#8aa0b6;">(${k.kid_user_id.substring(0,8)}...)</span><br/>
-            <div style="margin-top:8px;">
-              <span style="color:#34d399; font-size:18px; font-weight:600;">GB$ ${k.balance_gb.toFixed(2)}</span>
-              <span style="color:#60a5fa; font-size:16px; margin-left:12px;">${k.minutes} min</span>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="hero-content">
+                        <h1>Teaching Real-World Skills<br>Through <span class="highlight">Everyday Life</span></h1>
+                        <p class="lead">A family economy system that turns learning into earning, choices into budgeting, and responsibility into something visible.</p>
+                        <a href="/app" class="btn btn-hero">Get Started <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-center">
+                    <img src="/images/gbucks-coin.png" alt="GoodBodyBucks Coin" class="hero-coin">
+                </div>
             </div>
-            <div style="margin-top:6px; font-size:12px; color:#8aa0b6;">
-              💰 Spending: <span style="color:#60a5fa; font-weight:600;">$${k.spending_balance.toFixed(2)}</span>
-              <span style="margin: 0 8px;">|</span>
-              🏦 Savings: <span style="color:#fbbf24; font-weight:600;">$${k.savings_balance.toFixed(2)}</span>
+        </div>
+    </section>
+
+    <!-- What Is GoodbodyBucks Section -->
+    <section id="what-is">
+        <div class="container">
+            <h2 class="section-title">What Is <span style="color: var(--primary);">GoodbodyBucks</span>?</h2>
+            <p class="section-subtitle">GoodbodyBucks (GB$) is a family economy system that teaches kids real-world skills through everyday life.</p>
+            
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-lightbulb feature-icon"></i>
+                        <h3>It Turns</h3>
+                        <ul class="value-list">
+                            <li>learning into earning</li>
+                            <li>choices into budgeting</li>
+                            <li>time into something valuable</li>
+                            <li>responsibility into something visible</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-piggy-bank feature-icon"></i>
+                        <h3>Kids Earn GB$ For</h3>
+                        <ul class="value-list">
+                            <li>math</li>
+                            <li>reading</li>
+                            <li>writing</li>
+                            <li>outdoor work</li>
+                            <li>caring for animals</li>
+                            <li>helping the household run</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-cart3 feature-icon"></i>
+                        <h3>Kids Spend GB$ On</h3>
+                        <ul class="value-list">
+                            <li>meals</li>
+                            <li>screen time</li>
+                            <li>games</li>
+                            <li>special privileges</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-            ${k.locked ? "<span class='bad' style='display:inline-block; margin-top:4px;'>🔒 LOCKED</span>" : ""}
-            ${k.session.active ? `<span class='ok' style='display:inline-block; margin-top:4px;'>▶️ ${k.session.mode} (${sessionElapsed}m)</span>` : ""}
-            <div style="margin-top:8px;">
-              <button onclick="viewHistory('${k.kid_user_id}')" style="padding:6px 12px; font-size:11px; margin-right:4px;">History</button>
-              ${!isKid ? `<button onclick="quickResetKid('${k.kid_user_id}', '${k.name}')" style="padding:6px 12px; font-size:11px; background:#fb7185; border-color:#fb7185; color:white;">Reset</button>` : ''}
+
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="feature-card text-center">
+                        <h3 style="color: var(--primary); margin-bottom: 24px;">Just Like Real Life</h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="value-list text-start">
+                                    <li>money is limited</li>
+                                    <li>time runs out</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="value-list text-start">
+                                    <li>good choices compound</li>
+                                    <li>poor choices have consequences</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-        `;
-      }).join("");
-    }
-    
-    document.getElementById("kids").innerHTML = html;
-    
-    // Update kid dropdowns for admin controls
-    updateKidDropdowns(data.kids);
-  } catch(e) {
-    logError('refreshState', e);
-    setStatus("Error loading state: " + e.message);
-  }
-}
+        </div>
+    </section>
 
-function updateKidDropdowns(kids) {
-  if (!kids || kids.length === 0) return;
-  
-  const kidOptions = kids.map(k => `<option value="${k.name}">${k.name} ($${k.spending_balance.toFixed(2)} spending, $${k.savings_balance.toFixed(2)} savings, ${k.minutes} min)</option>`).join("");
-  
-  // Update all kid selection dropdowns
-  const rewardKidSelect = document.getElementById("rewardKid");
-  const consequenceKidSelect = document.getElementById("consequenceKid");
-  const transferKidSelect = document.getElementById("transferKid");
-  
-  if (rewardKidSelect) {
-    const currentValue = rewardKidSelect.value;
-    rewardKidSelect.innerHTML = '<option value="">-- Select Kid --</option>' + kidOptions;
-    if (currentValue) rewardKidSelect.value = currentValue;
-  }
-  
-  if (consequenceKidSelect) {
-    const currentValue = consequenceKidSelect.value;
-    consequenceKidSelect.innerHTML = '<option value="">-- Select Kid --</option>' + kidOptions;
-    if (currentValue) consequenceKidSelect.value = currentValue;
-  }
-  
-  if (transferKidSelect) {
-    const currentValue = transferKidSelect.value;
-    transferKidSelect.innerHTML = '<option value="">-- Select Kid --</option>' + kidOptions;
-    if (currentValue) transferKidSelect.value = currentValue;
-  }
-  
-  // Also update legacy text inputs (hidden by default)
-  const timeKid = document.getElementById("timeKid");
-  const moneyKid = document.getElementById("moneyKid");
-  if (timeKid && kids.length > 0) timeKid.value = kids[0].name;
-  if (moneyKid && kids.length > 0) moneyKid.value = kids[0].name;
-}
+    <!-- Interface Preview Section -->
+    <section id="interface" class="interface-preview">
+        <div class="container">
+            <h2 class="section-title">See It In <span style="color: var(--primary);">Action</span></h2>
+            <p class="section-subtitle">Real menus, real choices, real learning</p>
+            
+            <!-- Demo Wallet -->
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="demo-wallet">
+                        <img src="/images/gbucks-coin.png" alt="Wallet Logo" class="demo-wallet-logo">
+                        <div class="demo-wallet-title">Kid's Wallet</div>
+                        <div class="demo-wallet-balance">GB$ 12.50</div>
+                        <div class="demo-wallet-label">Available Balance</div>
+                        <div class="demo-wallet-minutes">45 minutes</div>
+                        <div class="demo-wallet-label">Screen Time Available</div>
+                        <div class="demo-wallet-status">
+                            ✓ Wallet Active
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-function updateConsequenceKidSelection() {
-  // This is called when the consequence kid dropdown changes
-  // Just log the selection for now
-  const select = document.getElementById("consequenceKid");
-  if (select && select.value) {
-    logClick('updateConsequenceKidSelection', 'kid_selected', { kidName: select.value });
-  }
-}
+            <!-- Interface Previews -->
+            <div class="row g-4 mt-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="preview-card" onclick="openDemoModal('food')">
+                        <img src="/images/food/food_menu.png" alt="Food Menu">
+                        <h3>Food Menu</h3>
+                        <p>Kids purchase meals with their earned GB$. Real budgeting, real consequences.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="preview-card" onclick="openDemoModal('gaming')">
+                        <img src="/images/tablet_time/gaming_menu.png" alt="Screen Time Menu">
+                        <h3>Screen Time</h3>
+                        <p>Purchase gaming and tablet time. They manage their minutes wisely.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="preview-card" onclick="openDemoModal('learning')">
+                        <img src="/images/learning/learning_menu.png" alt="Learning Menu">
+                        <h3>Earning Menu</h3>
+                        <p>Clear rewards for math, reading, writing, and household responsibilities.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="preview-card" onclick="openDemoModal('wallet')">
+                        <img src="/images/wallet/wallet_menu.png" alt="Wallet Menu">
+                        <h3>Wallet View</h3>
+                        <p>Track balance, minutes, and make smart financial decisions.</p>
+                    </div>
+                </div>
+            </div>
 
-async function viewHistory(kidUid){
-  logClick('viewHistory', 'purchase_history_view', { kidUid });
-  try {
-    logEvent('history_load_start', { kidUid });
-    const data = await api(`/api/purchase_history?kid_user_id=${kidUid}`);
-    const history = data.history || [];
-    logEvent('history_load_success', { kidUid, historyCount: history.length });
-    const histHtml = history.map(h=>{
-      const date = new Date(h.ts * 1000).toLocaleString();
-      return `<div style="font-size:11px; padding:4px; border-bottom:1px solid #223146;">
-        ${date}: ${h.label} - ${h.cost_gb} GB$ (${h.type})
-      </div>`;
-    }).join("");
-    document.getElementById("historyView").innerHTML = `<h3>Purchase History</h3>${histHtml || "No purchases yet"}`;
-    document.getElementById("historyView").classList.remove("hidden");
-  } catch(e) {
-    logError('viewHistory', e);
-    setStatus("Error loading history: " + e.message);
-  }
-}
+            <!-- Consequences Section -->
+            <div class="row mt-5">
+                <div class="col-lg-10 mx-auto">
+                    <div class="feature-card">
+                        <h3 style="color: var(--primary); text-align: center; margin-bottom: 32px; font-size: 1.8rem;">Parents Have Control</h3>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="modal-preview">
+                                    <div class="modal-preview-header">Time Consequences</div>
+                                    <img src="/images/consequences/consequences_menu_time.png" alt="Time Consequences" style="width: 100%; border-radius: 12px; margin-bottom: 16px;">
+                                    <div class="modal-preview-item">
+                                        <span class="modal-preview-label">Reduce screen time</span>
+                                        <span class="modal-preview-value">-5, -10, -15, -30 min</span>
+                                    </div>
+                                    <div class="modal-preview-item">
+                                        <span class="modal-preview-label">End session</span>
+                                        <span class="modal-preview-value">Immediate</span>
+                                    </div>
+                                    <div class="modal-preview-item">
+                                        <span class="modal-preview-label">Lock screens</span>
+                                        <span class="modal-preview-value">For the day</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="modal-preview">
+                                    <div class="modal-preview-header">Money Consequences</div>
+                                    <img src="/images/consequences/consequences_menu_money.png" alt="Money Consequences" style="width: 100%; border-radius: 12px; margin-bottom: 16px;">
+                                    <div class="modal-preview-item">
+                                        <span class="modal-preview-label">Financial penalties</span>
+                                        <span class="modal-preview-value">-$0.25 to -$5.00</span>
+                                    </div>
+                                    <div class="modal-preview-item">
+                                        <span class="modal-preview-label">Teach budgeting</span>
+                                        <span class="modal-preview-value">Real-world lessons</span>
+                                    </div>
+                                    <div class="modal-preview-item">
+                                        <span class="modal-preview-label">Fair & visible</span>
+                                        <span class="modal-preview-value">Kids understand</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p style="text-align: center; margin-top: 32px; font-size: 1.1rem; color: var(--text-muted);">
+                            Clear consequences. No arguments. Kids learn that actions have real impacts.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-/* ---------------- ACTIONS ---------------- */
-// Purchase modal state
-let pendingPurchase = null;
+    <!-- Legacy Section -->
+    <section id="legacy" class="legacy-section">
+        <div class="container">
+            <h2 class="section-title">A Legacy, <span style="color: var(--primary);">Continued</span></h2>
+            <p class="section-subtitle">GoodbodyBucks is inspired by a handwritten board from a previous generation.</p>
+            
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <div class="legacy-image-container">
+                        <img src="/images/legacy/goodbody_legacy_schedule.JPG" alt="Original hand-drawn schedule from the Goodbody household">
+                        <div class="legacy-caption">
+                            The original hand-drawn schedule that managed 9 children in the Goodbody household
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <h3 style="font-size: 2rem; margin-bottom: 24px;">Managing Nine Children</h3>
+                    <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text-muted);">
+                        Before apps and smartphones, a simple hand-drawn board kept an entire household running. 
+                        Nine children learned responsibility through a visible system where everyone knew their role.
+                    </p>
+                    <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text-muted);">
+                        The board showed who cleaned dishes, who had ice rights for the week, and when each child contributed to the family. 
+                        It wasn't about control—it was about clarity.
+                    </p>
+                    <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text-muted);">
+                        <strong style="color: var(--primary);">The tools have changed. The lesson hasn't.</strong>
+                    </p>
+                    <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text-muted);">
+                        Responsibility builds confidence. Clarity builds trust. And when kids understand the system, they rise to meet it.
+                    </p>
+                    <p style="font-size: 1.2rem; margin-top: 32px; font-weight: 600; color: var(--primary);">
+                        This is the Goodbody way—then and now.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-async function buyScreen(){ 
-  logClick('buyScreen', 'purchase_screen_time');
-  try {
-    const packageId = document.getElementById("screenPkg").value;
-    if (!packageId) {
-      setStatus("Error: Select a screen package");
-      return;
-    }
-    
-    // Get current state to show balance
-    const state = await api("/api/state");
-    let currentKid;
-    
-    // If kid user, find their own data
-    if (currentUser && currentUser.role === 'kid') {
-      currentKid = state.kids.find(k => k.kid_user_id === currentUser.uid);
-    } else {
-      // Admin testing - use first kid or show error
-      if (state.kids && state.kids.length > 0) {
-        currentKid = state.kids[0];
-        setStatus("Note: Using first kid's balance for preview");
-      } else {
-        setStatus("Error: No kids found");
-        return;
-      }
-    }
-    
-    if (!currentKid) {
-      setStatus("Error: Kid not found");
-      return;
-    }
-    
-    // Find package details
-    if (!catalogData || !catalogData.screen) {
-      await refreshCatalog();
-    }
-    const pkg = catalogData.screen.find(p => p.id === packageId);
-    if (!pkg) {
-      setStatus("Error: Package not found");
-      return;
-    }
-    
-    const currentBalance = currentKid.spending_balance;
-    const cost = pkg.cost_gb;
-    const newBalance = currentBalance - cost;
-    
-    if (newBalance < 0) {
-      setStatus(`Error: Insufficient funds. Need ${cost} GB$, have ${currentBalance.toFixed(2)} GB$`);
-      return;
-    }
-    
-    // Show confirmation modal
-    showPurchaseModal({
-      type: 'screen',
-      title: 'Buy Screen Time',
-      itemName: pkg.label,
-      cost: cost,
-      currentBalance: currentBalance,
-      newBalance: newBalance,
-      extraInfo: `You'll receive ${pkg.minutes} minutes of screen time`,
-      packageId: packageId,
-      kidUid: currentKid.kid_user_id
-    });
-  } catch(e) { 
-    logError('buyScreen', e);
-    setStatus("Error: " + e.message); 
-  }
-}
+    <!-- How It Works Section -->
+    <section id="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How It <span style="color: var(--primary);">Works</span></h2>
+            <p class="section-subtitle">Simple to set up, powerful in practice</p>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <i class="bi bi-house-door"></i>
+                        <h3>Set Up Your Family</h3>
+                        <p>Create your family account and add your kids. Set up earning opportunities and spending options that match your household values.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <i class="bi bi-cash-coin"></i>
+                        <h3>Kids Earn & Learn</h3>
+                        <p>Award GoodBodyBucks for schoolwork, chores, and responsibilities. Watch as kids start making connections between effort and reward.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <i class="bi bi-graph-up-arrow"></i>
+                        <h3>Build Real Skills</h3>
+                        <p>Kids make spending decisions, budget their money, and learn the value of saving. Real consequences, real growth.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-async function buyFood(){ 
-  logClick('buyFood', 'purchase_food');
-  try {
-    const itemId = document.getElementById("foodItem").value;
-    if (!itemId) {
-      setStatus("Error: Select a food item");
-      return;
-    }
-    
-    // Get current state to show balance
-    const state = await api("/api/state");
-    let currentKid;
-    
-    // If kid user, find their own data
-    if (currentUser && currentUser.role === 'kid') {
-      currentKid = state.kids.find(k => k.kid_user_id === currentUser.uid);
-    } else {
-      // Admin testing - use first kid or show error
-      if (state.kids && state.kids.length > 0) {
-        currentKid = state.kids[0];
-        setStatus("Note: Using first kid's balance for preview");
-      } else {
-        setStatus("Error: No kids found");
-        return;
-      }
-    }
-    
-    if (!currentKid) {
-      setStatus("Error: Kid not found");
-      return;
-    }
-    
-    // Find food item details
-    if (!catalogData || !catalogData.food) {
-      await refreshCatalog();
-    }
-    const item = catalogData.food.find(f => f.id === itemId);
-    if (!item) {
-      setStatus("Error: Food item not found");
-      return;
-    }
-    
-    const currentBalance = currentKid.spending_balance;
-    const cost = item.cost_gb;
-    const newBalance = currentBalance - cost;
-    
-    if (newBalance < 0) {
-      setStatus(`Error: Insufficient funds. Need ${cost} GB$, have ${currentBalance.toFixed(2)} GB$`);
-      return;
-    }
-    
-    // Show confirmation modal
-    showPurchaseModal({
-      type: 'food',
-      title: 'Buy Food',
-      itemName: item.label,
-      cost: cost,
-      currentBalance: currentBalance,
-      newBalance: newBalance,
-      extraInfo: `Category: ${item.category || 'Food'}`,
-      itemId: itemId,
-      kidUid: currentKid.kid_user_id
-    });
-  } catch(e) { 
-    logError('buyFood', e);
-    setStatus("Error: " + e.message); 
-  }
-}
+    <!-- Why It Works Section -->
+    <section id="why">
+        <div class="container">
+            <h2 class="section-title">Why It <span style="color: var(--primary);">Works</span></h2>
+            <p class="section-subtitle">GoodbodyBucks isn't about control. It's about understanding.</p>
+            
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="feature-card">
+                        <h3 style="color: var(--primary);"><i class="bi bi-x-circle"></i> Instead of arguing about:</h3>
+                        <ul class="value-list" style="margin-top: 24px;">
+                            <li>"Why can't I?"</li>
+                            <li>"That's not fair."</li>
+                            <li>"Just one more minute."</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="feature-card">
+                        <h3 style="color: var(--primary);"><i class="bi bi-check-circle"></i> The system provides:</h3>
+                        <ul class="value-list" style="margin-top: 24px;">
+                            <li>Visible rules</li>
+                            <li>Real math</li>
+                            <li>Clear choices</li>
+                            <li>Kid ownership</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
 
-function showPurchaseModal(purchase) {
-  pendingPurchase = purchase;
-  document.getElementById("modalTitle").textContent = purchase.title;
-  document.getElementById("modalItemName").textContent = purchase.itemName;
-  document.getElementById("modalCost").textContent = `-${purchase.cost.toFixed(2)} GB$`;
-  document.getElementById("modalCurrentBalance").textContent = `${purchase.currentBalance.toFixed(2)} GB$ (spending)`;
-  
-  const newBalanceEl = document.getElementById("modalNewBalance");
-  newBalanceEl.textContent = `${purchase.newBalance.toFixed(2)} GB$`;
-  newBalanceEl.className = purchase.newBalance < 0 ? "modal-value negative" : "modal-value";
-  
-  const extraInfo = document.getElementById("modalExtraInfo");
-  if (purchase.extraInfo) {
-    extraInfo.textContent = purchase.extraInfo;
-    extraInfo.style.display = "block";
-  } else {
-    extraInfo.style.display = "none";
-  }
-  
-  // Build menu grid in modal
-  const selectedId = purchase.type === 'screen' ? purchase.packageId : purchase.itemId;
-  buildModalMenuGrid(purchase.type, selectedId);
-  
-  const modal = document.getElementById("purchaseModal");
-  if (modal) {
-    modal.classList.remove("hidden");
-    modal.style.display = "flex"; // Ensure it's visible
-    // Add escape key listener
-    document.addEventListener("keydown", handleModalEscape);
-    logEvent('purchase_modal_shown', { type: purchase.type, itemName: purchase.itemName, cost: purchase.cost });
-  }
-}
+            <div class="row mt-5">
+                <div class="col-lg-10 mx-auto">
+                    <div class="feature-card text-center" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);">
+                        <h3 style="font-size: 1.8rem; margin-bottom: 32px;">The Result</h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <i class="bi bi-person-check" style="font-size: 3rem; color: var(--primary);"></i>
+                                <h4 style="margin-top: 16px; margin-bottom: 12px;">Parents Stop Being the Referee</h4>
+                                <p style="color: var(--text-muted);">The system handles the "no"</p>
+                            </div>
+                            <div class="col-md-6">
+                                <i class="bi bi-trophy" style="font-size: 3rem; color: var(--secondary);"></i>
+                                <h4 style="margin-top: 16px; margin-bottom: 12px;">Kids Become Decision-Makers</h4>
+                                <p style="color: var(--text-muted);">They own their choices</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-function buildModalMenuGrid(type, selectedId) {
-  const grid = document.getElementById("modalMenuGrid");
-  if (!grid || !catalogData) return;
-  
-  let items = [];
-  if (type === 'screen' && catalogData.screen) {
-    items = catalogData.screen;
-  } else if (type === 'food' && catalogData.food) {
-    items = catalogData.food;
-  }
-  
-  grid.innerHTML = items.map(item => {
-    const isSelected = item.id === selectedId;
-    const imgUrl = item.image_url || (type === 'food' ? '/images/food/placeholder.jpg' : '/images/tablet_time/placeholder.jpg');
-    const extraText = type === 'screen' ? `→ ${item.minutes} min` : (item.category ? `(${item.category})` : '');
-    
-    return `
-      <div class="modal-menu-item ${isSelected ? 'selected' : ''}" onclick="selectModalItem('${item.id}', '${type}')">
-        <img src="${API_BASE}${imgUrl}" alt="${item.label}" onerror="this.style.display='none';"/>
-        <div class="modal-menu-item-title">${item.label}</div>
-        <div class="modal-menu-item-price">${item.cost_gb} GB$ ${extraText}</div>
-      </div>
-    `;
-  }).join("");
-}
+    <!-- Built for Real Families Section -->
+    <section style="background: var(--card-bg);">
+        <div class="container">
+            <h2 class="section-title">Built for <span style="color: var(--primary);">Real Families</span></h2>
+            <p class="section-subtitle">GoodbodyBucks is designed to work on paper, on a phone, on a kitchen counter, in a barn</p>
+            
+            <div class="row g-4 mb-5">
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature-card text-center">
+                        <i class="bi bi-phone feature-icon"></i>
+                        <h3 style="font-size: 1.2rem;">Digital Wallet</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 12px;">
+                            Web app works on any device, anywhere
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature-card text-center">
+                        <i class="bi bi-journal-text feature-icon"></i>
+                        <h3 style="font-size: 1.2rem;">Physical Ledger</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 12px;">
+                            Track everything with built-in transaction history
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature-card text-center">
+                        <i class="bi bi-printer feature-icon"></i>
+                        <h3 style="font-size: 1.2rem;">Printable Menus</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 12px;">
+                            Post menus on fridge for easy reference
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="feature-card text-center">
+                        <i class="bi bi-house-heart feature-icon"></i>
+                        <h3 style="font-size: 1.2rem;">Real Responsibility</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 12px;">
+                            Blends seamlessly with household tasks
+                        </p>
+                    </div>
+                </div>
+            </div>
 
-async function selectModalItem(itemId, type) {
-  logClick('selectModalItem', 'modal_item_selected', { itemId, type });
-  
-  // Update the selected item in the modal
-  const items = document.querySelectorAll('.modal-menu-item');
-  items.forEach(item => item.classList.remove('selected'));
-  event.currentTarget.classList.add('selected');
-  
-  // Get current state to recalculate balance
-  const state = await api("/api/state");
-  let currentKid;
-  
-  if (currentUser && currentUser.role === 'kid') {
-    currentKid = state.kids.find(k => k.kid_user_id === currentUser.uid);
-  } else {
-    if (state.kids && state.kids.length > 0) {
-      currentKid = state.kids[0];
-    } else {
-      setStatus("Error: No kids found");
-      return;
-    }
-  }
-  
-  if (!currentKid) {
-    setStatus("Error: Kid not found");
-    return;
-  }
-  
-  // Find item details
-  let item;
-  if (type === 'screen') {
-    item = catalogData.screen.find(p => p.id === itemId);
-  } else if (type === 'food') {
-    item = catalogData.food.find(f => f.id === itemId);
-  }
-  
-  if (!item) {
-    setStatus("Error: Item not found");
-    return;
-  }
-  
-  const currentBalance = currentKid.balance_gb;
-  const cost = item.cost_gb;
-  const newBalance = currentBalance - cost;
-  
-  // Update modal with new selection
-  document.getElementById("modalItemName").textContent = item.label;
-  document.getElementById("modalCost").textContent = `-${cost.toFixed(2)} GB$`;
-  
-  const newBalanceEl = document.getElementById("modalNewBalance");
-  newBalanceEl.textContent = `${newBalance.toFixed(2)} GB$`;
-  newBalanceEl.className = newBalance < 0 ? "modal-value negative" : "modal-value";
-  
-  // Update extra info
-  const extraInfo = document.getElementById("modalExtraInfo");
-  if (type === 'screen') {
-    extraInfo.textContent = `You'll receive ${item.minutes} minutes of screen time`;
-  } else if (type === 'food') {
-    extraInfo.textContent = `Category: ${item.category || 'Food'}`;
-  }
-  extraInfo.style.display = "block";
-  
-  // Update pending purchase
-  pendingPurchase = {
-    ...pendingPurchase,
-    itemName: item.label,
-    cost: cost,
-    newBalance: newBalance,
-    extraInfo: type === 'screen' ? `You'll receive ${item.minutes} minutes of screen time` : `Category: ${item.category || 'Food'}`,
-    [type === 'screen' ? 'packageId' : 'itemId']: itemId
-  };
-  
-  // Check if insufficient funds
-  if (newBalance < 0) {
-    setStatus(`Warning: Insufficient funds. Need ${cost} GB$, have ${currentBalance.toFixed(2)} GB$`);
-  }
-}
+            <div class="row">
+                <div class="col-lg-10 mx-auto">
+                    <div class="feature-card" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);">
+                        <h3 style="font-size: 2rem; margin-bottom: 32px; text-align: center; color: var(--primary);">
+                            The Complete System
+                        </h3>
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <div style="text-align: center;">
+                                    <i class="bi bi-cash-stack" style="font-size: 3rem; color: var(--primary); margin-bottom: 16px; display: block;"></i>
+                                    <h4 style="color: var(--text-light); margin-bottom: 12px;">Earning System</h4>
+                                    <p style="color: var(--text-muted); font-size: 0.95rem;">
+                                        Clear rewards for learning, chores, and responsibilities
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div style="text-align: center;">
+                                    <i class="bi bi-cart-check" style="font-size: 3rem; color: var(--secondary); margin-bottom: 16px; display: block;"></i>
+                                    <h4 style="color: var(--text-light); margin-bottom: 12px;">Spending System</h4>
+                                    <p style="color: var(--text-muted); font-size: 0.95rem;">
+                                        Purchase meals, screen time, and privileges
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div style="text-align: center;">
+                                    <i class="bi bi-shield-check" style="font-size: 3rem; color: var(--primary); margin-bottom: 16px; display: block;"></i>
+                                    <h4 style="color: var(--text-light); margin-bottom: 12px;">Parent Controls</h4>
+                                    <p style="color: var(--text-muted); font-size: 0.95rem;">
+                                        Manage consequences and settings with ease
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--card-border);">
+                            <h4 style="font-size: 1.5rem; margin-bottom: 16px; color: var(--text-light);">No Gimmicks</h4>
+                            <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text-muted);">
+                                No fake rewards. No "gamification for the sake of it." 
+                                Just a system that respects kids enough to teach them how the world actually works.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-function handleModalEscape(event) {
-  if (event.key === "Escape" && !document.getElementById("purchaseModal").classList.contains("hidden")) {
-    closePurchaseModal();
-  }
-}
+    <!-- Call to Action Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to Start?</h2>
+            <p>Join families who are teaching real-world skills through everyday life.</p>
+            <a href="/app" class="btn btn-hero">Launch GoodbodyBucks <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </section>
 
-function closePurchaseModal() {
-  const modal = document.getElementById("purchaseModal");
-  if (modal) {
-    modal.classList.add("hidden");
-    modal.style.display = "none"; // Force hide
-    document.removeEventListener("keydown", handleModalEscape);
-    pendingPurchase = null;
-    logEvent('purchase_modal_cancelled');
-  }
-}
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p style="margin-bottom: 8px;">&copy; 2026 GoodbodyBucks. Teaching responsibility, one GB$ at a time.</p>
+            <p style="font-size: 0.9rem;">A family legacy continued.</p>
+        </div>
+    </footer>
 
-// Force close modal on page load (safety measure)
-window.addEventListener("load", function() {
-  closePurchaseModal();
-});
+    <!-- Demo Modals -->
+    <div id="demoModalOverlay" class="demo-modal-overlay" onclick="closeDemoModal(event)">
+        <div class="demo-modal" onclick="event.stopPropagation()">
+            <div class="demo-modal-header">
+                <button class="demo-modal-close" onclick="closeDemoModal()">&times;</button>
+                <h2 id="modalTitle" style="color: var(--primary); margin: 0;">Feature Preview</h2>
+            </div>
+            <div class="demo-modal-body">
+                <img id="modalImage" src="" alt="Feature Preview">
+                <h3 id="modalHeading" style="color: var(--primary); margin-bottom: 16px;"></h3>
+                <p id="modalDescription" style="color: var(--text-muted); line-height: 1.8; margin-bottom: 20px;"></p>
+                <div id="modalFeatures"></div>
+                <div class="demo-cta">
+                    <p style="color: var(--text-muted); margin-bottom: 16px;">Ready to get started?</p>
+                    <a href="/app" class="btn btn-hero">Launch GoodbodyBucks</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-// Also ensure modal is hidden when DOM is ready
-document.addEventListener("DOMContentLoaded", function() {
-  const modal = document.getElementById("purchaseModal");
-  if (modal) {
-    modal.classList.add("hidden");
-  }
-});
-
-async function confirmPurchase() {
-  if (!pendingPurchase) {
-    return;
-  }
-  
-  logClick('confirmPurchase', 'purchase_confirmed', { type: pendingPurchase.type });
-  
-  try {
-    // Show loading state
-    const confirmBtn = document.querySelector('.modal-confirm');
-    const originalText = confirmBtn.textContent;
-    confirmBtn.textContent = "Processing...";
-    confirmBtn.disabled = true;
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    if (pendingPurchase.type === 'screen') {
-      logTransaction('purchase_screen', { packageId: pendingPurchase.packageId });
-      await api("/api/purchase_screen","POST",{package_id: pendingPurchase.packageId}); 
-      logTransaction('purchase_screen_success', { packageId: pendingPurchase.packageId });
-      setStatus("Screen time purchased!");
-    } else if (pendingPurchase.type === 'food') {
-      logTransaction('purchase_food', { itemId: pendingPurchase.itemId });
-      await api("/api/purchase_food","POST",{item_id: pendingPurchase.itemId}); 
-      logTransaction('purchase_food_success', { itemId: pendingPurchase.itemId });
-      setStatus("Food purchased!");
-    }
+    <!-- Navigation Component JS -->
+    <script src="/nav.js"></script>
     
-    // Update state before closing modal
-    console.log('[MODAL] Updating state after purchase...');
-    await refreshState();
-    
-    // Update modal with new balance (show success)
-    const state = await api("/api/state");
-    let currentKid;
-    if (currentUser && currentUser.role === 'kid') {
-      currentKid = state.kids.find(k => k.kid_user_id === currentUser.uid);
-    } else if (state.kids && state.kids.length > 0) {
-      currentKid = state.kids[0];
-    }
-    
-    if (currentKid) {
-      document.getElementById("modalCurrentBalance").textContent = `${currentKid.spending_balance.toFixed(2)} GB$ (spending)`;
-      document.getElementById("modalNewBalance").textContent = `${currentKid.spending_balance.toFixed(2)} GB$`;
-      document.getElementById("modalNewBalance").className = "modal-value positive";
-      document.getElementById("modalExtraInfo").textContent = "✅ Purchase successful! Balance updated.";
-      document.getElementById("modalExtraInfo").style.display = "block";
-      document.getElementById("modalExtraInfo").style.color = "#34d399";
-      
-      // Close modal after showing updated balance
-      setTimeout(() => {
-        closePurchaseModal();
-        logEvent('purchase_completed', { type: pendingPurchase.type, newBalance: currentKid.balance_gb });
-      }, 1500);
-    } else {
-      closePurchaseModal();
-      logEvent('purchase_completed', { type: pendingPurchase.type });
-    }
-  } catch(e) {
-    logError('confirmPurchase', e);
-    setStatus("Error: " + e.message);
-    const confirmBtn = document.querySelector('.modal-confirm');
-    confirmBtn.textContent = "Confirm Purchase";
-    confirmBtn.disabled = false;
-    // Don't close modal on error - let user see the error
-  }
-}
-async function startSession(){ 
-  logClick('startSession', 'timer_start');
-  try {
-    const mode = document.getElementById("mode").value;
-    logEvent('session_start_attempt', { mode });
-    await api("/api/session/start","POST",{mode:mode}); 
-    logEvent('session_start_success', { mode });
-    await refreshState();
-    setStatus("Session started");
-  } catch(e) { 
-    logError('startSession', e);
-    setStatus("Error: " + e.message); 
-  }
-}
-async function stopSession(){ 
-  logClick('stopSession', 'timer_stop');
-  try {
-    logEvent('session_stop_attempt');
-    await api("/api/session/stop","POST",{}); 
-    logEvent('session_stop_success');
-    await refreshState();
-    setStatus("Session stopped");
-  } catch(e) { 
-    logError('stopSession', e);
-    setStatus("Error: " + e.message); 
-  }
-}
-async function dailyAllotment(){ 
-  logClick('dailyAllotment', 'admin_allotment');
-  try {
-    const amounts = JSON.parse(document.getElementById("allotment").value);
-    logTransaction('daily_allotment', { amounts });
-    await api("/api/daily_allotment","POST",{amounts:amounts}); 
-    logTransaction('daily_allotment_success', { amounts });
-    await refreshState();
-    setStatus("Allotment applied");
-  } catch(e) { 
-    logError('dailyAllotment', e);
-    setStatus("Error: " + e.message); 
-  }
-}
-
-async function updateSavingsSettings(){ 
-  logClick('updateSavingsSettings', 'admin_savings_settings');
-  try {
-    const enabled = document.getElementById("savingsEnabled").checked;
-    const percentage = parseInt(document.getElementById("savingsPercentage").value || 0);
-    
-    if (percentage < 0 || percentage > 100) {
-      setStatus("Error: Percentage must be between 0 and 100");
-      return;
-    }
-    
-    logEvent('savings_settings_update', { enabled, percentage });
-    await api("/api/admin/update_savings_settings","POST",{
-      enabled: enabled,
-      defaultPercentage: percentage
-    }); 
-    logEvent('savings_settings_update_success', { enabled, percentage });
-    setStatus(`Savings settings updated: ${enabled ? percentage + '% auto-savings enabled' : 'disabled'}`);
-  } catch(e) { 
-    logError('updateSavingsSettings', e);
-    setStatus("Error: " + e.message); 
-  }
-}
-
-async function transferToSavings(){ 
-  logClick('transferToSavings', 'admin_transfer_savings');
-  try {
-    const kidName = document.getElementById("transferKid").value;
-    const amount = parseFloat(document.getElementById("transferAmount").value || 0);
-    
-    if (!kidName) {
-      setStatus("Error: Please select a kid");
-      return;
-    }
-    
-    if (amount <= 0) {
-      setStatus("Error: Amount must be positive");
-      return;
-    }
-    
-    // Find kid UID from name
-    const kid = globalState.kids?.find(k => k.name === kidName);
-    if (!kid) {
-      setStatus("Error: Kid not found");
-      return;
-    }
-    
-    logTransaction('transfer_to_savings', { kid: kidName, amount });
-    await api("/api/transfer_to_savings","POST",{
-      kid_user_id: kid.kid_user_id,
-      amount: amount
-    }); 
-    logTransaction('transfer_to_savings_success', { kid: kidName, amount });
-    await refreshState();
-    setStatus(`Transferred $${amount.toFixed(2)} to ${kidName}'s savings`);
-    document.getElementById("transferAmount").value = "";
-  } catch(e) { 
-    logError('transferToSavings', e);
-    setStatus("Error: " + e.message); 
-  }
-}
-
-async function transferToSpending(){ 
-  logClick('transferToSpending', 'admin_transfer_spending');
-  try {
-    const kidName = document.getElementById("transferKid").value;
-    const amount = parseFloat(document.getElementById("transferAmount").value || 0);
-    
-    if (!kidName) {
-      setStatus("Error: Please select a kid");
-      return;
-    }
-    
-    if (amount <= 0) {
-      setStatus("Error: Amount must be positive");
-      return;
-    }
-    
-    // Find kid UID from name
-    const kid = globalState.kids?.find(k => k.name === kidName);
-    if (!kid) {
-      setStatus("Error: Kid not found");
-      return;
-    }
-    
-    logTransaction('transfer_to_spending', { kid: kidName, amount });
-    await api("/api/transfer_to_spending","POST",{
-      kid_user_id: kid.kid_user_id,
-      amount: amount
-    }); 
-    logTransaction('transfer_to_spending_success', { kid: kidName, amount });
-    await refreshState();
-    setStatus(`Transferred $${amount.toFixed(2)} to ${kidName}'s spending wallet`);
-    document.getElementById("transferAmount").value = "";
-  } catch(e) { 
-    logError('transferToSpending', e);
-    setStatus("Error: " + e.message); 
-  }
-}
-
-async function rewardKid(){ 
-  logClick('rewardKid', 'admin_reward');
-  try {
-    const kidName = document.getElementById("rewardKid").value;
-    const actionId = document.getElementById("rewardAction").value;
-    
-    if (!kidName) {
-      setStatus("Error: Please select a kid");
-      return;
-    }
-    if (!actionId) {
-      setStatus("Error: Please select a reward action");
-      return;
-    }
-    
-    logTransaction('reward', { kidName, actionId });
-    await api("/api/reward","POST",{kid_name:kidName,action_id:actionId}); 
-    logTransaction('reward_success', { kidName, actionId });
-    await refreshState();
-    setStatus(`✅ Reward applied to ${kidName}`);
-  } catch(e) { 
-    logError('rewardKid', e);
-    setStatus("Error: " + e.message); 
-  }
-}
-
-async function quickApplyTimeConsequence(consequenceId) {
-  logClick('quickApplyTimeConsequence', 'admin_consequence_time_quick', { consequenceId });
-  
-  const kidName = document.getElementById("consequenceKid").value;
-  if (!kidName) {
-    setStatus("❌ Please select a kid first");
-    return;
-  }
-  
-  const note = document.getElementById("consequenceNote").value.trim();
-  
-  // Find consequence details for confirmation
-  if (!catalogData || !catalogData.time_consequences) {
-    setStatus("Error: Catalog not loaded");
-    return;
-  }
-  
-  const consequence = catalogData.time_consequences.find(c => c.id === consequenceId);
-  if (!consequence) {
-    setStatus("Error: Consequence not found");
-    return;
-  }
-  
-  // Show confirmation
-  const confirmMsg = `Apply "${consequence.label}" to ${kidName}?${note ? '\nNote: ' + note : ''}`;
-  if (!confirm(confirmMsg)) {
-    return;
-  }
-  
-  try {
-    logTransaction('consequence_time', { kidName, consequenceId, note });
-    await api("/api/consequence_time","POST",{
-      kid_name: kidName,
-      consequence_id: consequenceId,
-      note: note
-    });
-    logTransaction('consequence_time_success', { kidName, consequenceId });
-    await refreshState();
-    setStatus(`✅ Time consequence applied to ${kidName}`);
-    
-    // Clear note field after successful application
-    document.getElementById("consequenceNote").value = "";
-  } catch(e) { 
-    logError('quickApplyTimeConsequence', e);
-    setStatus("Error: " + e.message); 
-  }
-}
-
-async function quickApplyMoneyConsequence(consequenceId) {
-  logClick('quickApplyMoneyConsequence', 'admin_consequence_money_quick', { consequenceId });
-  
-  const kidName = document.getElementById("consequenceKid").value;
-  if (!kidName) {
-    setStatus("❌ Please select a kid first");
-    return;
-  }
-  
-  const note = document.getElementById("consequenceNote").value.trim();
-  
-  // Find consequence details for confirmation
-  if (!catalogData || !catalogData.money_consequences) {
-    setStatus("Error: Catalog not loaded");
-    return;
-  }
-  
-  const consequence = catalogData.money_consequences.find(c => c.id === consequenceId);
-  if (!consequence) {
-    setStatus("Error: Consequence not found");
-    return;
-  }
-  
-  // Show confirmation
-  const confirmMsg = `Apply "${consequence.label}" to ${kidName}?${note ? '\nNote: ' + note : ''}`;
-  if (!confirm(confirmMsg)) {
-    return;
-  }
-  
-  try {
-    logTransaction('consequence_money', { kidName, consequenceId, note });
-    await api("/api/consequence_money","POST",{
-      kid_name: kidName,
-      consequence_id: consequenceId,
-      note: note
-    });
-    logTransaction('consequence_money_success', { kidName, consequenceId });
-    await refreshState();
-    setStatus(`✅ Money consequence applied to ${kidName}`);
-    
-    // Clear note field after successful application
-    document.getElementById("consequenceNote").value = "";
-  } catch(e) { 
-    logError('quickApplyMoneyConsequence', e);
-    setStatus("Error: " + e.message); 
-  }
-}
-async function timePunish(){ 
-  logClick('timePunish', 'admin_consequence_time');
-  try {
-    const kidName = document.getElementById("timeKid").value;
-    const consequenceId = document.getElementById("timeConsequence").value;
-    logTransaction('consequence_time', { kidName, consequenceId });
-    await api("/api/consequence_time","POST",{kid_name:kidName,consequence_id:consequenceId}); 
-    logTransaction('consequence_time_success', { kidName, consequenceId });
-    await refreshState();
-    setStatus("Time consequence applied");
-  } catch(e) { 
-    logError('timePunish', e);
-    setStatus("Error: " + e.message); 
-  }
-}
-async function moneyPunish(){ 
-  logClick('moneyPunish', 'admin_consequence_money');
-  try {
-    const kidName = document.getElementById("moneyKid").value;
-    const consequenceId = document.getElementById("moneyConsequence").value;
-    logTransaction('consequence_money', { kidName, consequenceId });
-    await api("/api/consequence_money","POST",{kid_name:kidName,consequence_id:consequenceId}); 
-    logTransaction('consequence_money_success', { kidName, consequenceId });
-    await refreshState();
-    setStatus("Money consequence applied");
-  } catch(e) { 
-    logError('moneyPunish', e);
-    setStatus("Error: " + e.message); 
-  }
-}
-
-/* ---------------- MEMBER MANAGEMENT ---------------- */
-async function addMember(){
-  logClick('addMember', 'admin_add_member');
-  try {
-    const name = document.getElementById("addMemberName").value.trim();
-    const role = document.getElementById("addMemberRole").value;
-    let uid = document.getElementById("addMemberUid").value.trim();
-    
-    if (!name) {
-      setStatus("Error: Name required");
-      return;
-    }
-    
-    // If no UID provided, we can't create - need Firebase Auth UID
-    if (!uid) {
-      setStatus("Error: Firebase UID required. Create account in Firebase Auth first, then add here.");
-      return;
-    }
-    
-    logEvent('member_add_attempt', { name, role, uid });
-    await api("/api/admin/add_member","POST",{uid, name, role});
-    logEvent('member_add_success', { name, role, uid });
-    await refreshState();
-    setStatus(`Member ${name} added as ${role}`);
-    
-    // Clear form
-    document.getElementById("addMemberName").value = "";
-    document.getElementById("addMemberUid").value = "";
-  } catch(e) {
-    logError('addMember', e);
-    setStatus("Error: " + e.message);
-  }
-}
-
-async function removeMember(){
-  logClick('removeMember', 'admin_remove_member');
-  try {
-    const input = document.getElementById("removeMemberUid").value.trim();
-    if (!input) {
-      setStatus("Error: UID or name required");
-      return;
-    }
-    
-    if (!confirm(`Remove member "${input}"? This will delete their membership, wallet, and session data.`)) {
-      return;
-    }
-    
-    // Try to find by name first, then use as UID
-    let uid = input;
-    try {
-      const state = await api("/api/state");
-      const kid = state.kids.find(k => k.name.toLowerCase() === input.toLowerCase());
-      if (kid) {
-        uid = kid.kid_user_id;
-      }
-    } catch (e) {
-      // Use input as UID
-    }
-    
-    logEvent('member_remove_attempt', { uid, input });
-    await api("/api/admin/remove_member","POST",{uid});
-    logEvent('member_remove_success', { uid });
-    await refreshState();
-    setStatus(`Member removed`);
-    
-    // Clear form
-    document.getElementById("removeMemberUid").value = "";
-  } catch(e) {
-    logError('removeMember', e);
-    setStatus("Error: " + e.message);
-  }
-}
-
-async function resetKid(){
-  logClick('resetKid', 'admin_reset_kid');
-  try {
-    const input = document.getElementById("resetKidUid").value.trim();
-    if (!input) {
-      setStatus("Error: UID or name required");
-      return;
-    }
-    
-    // Try to find by name first, then use as UID
-    let uid = input;
-    try {
-      const state = await api("/api/state");
-      const kid = state.kids.find(k => k.name.toLowerCase() === input.toLowerCase());
-      if (kid) {
-        uid = kid.kid_user_id;
-      }
-    } catch (e) {
-      // Use input as UID
-    }
-    
-    const balance = parseFloat(document.getElementById("resetBalance").value) || 0.0;
-    const minutes = parseInt(document.getElementById("resetMinutes").value) || 0;
-    const locked = document.getElementById("resetLocked").checked;
-    
-    if (!confirm(`Reset kid to GB$${balance}, ${minutes} min, ${locked ? 'locked' : 'unlocked'}?`)) {
-      return;
-    }
-    
-    logEvent('kid_reset_attempt', { uid, balance, minutes, locked });
-    await api("/api/admin/reset_kid","POST",{
-      uid,
-      balance_gb: balance,
-      minutes: minutes,
-      locked: locked
-    });
-    logEvent('kid_reset_success', { uid, balance, minutes, locked });
-    await refreshState();
-    setStatus(`Kid reset: GB$${balance}, ${minutes} min, ${locked ? 'locked' : 'unlocked'}`);
-    
-    // Clear form
-    document.getElementById("resetKidUid").value = "";
-    document.getElementById("resetBalance").value = "";
-    document.getElementById("resetMinutes").value = "";
-    document.getElementById("resetLocked").checked = false;
-  } catch(e) {
-    logError('resetKid', e);
-    setStatus("Error: " + e.message);
-  }
-}
-
-async function quickResetKid(uid, name){
-  logClick('quickResetKid', 'admin_quick_reset', { uid, name });
-  if (!confirm(`Reset ${name} to GB$0, 0 minutes, unlocked?`)) {
-    return;
-  }
-  try {
-    logEvent('kid_reset_attempt', { uid, balance: 0, minutes: 0, locked: false });
-    await api("/api/admin/reset_kid","POST",{
-      uid,
-      balance_gb: 0.0,
-      minutes: 0,
-      locked: false
-    });
-    logEvent('kid_reset_success', { uid, balance: 0, minutes: 0, locked: false });
-    await refreshState();
-    setStatus(`${name} reset to zero`);
-  } catch(e) {
-    logError('quickResetKid', e);
-    setStatus("Error: " + e.message);
-  }
-}
-</script>
-
-<!-- Navigation Component JS -->
-<script src="/nav.js"></script>
+    <!-- Demo Modal JS -->
+    <script>
+        const demoContent = {
+            food: {
+                title: 'Food Menu',
+                image: '/images/food/food_menu.png',
+                heading: 'Real Meals, Real Budgeting',
+                description: 'Kids use their earned GoodbodyBucks to purchase breakfast, lunch, dinner, and snacks. They learn to budget their money and make smart choices about what they can afford.',
+                features: [
+                    { label: 'Breakfast Options', value: 'Eggs, bacon, waffles, yogurt' },
+                    { label: 'Lunch Choices', value: 'Sandwiches, nuggets, drinks' },
+                    { label: 'Dinner Selections', value: 'Spaghetti, tacos, dessert' },
+                    { label: 'Teaching Moment', value: 'Limited budget = smart choices' }
+                ]
+            },
+            gaming: {
+                title: 'Screen Time Packages',
+                image: '/images/tablet_time/gaming_menu.png',
+                heading: 'Earn Time, Spend Wisely',
+                description: 'Purchase screen time in blocks ranging from 10 to 60 minutes. Kids learn to manage their time and make it last throughout the day or week.',
+                features: [
+                    { label: 'Tablet Time', value: '10, 20, 30, 45, or 60 minutes' },
+                    { label: 'Game Time', value: '15, 30, 45, or 60 minutes' },
+                    { label: 'Cost Structure', value: 'GB$0.50 to GB$3.00 per package' },
+                    { label: 'Life Lesson', value: 'Time is valuable and limited' }
+                ]
+            },
+            learning: {
+                title: 'Earning Opportunities',
+                image: '/images/learning/learning_menu.png',
+                heading: 'Learn, Work, Earn',
+                description: 'Kids earn GoodbodyBucks by completing schoolwork, chores, and household responsibilities. Every task has a clear reward, teaching the value of effort.',
+                features: [
+                    { label: 'Math Problems', value: 'GB$0.25 to GB$1.00 per problem' },
+                    { label: 'Reading', value: 'GB$0.25 per page, GB$1.00 for 5 pages' },
+                    { label: 'Writing & Spelling', value: 'GB$0.25 to GB$0.50 per task' },
+                    { label: 'Core Principle', value: 'Effort = Reward' }
+                ]
+            },
+            wallet: {
+                title: 'Kid Wallet Dashboard',
+                image: '/images/wallet/wallet_menu.png',
+                heading: 'Track Everything',
+                description: 'Kids see their balance, available screen time, and can make purchase decisions. The wallet is their personal financial dashboard.',
+                features: [
+                    { label: 'GB$ Balance', value: 'Current spending money' },
+                    { label: 'Screen Minutes', value: 'Available time remaining' },
+                    { label: 'Purchase History', value: 'See what you\'ve bought' },
+                    { label: 'Wallet Status', value: 'Active, locked, or limited' }
+                ]
+            }
+        };
+        
+        function openDemoModal(type) {
+            const content = demoContent[type];
+            if (!content) return;
+            
+            document.getElementById('modalTitle').textContent = content.title;
+            document.getElementById('modalImage').src = content.image;
+            document.getElementById('modalHeading').textContent = content.heading;
+            document.getElementById('modalDescription').textContent = content.description;
+            
+            const featuresHTML = content.features.map(f => `
+                <div class="modal-preview-item">
+                    <span class="modal-preview-label">${f.label}</span>
+                    <span class="modal-preview-value">${f.value}</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('modalFeatures').innerHTML = `
+                <div class="modal-preview" style="margin-top: 24px;">
+                    ${featuresHTML}
+                </div>
+            `;
+            
+            document.getElementById('demoModalOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeDemoModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('demoModalOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeDemoModal();
+            }
+        });
+    </script>
 </body>
 </html>
+

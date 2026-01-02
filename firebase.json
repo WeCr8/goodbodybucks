@@ -36,16 +36,8 @@
         "destination": "/test-landing.html"
       },
       {
-        "source": "/",
-        "destination": "/landing.html"
-      },
-      {
         "source": "/app",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/landing",
-        "destination": "/landing.html"
+        "destination": "/app-main.html"
       },
       {
         "source": "/test-nav",
