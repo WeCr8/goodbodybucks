@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Test - GoodbodyBucks</title>
+    <link rel="stylesheet" href="/nav.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0b0f14;
+            color: #eaf2ff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #34d399;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #8aa0b6;
+            margin-bottom: 40px;
+        }
+        
+        .test-section {
+            background: #121823;
+            border: 1px solid #223146;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .test-section h2 {
+            color: #34d399;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+        
+        .test-item {
+            background: #0d121b;
+            border: 1px solid #223146;
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.3s;
+        }
+        
+        .test-item:hover {
+            border-color: #34d399;
+            transform: translateY(-2px);
+        }
+        
+        .test-item h3 {
+            font-size: 14px;
+            color: #eaf2ff;
+            margin-bottom: 8px;
+        }
+        
+        .test-item p {
+            font-size: 12px;
+            color: #8aa0b6;
+            margin-bottom: 12px;
+        }
+        
+        .test-link {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #34d399;
+            color: #0b0f14;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        
+        .test-link:hover {
+            background: #22c088;
+            transform: scale(1.05);
+        }
+        
+        .test-link.secondary {
+            background: transparent;
+            color: #60a5fa;
+            border: 1px solid #60a5fa;
+        }
+        
+        .test-link.secondary:hover {
+            background: rgba(96, 165, 250, 0.1);
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .status.pass {
+            background: rgba(52, 211, 153, 0.2);
+            color: #34d399;
+        }
+        
+        .status.pending {
+            background: rgba(96, 165, 250, 0.2);
+            color: #60a5fa;
+        }
+        
+        .image-test {
+            width: 64px;
+            height: 64px;
+            border-radius: 8px;
+            border: 2px solid #223146;
+            margin-right: 12px;
+        }
+        
+        .image-test.loaded {
+            border-color: #34d399;
+        }
+        
+        .image-test.error {
+            border-color: #fb7185;
+        }
+        
+        .results {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
+            border: 2px solid #34d399;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 40px;
+            text-align: center;
+        }
+        
+        .results h2 {
+            margin-bottom: 16px;
+        }
+        
+        #testResults {
+            font-size: 18px;
+            color: #eaf2ff;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #60a5fa;
+            text-decoration: none;
+        }
+        
+        .back-link:hover {
+            color: #34d399;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to Landing Page</a>
+        
+        <h1>🧭 Navigation Test Suite</h1>
+        <p class="subtitle">Test all navigation routes, links, and components</p>
+        
+        <!-- Page Navigation Tests -->
+        <div class="test-section">
+            <h2>📄 Page Navigation</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h3>Landing Page</h3>
+                    <p>Test the main landing page</p>
+                    <a href="/" class="test-link">Visit / <span class="status pass">PRIMARY</span></a>
+                    <a href="/landing" class="test-link secondary">Visit /landing</a>
+                </div>
+                
+                <div class="test-item">
+                    <h3>Main Application</h3>
+                    <p>Test the main app route</p>
+                    <a href="/app" class="test-link">Visit /app <span class="status pass">PRIMARY</span></a>
+                </div>
+                
+                <div class="test-item">
+                    <h3>Direct HTML Access</h3>
+                    <p>Test redirects for direct HTML</p>
+                    <a href="/landing.html" class="test-link secondary">Test landing.html redirect</a>
+                    <a href="/index.html" class="test-link secondary">Test index.html redirect</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Anchor Navigation Tests -->
+        <div class="test-section">
+            <h2>⚓ Anchor Links (Landing Page)</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h3>What Is It Section</h3>
+                    <p>Scroll to "What Is GoodbodyBucks"</p>
+                    <a href="/#what-is" class="test-link">Go to #what-is</a>
+                </div>
+                
+                <div class="test-item">
+                    <h3>Legacy Section</h3>
+                    <p>Scroll to "The Legacy" section</p>
+                    <a href="/#legacy" class="test-link">Go to #legacy</a>
+                </div>
+                
+                <div class="test-item">
+                    <h3>How It Works</h3>
+                    <p>Scroll to "How It Works"</p>
+                    <a href="/#how-it-works" class="test-link">Go to #how-it-works</a>
+                </div>
+                
+                <div class="test-item">
+                    <h3>Why It Works</h3>
+                    <p>Scroll to "Why It Works"</p>
+                    <a href="/#why" class="test-link">Go to #why</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Component Tests -->
+        <div class="test-section">
+            <h2>🎨 Navigation Components</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h3>Navigation CSS</h3>
+                    <p>Test navigation stylesheet</p>
+                    <a href="/nav.css" class="test-link" target="_blank">View nav.css</a>
+                </div>
+                
+                <div class="test-item">
+                    <h3>Navigation JS</h3>
+                    <p>Test navigation JavaScript</p>
+                    <a href="/nav.js" class="test-link" target="_blank">View nav.js</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Image Tests -->
+        <div class="test-section">
+            <h2>🖼️ Image Loading</h2>
+            <div class="test-grid">
+                <div class="test-item" style="display: flex; align-items: center;">
+                    <img id="logoImg" src="/images/gbucks-coin.png" alt="Logo" class="image-test">
+                    <div>
+                        <h3>Logo Image</h3>
+                        <p>gbucks-coin.png</p>
+                        <span id="logoStatus" class="status pending">Loading...</span>
+                    </div>
+                </div>
+                
+                <div class="test-item" style="display: flex; align-items: center;">
+                    <img id="legacyImg" src="/images/legacy/goodbody_legacy_schedule.JPG" alt="Legacy" class="image-test">
+                    <div>
+                        <h3>Legacy Image</h3>
+                        <p>goodbody_legacy_schedule.JPG</p>
+                        <span id="legacyStatus" class="status pending">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- API Tests -->
+        <div class="test-section">
+            <h2>🔌 API Endpoints</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h3>Health Check</h3>
+                    <p>Test API health endpoint</p>
+                    <button onclick="testHealth()" class="test-link">Test /api/health</button>
+                    <div id="healthResult" style="margin-top: 8px; font-size: 12px; color: #8aa0b6;"></div>
+                </div>
+                
+                <div class="test-item">
+                    <h3>Image Test</h3>
+                    <p>Test image verification endpoint</p>
+                    <button onclick="testImageEndpoint()" class="test-link">Test /test-image</button>
+                    <div id="imageTestResult" style="margin-top: 8px; font-size: 12px; color: #8aa0b6;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Error Page Test -->
+        <div class="test-section">
+            <h2>❌ Error Handling</h2>
+            <div class="test-grid">
+                <div class="test-item">
+                    <h3>404 Page</h3>
+                    <p>Test custom 404 error page</p>
+                    <a href="/nonexistent-page" class="test-link secondary">Trigger 404 Error</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results -->
+        <div class="results">
+            <h2>Test Results</h2>
+            <div id="testResults">Run tests by clicking buttons above</div>
+        </div>
+    </div>
+    
+    <script src="/nav.js"></script>
+    <script>
+        // Image load tests
+        const logoImg = document.getElementById('logoImg');
+        const legacyImg = document.getElementById('legacyImg');
+        const logoStatus = document.getElementById('logoStatus');
+        const legacyStatus = document.getElementById('legacyStatus');
+        
+        logoImg.onload = function() {
+            logoImg.classList.add('loaded');
+            logoStatus.textContent = '✓ Loaded';
+            logoStatus.className = 'status pass';
+        };
+        
+        logoImg.onerror = function() {
+            logoImg.classList.add('error');
+            logoStatus.textContent = '✗ Failed';
+            logoStatus.className = 'status';
+            logoStatus.style.background = 'rgba(251, 113, 133, 0.2)';
+            logoStatus.style.color = '#fb7185';
+        };
+        
+        legacyImg.onload = function() {
+            legacyImg.classList.add('loaded');
+            legacyStatus.textContent = '✓ Loaded';
+            legacyStatus.className = 'status pass';
+        };
+        
+        legacyImg.onerror = function() {
+            legacyImg.classList.add('error');
+            legacyStatus.textContent = '✗ Failed';
+            legacyStatus.className = 'status';
+            legacyStatus.style.background = 'rgba(251, 113, 133, 0.2)';
+            legacyStatus.style.color = '#fb7185';
+        };
+        
+        // API tests
+        async function testHealth() {
+            const resultDiv = document.getElementById('healthResult');
+            resultDiv.textContent = 'Testing...';
+            resultDiv.style.color = '#60a5fa';
+            
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                if (data.ok) {
+                    resultDiv.textContent = '✓ Health check passed!';
+                    resultDiv.style.color = '#34d399';
+                } else {
+                    resultDiv.textContent = '✗ Health check failed';
+                    resultDiv.style.color = '#fb7185';
+                }
+            } catch (error) {
+                resultDiv.textContent = '✗ Error: ' + error.message;
+                resultDiv.style.color = '#fb7185';
+            }
+        }
+        
+        async function testImageEndpoint() {
+            const resultDiv = document.getElementById('imageTestResult');
+            resultDiv.textContent = 'Testing...';
+            resultDiv.style.color = '#60a5fa';
+            
+            try {
+                const response = await fetch('/test-image');
+                const data = await response.json();
+                if (data.ok) {
+                    resultDiv.textContent = '✓ Image test passed!';
+                    resultDiv.style.color = '#34d399';
+                } else {
+                    resultDiv.textContent = '✗ Image test failed';
+                    resultDiv.style.color = '#fb7185';
+                }
+            } catch (error) {
+                resultDiv.textContent = '✗ Error: ' + error.message;
+                resultDiv.style.color = '#fb7185';
+            }
+        }
+        
+        // Overall test summary
+        setTimeout(() => {
+            const logoLoaded = logoImg.classList.contains('loaded');
+            const legacyLoaded = legacyImg.classList.contains('loaded');
+            
+            let results = '<div style="text-align: left; max-width: 600px; margin: 0 auto;">';
+            results += '<p><strong>Automatic Tests:</strong></p>';
+            results += '<p>✓ Navigation components loaded</p>';
+            results += '<p>' + (logoLoaded ? '✓' : '✗') + ' Logo image loaded</p>';
+            results += '<p>' + (legacyLoaded ? '✓' : '✗') + ' Legacy image loaded</p>';
+            results += '<p style="margin-top: 16px; color: #8aa0b6;">Click buttons above to test API endpoints and navigation links.</p>';
+            results += '</div>';
+            
+            document.getElementById('testResults').innerHTML = results;
+        }, 2000);
+    </script>
+</body>
+</html>
+

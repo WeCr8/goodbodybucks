@@ -30,6 +30,7 @@
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(52, 211, 153, 0.4);
     animation: slideIn 0.3s ease-out;
+    box-sizing: border-box;
   }
   
   @keyframes slideIn {
@@ -49,6 +50,7 @@
     border-bottom: 2px solid #34d399;
     text-align: center;
     position: relative;
+    overflow: hidden;
   }
   
   .wallet-modal-close {
@@ -80,18 +82,25 @@
     font-weight: 700;
     color: #34d399;
     margin: 0 0 8px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .wallet-modal-subtitle {
     font-size: 14px;
     color: #8aa0b6;
     margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .wallet-modal-body {
     padding: 24px;
     max-height: calc(90vh - 200px);
     overflow-y: auto;
+    overflow-x: hidden;
   }
   
   .wallet-summary {
@@ -100,6 +109,7 @@
     border-radius: 16px;
     padding: 20px;
     margin-bottom: 24px;
+    overflow: hidden;
   }
   
   .wallet-stat {
@@ -108,6 +118,8 @@
     align-items: center;
     padding: 12px 0;
     border-bottom: 1px solid #223146;
+    overflow: hidden;
+    gap: 8px;
   }
   
   .wallet-stat:last-child {
@@ -117,11 +129,18 @@
   .wallet-stat-label {
     font-size: 14px;
     color: #8aa0b6;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .wallet-stat-value {
     font-size: 28px;
     font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   
   .wallet-stat-value.balance {
@@ -138,6 +157,9 @@
     font-size: 11px;
     color: #8aa0b6;
     margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .wallet-status-badge {
@@ -146,6 +168,10 @@
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
   }
   
   .wallet-status-badge.active {
@@ -167,6 +193,9 @@
     margin: 24px 0 12px 0;
     padding-bottom: 8px;
     border-bottom: 1px solid #223146;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .transaction-list {
@@ -184,6 +213,8 @@
     justify-content: space-between;
     align-items: center;
     transition: all 0.2s;
+    overflow: hidden;
+    gap: 8px;
   }
   
   .transaction-item:hover {
@@ -193,6 +224,8 @@
   
   .transaction-info {
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
   }
   
   .transaction-label {
@@ -200,11 +233,17 @@
     color: #eaf2ff;
     font-weight: 500;
     margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .transaction-details {
     font-size: 11px;
     color: #8aa0b6;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .transaction-amount {

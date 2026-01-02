@@ -32,11 +32,7 @@
     "rewrites": [
       {
         "source": "/app",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/",
-        "destination": "/landing.html"
+        "destination": "/app.html"
       },
       {
         "source": "/api/**",
