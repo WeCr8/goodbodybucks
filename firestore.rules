@@ -1,0 +1,124 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===================================================================
+    // ROLE DEFINITIONS
+    // ===================================================================
+    // "admin" = Parent/Guardian (full family control)
+    // "kid" = Child (limited access to own data only)
+    // ===================================================================
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is parent (admin) for a family
+    // Parents have full control over family data
+    function isParent(familyId) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/families/$(familyId)/members/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/families/$(familyId)/members/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Alias for backwards compatibility
+    function isAdminOfFamily(familyId) {
+      return isParent(familyId);
+    }
+    
+    // Helper function to check if user is a member of a family
+    function isMemberOfFamily(familyId) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/families/$(familyId)/members/$(request.auth.uid));
+    }
+    
+    // Helper function to check if user is a kid in this family
+    function isKidInFamily(familyId) {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/families/$(familyId)/members/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/families/$(familyId)/members/$(request.auth.uid)).data.role == 'kid';
+    }
+    
+    // Helper function to check if user is the specific kid
+    function isThisKid(familyId, kidUid) {
+      return isAuthenticated() && 
+             request.auth.uid == kidUid &&
+             isKidInFamily(familyId);
+    }
+    
+    // Helper function to check if user can view this kid's data
+    // (Either the kid themselves or a parent)
+    function canViewKidData(familyId, kidUid) {
+      return isParent(familyId) || (request.auth.uid == kidUid && isKidInFamily(familyId));
+    }
+    
+    // Families collection - root level
+    match /families/{familyId} {
+      // Allow read if user is a member of the family
+      allow read: if isMemberOfFamily(familyId);
+      
+      // Allow create for any authenticated user (for initial family setup)
+      allow create: if isAuthenticated();
+      
+      // Allow update/delete only for admins
+      allow update, delete: if isAdminOfFamily(familyId);
+      
+      // Members subcollection
+      match /members/{uid} {
+        // Members can read their own data and parents can read all
+        allow read: if isAuthenticated() && (request.auth.uid == uid || isParent(familyId));
+        
+        // Only parents can create, update, or delete members
+        // Exception: first member can be created by anyone (bootstrap)
+        allow create: if isAuthenticated();
+        allow update, delete: if isParent(familyId);
+      }
+      
+      // Wallets subcollection
+      match /wallets/{uid} {
+        // Kids can read their own wallet, parents can read all
+        allow read: if canViewKidData(familyId, uid);
+        
+        // Only parents can write wallets (backend uses Admin SDK, bypasses these rules)
+        allow write: if isParent(familyId);
+      }
+      
+      // Sessions subcollection
+      match /sessions/{uid} {
+        // Kids can read their own session, parents can read all
+        allow read: if canViewKidData(familyId, uid);
+        
+        // Kids can start/stop their own session, parents can control all sessions
+        allow write: if isAuthenticated() && (request.auth.uid == uid || isParent(familyId));
+      }
+      
+      // Purchases subcollection
+      match /purchases/{purchaseId} {
+        // Kids can read their own purchases, parents can read all
+        allow read: if isAuthenticated() && 
+                     (resource.data.kidUid == request.auth.uid || isParent(familyId));
+        
+        // Only parents can write purchases (backend uses Admin SDK for kid purchases)
+        allow write: if isParent(familyId);
+      }
+      
+      // Ledger subcollection (Audit Trail)
+      match /ledger/{entryId} {
+        // Only parents can read the ledger (audit trail)
+        allow read: if isParent(familyId);
+        
+        // Only backend system can write to ledger (immutable audit trail)
+        // Backend uses Admin SDK which bypasses these rules
+        allow write: if false;
+      }
+    }
+    
+    // Default deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

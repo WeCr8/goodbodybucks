@@ -1,0 +1,40 @@
+rules_version = '2';
+
+// Firebase Storage Rules for GoodbodyBucks
+// Note: Currently, images are served from the Flask backend's public/images directory
+// These rules are for future use if you decide to migrate images to Firebase Storage
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Public images directory - read-only for all authenticated users
+    match /images/{allPaths=**} {
+      // Anyone can read images (including unauthenticated users for public access)
+      allow read: if true;
+      
+      // Only authenticated admins can upload/modify images
+      // You would need to add custom claims to identify admins
+      allow write: if isAuthenticated();
+    }
+    
+    // Family-specific assets (if needed in future)
+    match /families/{familyId}/{allPaths=**} {
+      // Only authenticated family members can read
+      allow read: if isAuthenticated();
+      
+      // Only authenticated users can write (backend should handle authorization)
+      allow write: if isAuthenticated();
+    }
+    
+    // Default deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

@@ -9,22 +9,28 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
+<!-- Navigation Component CSS -->
+<link rel="stylesheet" href="/nav.css">
+
 <style>
   body { margin:0; font-family:system-ui; background:#0b0f14; color:#eaf2ff; }
   .wrap { max-width:1100px; margin:auto; padding:16px; }
-  .card { background:#121823; border:1px solid #223146; border-radius:14px; padding:14px; margin-bottom:12px; }
-  h1,h2,h3 { margin:6px 0; }
-  label { font-size:12px; color:#8aa0b6; display:block; margin-top:10px; }
+  .card { background:#121823; border:1px solid #223146; border-radius:14px; padding:14px; margin-bottom:12px; overflow:hidden; }
+  h1,h2,h3 { margin:6px 0; overflow:hidden; text-overflow:ellipsis; }
+  label { font-size:12px; color:#8aa0b6; display:block; margin-top:10px; overflow:hidden; text-overflow:ellipsis; }
   input,select,textarea,button {
     width:100%; padding:10px; border-radius:10px;
     border:1px solid #223146; background:#0d121b; color:#eaf2ff;
+    box-sizing:border-box; max-width:100%;
   }
-  button { cursor:pointer; font-weight:600; margin-top:8px; }
-  .row { display:flex; gap:10px; }
-  .row > * { flex:1; }
+  input, select { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  textarea { overflow-y:auto; resize:vertical; min-height:60px; max-height:200px; word-wrap:break-word; }
+  button { cursor:pointer; font-weight:600; margin-top:8px; overflow:hidden; text-overflow:ellipsis; }
+  .row { display:flex; gap:10px; overflow:hidden; }
+  .row > * { flex:1; min-width:0; overflow:hidden; }
   .hidden { display:none; }
-  .kid { background:#0d121b; border-radius:12px; padding:10px; margin-bottom:8px; }
-  .pill { font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid #223146; }
+  .kid { background:#0d121b; border-radius:12px; padding:10px; margin-bottom:8px; overflow:hidden; }
+  .pill { font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid #223146; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%; display:inline-block; }
   .ok { color:#34d399; }
   .bad { color:#fb7185; }
   .wallet { background:linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%); border:2px solid #3a5f8f; border-radius:20px; padding:24px; margin:16px 0; text-align:center; }
@@ -44,18 +50,18 @@
   .menu-toggle { background:#223146; color:#8aa0b6; padding:8px 12px; border-radius:8px; font-size:12px; cursor:pointer; display:inline-block; margin-bottom:8px; }
   .menu-toggle:hover { background:#2a3a52; color:#eaf2ff; }
   .menu-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-top:16px; }
-  .menu-card { background:#0d121b; border:1px solid #223146; border-radius:12px; padding:12px; text-align:center; }
-  .menu-card img { width:100%; border-radius:8px; margin-bottom:8px; }
-  .menu-card-title { font-size:14px; font-weight:600; color:#eaf2ff; margin-bottom:4px; }
-  .menu-card-price { font-size:12px; color:#34d399; }
+  .menu-card { background:#0d121b; border:1px solid #223146; border-radius:12px; padding:12px; text-align:center; overflow:hidden; }
+  .menu-card img { width:100%; border-radius:8px; margin-bottom:8px; max-width:100%; height:auto; }
+  .menu-card-title { font-size:14px; font-weight:600; color:#eaf2ff; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .menu-card-price { font-size:12px; color:#34d399; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:1000; }
-  .modal { background:#121823; border:2px solid #34d399; border-radius:16px; padding:24px; max-width:500px; width:90%; box-shadow:0 8px 32px rgba(52,211,153,0.3); }
-  .modal-header { font-size:20px; font-weight:700; color:#34d399; margin-bottom:16px; text-align:center; }
-  .modal-content { margin:16px 0; }
-  .modal-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #223146; }
+  .modal { background:#121823; border:2px solid #34d399; border-radius:16px; padding:24px; max-width:500px; width:90%; box-shadow:0 8px 32px rgba(52,211,153,0.3); overflow:hidden; box-sizing:border-box; }
+  .modal-header { font-size:20px; font-weight:700; color:#34d399; margin-bottom:16px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .modal-content { margin:16px 0; overflow:hidden; }
+  .modal-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #223146; overflow:hidden; gap:8px; }
   .modal-row:last-child { border-bottom:none; font-weight:600; font-size:16px; }
-  .modal-label { color:#8aa0b6; }
-  .modal-value { color:#eaf2ff; }
+  .modal-label { color:#8aa0b6; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex-shrink:0; max-width:50%; }
+  .modal-value { color:#eaf2ff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:right; }
   .modal-value.positive { color:#34d399; }
   .modal-value.negative { color:#fb7185; }
   .modal-actions { display:flex; gap:12px; margin-top:20px; }
@@ -66,20 +72,20 @@
   .modal-confirm:hover { background:#22c088; }
   .modal-menu-section { max-height:300px; overflow-y:auto; margin-top:16px; padding-top:16px; border-top:1px solid #223146; }
   .modal-menu-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:8px; margin-top:12px; }
-  .modal-menu-item { background:#0d121b; border:2px solid #223146; border-radius:8px; padding:8px; text-align:center; cursor:pointer; transition:all 0.2s; }
+  .modal-menu-item { background:#0d121b; border:2px solid #223146; border-radius:8px; padding:8px; text-align:center; cursor:pointer; transition:all 0.2s; overflow:hidden; }
   .modal-menu-item:hover { border-color:#34d399; transform:scale(1.05); }
   .modal-menu-item.selected { border-color:#34d399; background:rgba(52,211,153,0.1); }
-  .modal-menu-item img { width:100%; border-radius:4px; margin-bottom:4px; }
-  .modal-menu-item-title { font-size:11px; color:#eaf2ff; margin-bottom:2px; }
-  .modal-menu-item-price { font-size:10px; color:#34d399; }
+  .modal-menu-item img { width:100%; border-radius:4px; margin-bottom:4px; max-width:100%; height:auto; }
+  .modal-menu-item-title { font-size:11px; color:#eaf2ff; margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .modal-menu-item-price { font-size:10px; color:#34d399; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:1000; }
-  .modal { background:#121823; border:2px solid #34d399; border-radius:16px; padding:24px; max-width:500px; width:90%; box-shadow:0 8px 32px rgba(52,211,153,0.3); }
-  .modal-header { font-size:20px; font-weight:700; color:#34d399; margin-bottom:16px; text-align:center; }
-  .modal-content { margin:16px 0; }
-  .modal-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #223146; }
+  .modal { background:#121823; border:2px solid #34d399; border-radius:16px; padding:24px; max-width:500px; width:90%; box-shadow:0 8px 32px rgba(52,211,153,0.3); overflow:hidden; box-sizing:border-box; }
+  .modal-header { font-size:20px; font-weight:700; color:#34d399; margin-bottom:16px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .modal-content { margin:16px 0; overflow:hidden; }
+  .modal-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #223146; overflow:hidden; gap:8px; }
   .modal-row:last-child { border-bottom:none; font-weight:600; font-size:16px; }
-  .modal-label { color:#8aa0b6; }
-  .modal-value { color:#eaf2ff; }
+  .modal-label { color:#8aa0b6; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex-shrink:0; max-width:50%; }
+  .modal-value { color:#eaf2ff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:right; }
   .modal-value.positive { color:#34d399; }
   .modal-value.negative { color:#fb7185; }
   .modal-actions { display:flex; gap:12px; margin-top:20px; }
@@ -115,6 +121,7 @@
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(52, 211, 153, 0.4);
     animation: slideIn 0.3s ease-out;
+    box-sizing: border-box;
   }
   
   @keyframes slideIn {
@@ -134,6 +141,7 @@
     border-bottom: 2px solid #34d399;
     text-align: center;
     position: relative;
+    overflow: hidden;
   }
   
   .wallet-modal-close {
@@ -165,18 +173,25 @@
     font-weight: 700;
     color: #34d399;
     margin: 0 0 8px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .wallet-modal-subtitle {
     font-size: 14px;
     color: #8aa0b6;
     margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .wallet-modal-body {
     padding: 24px;
     max-height: calc(90vh - 200px);
     overflow-y: auto;
+    overflow-x: hidden;
   }
   
   .wallet-summary {
@@ -185,6 +200,7 @@
     border-radius: 16px;
     padding: 20px;
     margin-bottom: 24px;
+    overflow: hidden;
   }
   
   .wallet-stat {
@@ -193,6 +209,8 @@
     align-items: center;
     padding: 12px 0;
     border-bottom: 1px solid #223146;
+    overflow: hidden;
+    gap: 8px;
   }
   
   .wallet-stat:last-child {
@@ -202,11 +220,18 @@
   .wallet-stat-label {
     font-size: 14px;
     color: #8aa0b6;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .wallet-stat-value {
     font-size: 28px;
     font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   
   .wallet-stat-value.balance {
@@ -223,6 +248,9 @@
     font-size: 11px;
     color: #8aa0b6;
     margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .wallet-status-badge {
@@ -231,6 +259,10 @@
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
   }
   
   .wallet-status-badge.active {
@@ -252,6 +284,9 @@
     margin: 24px 0 12px 0;
     padding-bottom: 8px;
     border-bottom: 1px solid #223146;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .transaction-list {
@@ -269,6 +304,8 @@
     justify-content: space-between;
     align-items: center;
     transition: all 0.2s;
+    overflow: hidden;
+    gap: 8px;
   }
   
   .transaction-item:hover {
@@ -278,6 +315,8 @@
   
   .transaction-info {
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
   }
   
   .transaction-label {
@@ -285,11 +324,17 @@
     color: #eaf2ff;
     font-weight: 500;
     margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .transaction-details {
     font-size: 11px;
     color: #8aa0b6;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .transaction-amount {
@@ -360,10 +405,100 @@
     font-size: 48px;
     margin-bottom: 12px;
   }
+  
+  /* Consequence Card Styles */
+  .consequence-card {
+    background: #0d121b;
+    border: 2px solid #223146;
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .consequence-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 24px rgba(52, 211, 153, 0.3);
+  }
+  
+  .consequence-card.time-consequence {
+    border-color: #60a5fa;
+  }
+  
+  .consequence-card.time-consequence:hover {
+    border-color: #3b82f6;
+    background: rgba(96, 165, 250, 0.1);
+    box-shadow: 0 8px 24px rgba(96, 165, 250, 0.4);
+  }
+  
+  .consequence-card.money-consequence {
+    border-color: #fb7185;
+  }
+  
+  .consequence-card.money-consequence:hover {
+    border-color: #f43f5e;
+    background: rgba(251, 113, 133, 0.1);
+    box-shadow: 0 8px 24px rgba(251, 113, 133, 0.4);
+  }
+  
+  .consequence-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #eaf2ff;
+    margin-bottom: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .consequence-card-effect {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .admin-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 20px 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #223146;
+    overflow: hidden;
+  }
+  
+  .admin-section-header h3 {
+    margin: 0;
+    font-size: 18px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 </style>
 </head>
 
 <body>
+<!-- App Navigation -->
+<nav class="app-nav">
+  <div class="nav-content">
+    <a href="/" class="nav-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      About GoodbodyBucks
+    </a>
+    <div class="nav-links">
+      <span id="navUserInfo" style="color: #8aa0b6; font-size: 12px;"></span>
+    </div>
+  </div>
+</nav>
+
 <div class="wrap">
   <div class="logo-header">
     <div>
@@ -565,24 +700,97 @@
   </div>
 </div>
 
-<label>Daily Allotment JSON</label>
+<div class="admin-section-header">
+  <h3 style="color:#60a5fa;">💰 Daily Allotment</h3>
+</div>
+<label>Allotment JSON (kid name → GB$ amount)</label>
 <textarea id="allotment">{ "Miles": 12, "Sabrina": 15 }</textarea>
-<button onclick="dailyAllotment()">Apply</button>
+<button onclick="dailyAllotment()">Apply Daily Allotment</button>
 
-<label>Reward Kid</label>
-<input id="rewardKid"/>
+<div class="admin-section-header">
+  <h3 style="color:#fbbf24;">🏦 Savings Settings</h3>
+</div>
+<p style="font-size:12px; color:#8aa0b6; margin:8px 0;">Configure automatic savings from daily allotments</p>
+<label>Enable Automatic Savings</label>
+<div style="display:flex; gap:8px; margin-bottom:12px;">
+  <input type="checkbox" id="savingsEnabled" style="width:auto;"/>
+  <label for="savingsEnabled" style="margin:0; color:#eaf2ff;">Automatically split allotments into spending and savings</label>
+</div>
+<label>Default Savings Percentage (0-100%)</label>
+<input type="number" id="savingsPercentage" min="0" max="100" value="10" placeholder="e.g., 10 for 10%"/>
+<button onclick="updateSavingsSettings()">Update Savings Settings</button>
+
+<div style="margin-top:16px; padding:12px; background:#0d121b; border-radius:8px; border:1px solid #223146;">
+  <h4 style="color:#8aa0b6; font-size:14px; margin:0 0 8px 0;">💸 Transfer Between Wallets</h4>
+  <label>Select Kid</label>
+  <select id="transferKid"></select>
+  <label>Amount (GB$)</label>
+  <input type="number" id="transferAmount" min="0" step="0.25" placeholder="e.g., 5.00"/>
+  <div style="display:flex; gap:8px; margin-top:8px;">
+    <button onclick="transferToSavings()" style="flex:1; background:#fbbf24; color:#0b0f14;">💰→🏦 To Savings</button>
+    <button onclick="transferToSpending()" style="flex:1; background:#60a5fa; color:#0b0f14;">🏦→💰 To Spending</button>
+  </div>
+</div>
+
+<div class="admin-section-header">
+  <h3 style="color:#34d399;">⭐ Rewards</h3>
+</div>
+<label>Select Kid</label>
+<select id="rewardKid"></select>
+<label>Reward Action</label>
 <select id="rewardAction"></select>
-<button onclick="rewardKid()">Reward</button>
+<button onclick="rewardKid()">Give Reward</button>
 
-<label>Time Consequence</label>
-<input id="timeKid"/>
-<select id="timeConsequence"></select>
-<button onclick="timePunish()">Apply</button>
+<div class="admin-section-header">
+  <h3 style="color:#fb7185;">⚠️ Consequences</h3>
+</div>
+<p style="font-size:12px; color:#8aa0b6; margin:8px 0;">Quick and easy consequence management - select kid, then click any consequence to apply</p>
 
-<label>Money Consequence</label>
-<input id="moneyKid"/>
-<select id="moneyConsequence"></select>
-<button onclick="moneyPunish()">Apply</button>
+<!-- Kid Selection for Consequences -->
+<label>Select Kid</label>
+<select id="consequenceKid" onchange="updateConsequenceKidSelection()"></select>
+
+<!-- Visual Consequence Menus -->
+<div style="margin-top:16px;">
+  <div class="menu-section">
+    <h4 style="color:#60a5fa;">⏱️ Time Consequences</h4>
+    <img src="/images/consequences/consequences_menu_time.png" alt="Time Consequences Menu" 
+         class="menu-image" 
+         style="max-width:500px; cursor:default;"
+         onload="console.log('[IMAGE] ✅ Loaded: consequences/consequences_menu_time.png');"
+         onerror="console.error('[IMAGE] ❌ Failed to load: consequences/consequences_menu_time.png from', this.src); this.style.display='none';"/>
+    <div id="timeConsequenceGrid" class="menu-grid"></div>
+  </div>
+  
+  <div class="menu-section">
+    <h4 style="color:#34d399;">💰 Money Consequences</h4>
+    <img src="/images/consequences/consequences_menu_money.png" alt="Money Consequences Menu" 
+         class="menu-image" 
+         style="max-width:500px; cursor:default;"
+         onload="console.log('[IMAGE] ✅ Loaded: consequences/consequences_menu_money.png');"
+         onerror="console.error('[IMAGE] ❌ Failed to load: consequences/consequences_menu_money.png from', this.src); this.style.display='none';"/>
+    <div id="moneyConsequenceGrid" class="menu-grid"></div>
+  </div>
+</div>
+
+<!-- Optional Note for Consequences -->
+<div style="margin-top:16px;">
+  <label>Optional Note (for tracking reasons)</label>
+  <input id="consequenceNote" placeholder="e.g., 'Didn't clean room'" maxlength="120"/>
+</div>
+
+<!-- Legacy fallback controls (hidden by default) -->
+<div id="legacyConsequenceControls" class="hidden">
+  <label>Time Consequence</label>
+  <input id="timeKid"/>
+  <select id="timeConsequence"></select>
+  <button onclick="timePunish()">Apply</button>
+
+  <label>Money Consequence</label>
+  <input id="moneyKid"/>
+  <select id="moneyConsequence"></select>
+  <button onclick="moneyPunish()">Apply</button>
+</div>
 </div>
 
 <div class="card">
@@ -985,7 +1193,7 @@ async function refreshCatalog(){
       const imgUrl = x.image_url || '/images/food/placeholder.jpg';
       return `<option value="${x.id}" data-image="${imgUrl}">${x.label} (${x.cost_gb} GB$)</option>`;
     }).join("");
-    document.getElementById("rewardAction").innerHTML = cfg.rewards.map(x=>`<option value="${x.id}">${x.label}</option>`).join("");
+    document.getElementById("rewardAction").innerHTML = cfg.rewards.map(x=>`<option value="${x.id}">${x.label} (+${x.delta_gb} GB$)</option>`).join("");
     document.getElementById("timeConsequence").innerHTML = cfg.time_consequences.map(x=>`<option value="${x.id}">${x.label}</option>`).join("");
     document.getElementById("moneyConsequence").innerHTML = cfg.money_consequences.map(x=>`<option value="${x.id}">${x.label}</option>`).join("");
     
@@ -993,6 +1201,10 @@ async function refreshCatalog(){
     buildFoodMenuGrid(cfg.food);
     buildScreenMenuGrid(cfg.screen);
     buildLearningMenuGrid(cfg.rewards);
+    
+    // Build consequence grids (visual, quick-apply)
+    buildTimeConsequenceGrid(cfg.time_consequences);
+    buildMoneyConsequenceGrid(cfg.money_consequences);
     
     // Make menu grids visible after building
     setTimeout(() => {
@@ -1065,6 +1277,53 @@ function buildLearningMenuGrid(rewardItems) {
   `).join("");
   
   // Make grid visible after building
+  grid.classList.remove("hidden");
+}
+
+function buildTimeConsequenceGrid(consequences) {
+  const grid = document.getElementById("timeConsequenceGrid");
+  if (!grid || !consequences) return;
+  
+  grid.innerHTML = consequences.map(item => {
+    let description = "";
+    let effectClass = "";
+    
+    if (item.delta_minutes) {
+      description = `${item.delta_minutes} min`;
+      effectClass = "time-consequence";
+    } else if (item.set_minutes !== undefined) {
+      description = `Set to ${item.set_minutes}`;
+      effectClass = "time-consequence";
+    } else if (item.lock !== undefined) {
+      description = item.lock ? "Lock" : "Unlock";
+      effectClass = "time-consequence";
+    }
+    
+    return `
+      <div class="consequence-card ${effectClass}" onclick="quickApplyTimeConsequence('${item.id}')">
+        <div class="consequence-card-title">${item.label}</div>
+        <div class="consequence-card-effect" style="color:#60a5fa;">${description}</div>
+      </div>
+    `;
+  }).join("");
+  
+  grid.classList.remove("hidden");
+}
+
+function buildMoneyConsequenceGrid(consequences) {
+  const grid = document.getElementById("moneyConsequenceGrid");
+  if (!grid || !consequences) return;
+  
+  grid.innerHTML = consequences.map(item => {
+    const amount = item.delta_gb || 0;
+    return `
+      <div class="consequence-card money-consequence" onclick="quickApplyMoneyConsequence('${item.id}')">
+        <div class="consequence-card-title">${item.label}</div>
+        <div class="consequence-card-effect" style="color:#fb7185;">${amount.toFixed(2)} GB$</div>
+      </div>
+    `;
+  }).join("");
+  
   grid.classList.remove("hidden");
 }
 
@@ -1145,8 +1404,18 @@ async function refreshState(){
                onerror="console.error('[IMAGE] ❌ Failed to load wallet logo: gbucks-coin.png from', this.src); this.style.display='none';"/>
           <div class="wallet-title">${currentKid.name}'s Wallet</div>
           <div class="wallet-balance">GB$ ${currentKid.balance_gb.toFixed(2)}</div>
-          <div class="wallet-label">Goodbody Bucks</div>
-          <div class="wallet-minutes">${currentKid.minutes} min</div>
+          <div class="wallet-label">Total Balance</div>
+          <div style="display: flex; gap: 24px; justify-content: center; margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
+            <div style="text-align: center;">
+              <div style="font-size: 24px; font-weight: 700; color: #60a5fa;">GB$ ${currentKid.spending_balance.toFixed(2)}</div>
+              <div style="font-size: 11px; color: #8aa0b6; margin-top: 4px;">💰 Spending</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 24px; font-weight: 700; color: #fbbf24;">GB$ ${currentKid.savings_balance.toFixed(2)}</div>
+              <div style="font-size: 11px; color: #8aa0b6; margin-top: 4px;">🏦 Savings</div>
+            </div>
+          </div>
+          <div class="wallet-minutes" style="margin-top: 16px;">${currentKid.minutes} min</div>
           <div class="wallet-label">Screen Time Available</div>
           <div class="wallet-status">
             ${currentKid.locked ? '<span class="bad">🔒 SCREENS LOCKED</span>' : ''}
@@ -1169,6 +1438,11 @@ async function refreshState(){
               <span style="color:#34d399; font-size:18px; font-weight:600;">GB$ ${k.balance_gb.toFixed(2)}</span>
               <span style="color:#60a5fa; font-size:16px; margin-left:12px;">${k.minutes} min</span>
             </div>
+            <div style="margin-top:6px; font-size:12px; color:#8aa0b6;">
+              💰 Spending: <span style="color:#60a5fa; font-weight:600;">$${k.spending_balance.toFixed(2)}</span>
+              <span style="margin: 0 8px;">|</span>
+              🏦 Savings: <span style="color:#fbbf24; font-weight:600;">$${k.savings_balance.toFixed(2)}</span>
+            </div>
             ${k.locked ? "<span class='bad' style='display:inline-block; margin-top:4px;'>🔒 LOCKED</span>" : ""}
             ${k.session.active ? `<span class='ok' style='display:inline-block; margin-top:4px;'>▶️ ${k.session.mode} (${sessionElapsed}m)</span>` : ""}
             <div style="margin-top:8px;">
@@ -1181,9 +1455,56 @@ async function refreshState(){
     }
     
     document.getElementById("kids").innerHTML = html;
+    
+    // Update kid dropdowns for admin controls
+    updateKidDropdowns(data.kids);
   } catch(e) {
     logError('refreshState', e);
     setStatus("Error loading state: " + e.message);
+  }
+}
+
+function updateKidDropdowns(kids) {
+  if (!kids || kids.length === 0) return;
+  
+  const kidOptions = kids.map(k => `<option value="${k.name}">${k.name} ($${k.spending_balance.toFixed(2)} spending, $${k.savings_balance.toFixed(2)} savings, ${k.minutes} min)</option>`).join("");
+  
+  // Update all kid selection dropdowns
+  const rewardKidSelect = document.getElementById("rewardKid");
+  const consequenceKidSelect = document.getElementById("consequenceKid");
+  const transferKidSelect = document.getElementById("transferKid");
+  
+  if (rewardKidSelect) {
+    const currentValue = rewardKidSelect.value;
+    rewardKidSelect.innerHTML = '<option value="">-- Select Kid --</option>' + kidOptions;
+    if (currentValue) rewardKidSelect.value = currentValue;
+  }
+  
+  if (consequenceKidSelect) {
+    const currentValue = consequenceKidSelect.value;
+    consequenceKidSelect.innerHTML = '<option value="">-- Select Kid --</option>' + kidOptions;
+    if (currentValue) consequenceKidSelect.value = currentValue;
+  }
+  
+  if (transferKidSelect) {
+    const currentValue = transferKidSelect.value;
+    transferKidSelect.innerHTML = '<option value="">-- Select Kid --</option>' + kidOptions;
+    if (currentValue) transferKidSelect.value = currentValue;
+  }
+  
+  // Also update legacy text inputs (hidden by default)
+  const timeKid = document.getElementById("timeKid");
+  const moneyKid = document.getElementById("moneyKid");
+  if (timeKid && kids.length > 0) timeKid.value = kids[0].name;
+  if (moneyKid && kids.length > 0) moneyKid.value = kids[0].name;
+}
+
+function updateConsequenceKidSelection() {
+  // This is called when the consequence kid dropdown changes
+  // Just log the selection for now
+  const select = document.getElementById("consequenceKid");
+  if (select && select.value) {
+    logClick('updateConsequenceKidSelection', 'kid_selected', { kidName: select.value });
   }
 }
 
@@ -1254,7 +1575,7 @@ async function buyScreen(){
       return;
     }
     
-    const currentBalance = currentKid.balance_gb;
+    const currentBalance = currentKid.spending_balance;
     const cost = pkg.cost_gb;
     const newBalance = currentBalance - cost;
     
@@ -1323,7 +1644,7 @@ async function buyFood(){
       return;
     }
     
-    const currentBalance = currentKid.balance_gb;
+    const currentBalance = currentKid.spending_balance;
     const cost = item.cost_gb;
     const newBalance = currentBalance - cost;
     
@@ -1355,7 +1676,7 @@ function showPurchaseModal(purchase) {
   document.getElementById("modalTitle").textContent = purchase.title;
   document.getElementById("modalItemName").textContent = purchase.itemName;
   document.getElementById("modalCost").textContent = `-${purchase.cost.toFixed(2)} GB$`;
-  document.getElementById("modalCurrentBalance").textContent = `${purchase.currentBalance.toFixed(2)} GB$`;
+  document.getElementById("modalCurrentBalance").textContent = `${purchase.currentBalance.toFixed(2)} GB$ (spending)`;
   
   const newBalanceEl = document.getElementById("modalNewBalance");
   newBalanceEl.textContent = `${purchase.newBalance.toFixed(2)} GB$`;
@@ -1557,8 +1878,8 @@ async function confirmPurchase() {
     }
     
     if (currentKid) {
-      document.getElementById("modalCurrentBalance").textContent = `${currentKid.balance_gb.toFixed(2)} GB$`;
-      document.getElementById("modalNewBalance").textContent = `${currentKid.balance_gb.toFixed(2)} GB$`;
+      document.getElementById("modalCurrentBalance").textContent = `${currentKid.spending_balance.toFixed(2)} GB$ (spending)`;
+      document.getElementById("modalNewBalance").textContent = `${currentKid.spending_balance.toFixed(2)} GB$`;
       document.getElementById("modalNewBalance").className = "modal-value positive";
       document.getElementById("modalExtraInfo").textContent = "✅ Purchase successful! Balance updated.";
       document.getElementById("modalExtraInfo").style.display = "block";
@@ -1623,18 +1944,225 @@ async function dailyAllotment(){
     setStatus("Error: " + e.message); 
   }
 }
+
+async function updateSavingsSettings(){ 
+  logClick('updateSavingsSettings', 'admin_savings_settings');
+  try {
+    const enabled = document.getElementById("savingsEnabled").checked;
+    const percentage = parseInt(document.getElementById("savingsPercentage").value || 0);
+    
+    if (percentage < 0 || percentage > 100) {
+      setStatus("Error: Percentage must be between 0 and 100");
+      return;
+    }
+    
+    logEvent('savings_settings_update', { enabled, percentage });
+    await api("/api/admin/update_savings_settings","POST",{
+      enabled: enabled,
+      defaultPercentage: percentage
+    }); 
+    logEvent('savings_settings_update_success', { enabled, percentage });
+    setStatus(`Savings settings updated: ${enabled ? percentage + '% auto-savings enabled' : 'disabled'}`);
+  } catch(e) { 
+    logError('updateSavingsSettings', e);
+    setStatus("Error: " + e.message); 
+  }
+}
+
+async function transferToSavings(){ 
+  logClick('transferToSavings', 'admin_transfer_savings');
+  try {
+    const kidName = document.getElementById("transferKid").value;
+    const amount = parseFloat(document.getElementById("transferAmount").value || 0);
+    
+    if (!kidName) {
+      setStatus("Error: Please select a kid");
+      return;
+    }
+    
+    if (amount <= 0) {
+      setStatus("Error: Amount must be positive");
+      return;
+    }
+    
+    // Find kid UID from name
+    const kid = globalState.kids?.find(k => k.name === kidName);
+    if (!kid) {
+      setStatus("Error: Kid not found");
+      return;
+    }
+    
+    logTransaction('transfer_to_savings', { kid: kidName, amount });
+    await api("/api/transfer_to_savings","POST",{
+      kid_user_id: kid.kid_user_id,
+      amount: amount
+    }); 
+    logTransaction('transfer_to_savings_success', { kid: kidName, amount });
+    await refreshState();
+    setStatus(`Transferred $${amount.toFixed(2)} to ${kidName}'s savings`);
+    document.getElementById("transferAmount").value = "";
+  } catch(e) { 
+    logError('transferToSavings', e);
+    setStatus("Error: " + e.message); 
+  }
+}
+
+async function transferToSpending(){ 
+  logClick('transferToSpending', 'admin_transfer_spending');
+  try {
+    const kidName = document.getElementById("transferKid").value;
+    const amount = parseFloat(document.getElementById("transferAmount").value || 0);
+    
+    if (!kidName) {
+      setStatus("Error: Please select a kid");
+      return;
+    }
+    
+    if (amount <= 0) {
+      setStatus("Error: Amount must be positive");
+      return;
+    }
+    
+    // Find kid UID from name
+    const kid = globalState.kids?.find(k => k.name === kidName);
+    if (!kid) {
+      setStatus("Error: Kid not found");
+      return;
+    }
+    
+    logTransaction('transfer_to_spending', { kid: kidName, amount });
+    await api("/api/transfer_to_spending","POST",{
+      kid_user_id: kid.kid_user_id,
+      amount: amount
+    }); 
+    logTransaction('transfer_to_spending_success', { kid: kidName, amount });
+    await refreshState();
+    setStatus(`Transferred $${amount.toFixed(2)} to ${kidName}'s spending wallet`);
+    document.getElementById("transferAmount").value = "";
+  } catch(e) { 
+    logError('transferToSpending', e);
+    setStatus("Error: " + e.message); 
+  }
+}
+
 async function rewardKid(){ 
   logClick('rewardKid', 'admin_reward');
   try {
     const kidName = document.getElementById("rewardKid").value;
     const actionId = document.getElementById("rewardAction").value;
+    
+    if (!kidName) {
+      setStatus("Error: Please select a kid");
+      return;
+    }
+    if (!actionId) {
+      setStatus("Error: Please select a reward action");
+      return;
+    }
+    
     logTransaction('reward', { kidName, actionId });
     await api("/api/reward","POST",{kid_name:kidName,action_id:actionId}); 
     logTransaction('reward_success', { kidName, actionId });
     await refreshState();
-    setStatus("Reward applied");
+    setStatus(`✅ Reward applied to ${kidName}`);
   } catch(e) { 
     logError('rewardKid', e);
+    setStatus("Error: " + e.message); 
+  }
+}
+
+async function quickApplyTimeConsequence(consequenceId) {
+  logClick('quickApplyTimeConsequence', 'admin_consequence_time_quick', { consequenceId });
+  
+  const kidName = document.getElementById("consequenceKid").value;
+  if (!kidName) {
+    setStatus("❌ Please select a kid first");
+    return;
+  }
+  
+  const note = document.getElementById("consequenceNote").value.trim();
+  
+  // Find consequence details for confirmation
+  if (!catalogData || !catalogData.time_consequences) {
+    setStatus("Error: Catalog not loaded");
+    return;
+  }
+  
+  const consequence = catalogData.time_consequences.find(c => c.id === consequenceId);
+  if (!consequence) {
+    setStatus("Error: Consequence not found");
+    return;
+  }
+  
+  // Show confirmation
+  const confirmMsg = `Apply "${consequence.label}" to ${kidName}?${note ? '\nNote: ' + note : ''}`;
+  if (!confirm(confirmMsg)) {
+    return;
+  }
+  
+  try {
+    logTransaction('consequence_time', { kidName, consequenceId, note });
+    await api("/api/consequence_time","POST",{
+      kid_name: kidName,
+      consequence_id: consequenceId,
+      note: note
+    });
+    logTransaction('consequence_time_success', { kidName, consequenceId });
+    await refreshState();
+    setStatus(`✅ Time consequence applied to ${kidName}`);
+    
+    // Clear note field after successful application
+    document.getElementById("consequenceNote").value = "";
+  } catch(e) { 
+    logError('quickApplyTimeConsequence', e);
+    setStatus("Error: " + e.message); 
+  }
+}
+
+async function quickApplyMoneyConsequence(consequenceId) {
+  logClick('quickApplyMoneyConsequence', 'admin_consequence_money_quick', { consequenceId });
+  
+  const kidName = document.getElementById("consequenceKid").value;
+  if (!kidName) {
+    setStatus("❌ Please select a kid first");
+    return;
+  }
+  
+  const note = document.getElementById("consequenceNote").value.trim();
+  
+  // Find consequence details for confirmation
+  if (!catalogData || !catalogData.money_consequences) {
+    setStatus("Error: Catalog not loaded");
+    return;
+  }
+  
+  const consequence = catalogData.money_consequences.find(c => c.id === consequenceId);
+  if (!consequence) {
+    setStatus("Error: Consequence not found");
+    return;
+  }
+  
+  // Show confirmation
+  const confirmMsg = `Apply "${consequence.label}" to ${kidName}?${note ? '\nNote: ' + note : ''}`;
+  if (!confirm(confirmMsg)) {
+    return;
+  }
+  
+  try {
+    logTransaction('consequence_money', { kidName, consequenceId, note });
+    await api("/api/consequence_money","POST",{
+      kid_name: kidName,
+      consequence_id: consequenceId,
+      note: note
+    });
+    logTransaction('consequence_money_success', { kidName, consequenceId });
+    await refreshState();
+    setStatus(`✅ Money consequence applied to ${kidName}`);
+    
+    // Clear note field after successful application
+    document.getElementById("consequenceNote").value = "";
+  } catch(e) { 
+    logError('quickApplyMoneyConsequence', e);
     setStatus("Error: " + e.message); 
   }
 }
@@ -1815,5 +2343,8 @@ async function quickResetKid(uid, name){
   }
 }
 </script>
+
+<!-- Navigation Component JS -->
+<script src="/nav.js"></script>
 </body>
 </html>

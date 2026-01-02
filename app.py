@@ -79,19 +79,28 @@ DEFAULT_FOOD_MENU = [
 ]
 
 DEFAULT_TIME_CONSEQUENCES = [
-    {"id":"minus5","label":"Time -5 minutes","delta_minutes":-5,"image_url":"/images/consequences/minus5.jpg"},
-    {"id":"minus10","label":"Time -10 minutes","delta_minutes":-10,"image_url":"/images/consequences/minus10.jpg"},
-    {"id":"end_session","label":"End current session (minutes=0)","set_minutes":0,"image_url":"/images/consequences/end_session.jpg"},
-    {"id":"lock_day","label":"Lock screens for today","lock":True,"image_url":"/images/consequences/lock_day.jpg"},
-    {"id":"unlock","label":"Unlock screens","lock":False,"image_url":"/images/consequences/unlock.jpg"},
+    {"id":"minus5","label":"⏱️ -5 minutes","delta_minutes":-5,"image_url":"/images/consequences/minus5.jpg"},
+    {"id":"minus10","label":"⏱️ -10 minutes","delta_minutes":-10,"image_url":"/images/consequences/minus10.jpg"},
+    {"id":"minus15","label":"⏱️ -15 minutes","delta_minutes":-15,"image_url":"/images/consequences/minus15.jpg"},
+    {"id":"minus30","label":"⏱️ -30 minutes","delta_minutes":-30,"image_url":"/images/consequences/minus30.jpg"},
+    {"id":"end_session","label":"⛔ End session now","set_minutes":0,"image_url":"/images/consequences/end_session.jpg"},
+    {"id":"lock_day","label":"🔒 Lock screens","lock":True,"image_url":"/images/consequences/lock_day.jpg"},
+    {"id":"unlock","label":"🔓 Unlock screens","lock":False,"image_url":"/images/consequences/unlock.jpg"},
 ]
 
 DEFAULT_MONEY_CONSEQUENCES = [
-    {"id":"deduct25","label":"-$0.25","delta_gb":-0.25,"image_url":"/images/consequences/deduct25.jpg"},
-    {"id":"deduct50","label":"-$0.50","delta_gb":-0.50,"image_url":"/images/consequences/deduct50.jpg"},
-    {"id":"deduct100","label":"-$1.00","delta_gb":-1.00,"image_url":"/images/consequences/deduct100.jpg"},
-    {"id":"deduct200","label":"-$2.00","delta_gb":-2.00,"image_url":"/images/consequences/deduct200.jpg"},
+    {"id":"deduct25","label":"💸 -$0.25","delta_gb":-0.25,"image_url":"/images/consequences/deduct25.jpg"},
+    {"id":"deduct50","label":"💸 -$0.50","delta_gb":-0.50,"image_url":"/images/consequences/deduct50.jpg"},
+    {"id":"deduct100","label":"💸 -$1.00","delta_gb":-1.00,"image_url":"/images/consequences/deduct100.jpg"},
+    {"id":"deduct200","label":"💸 -$2.00","delta_gb":-2.00,"image_url":"/images/consequences/deduct200.jpg"},
+    {"id":"deduct500","label":"💸 -$5.00","delta_gb":-5.00,"image_url":"/images/consequences/deduct500.jpg"},
 ]
+
+DEFAULT_SAVINGS_SETTINGS = {
+    "enabled": False,
+    "defaultPercentage": 0,
+    "perKidSettings": {}  # kid_uid -> {"percentage": 10, "enabled": True}
+}
 
 def now_ts() -> int:
     return int(time.time())
@@ -229,12 +238,39 @@ def auth_required(roles=None, allow_bootstrap=False):
     return deco
 
 # -------------------------
-# Static: serve index.html and images
+# Static: serve landing page, app, and images
 # -------------------------
 @app.get("/")
+def landing():
+    # Serve landing page at root
+    return send_from_directory(APP_DIR, "landing.html")
+
+@app.get("/app")
 def index():
-    # If you keep your index.html next to app.py for local testing
+    # Serve main app at /app
     return send_from_directory(APP_DIR, "index.html")
+
+@app.get("/landing")
+def landing_alias():
+    # Alternative route to landing page
+    return send_from_directory(APP_DIR, "landing.html")
+
+@app.get("/test-nav")
+def test_navigation():
+    # Navigation test page
+    return send_from_directory(APP_DIR, "test_navigation.html")
+
+@app.get("/index.html")
+def index_html():
+    # Direct access to index.html redirects to /app
+    from flask import redirect
+    return redirect("/app", code=302)
+
+@app.get("/landing.html")
+def landing_html():
+    # Direct access to landing.html redirects to /
+    from flask import redirect
+    return redirect("/", code=302)
 
 @app.route("/test-image", methods=["GET"])
 def test_image():
@@ -245,6 +281,16 @@ def test_image():
         return jsonify({"ok": True, "message": "Image file exists", "path": test_file, "version": "2026-01-02-v2"})
     else:
         return jsonify({"ok": False, "error": "Image file not found", "path": test_file}), 404
+
+@app.route("/nav.css", methods=["GET"])
+def serve_nav_css():
+    """Serve navigation CSS component"""
+    return send_from_directory(os.path.join(APP_DIR, "public"), "nav.css")
+
+@app.route("/nav.js", methods=["GET"])
+def serve_nav_js():
+    """Serve navigation JavaScript component"""
+    return send_from_directory(os.path.join(APP_DIR, "public"), "nav.js")
 
 @app.route("/images/<path:filename>", methods=["GET"])
 def serve_image(filename):
@@ -311,6 +357,7 @@ def api_setup_family():
         "food": DEFAULT_FOOD_MENU,
         "time_consequences": DEFAULT_TIME_CONSEQUENCES,
         "money_consequences": DEFAULT_MONEY_CONSEQUENCES,
+        "savings": DEFAULT_SAVINGS_SETTINGS,
     }
 
     try:
@@ -429,6 +476,8 @@ def api_bootstrap():
     
     wallet_ref(family_id, uid).set({
         "balanceGb": 0.0,
+        "spendingBalance": 0.0,
+        "savingsBalance": 0.0,
         "minutes": 0,
         "locked": False,
         "updatedTs": now_ts()
@@ -476,6 +525,8 @@ def api_admin_add_member():
 
     wallet_ref(family_id, uid).set({
         "balanceGb": 0.0,
+        "spendingBalance": 0.0,
+        "savingsBalance": 0.0,
         "minutes": 0,
         "locked": False,
         "updatedTs": now_ts()
@@ -561,8 +612,12 @@ def api_admin_reset_kid():
     locked = bool(data.get("locked", False))
     
     # Reset wallet
+    spending = clamp_money(data.get("spending_balance", balance_gb))
+    savings = clamp_money(data.get("savings_balance", 0.0))
     wallet_ref(family_id, uid).set({
         "balanceGb": balance_gb,
+        "spendingBalance": spending,
+        "savingsBalance": savings,
         "minutes": minutes,
         "locked": locked,
         "updatedTs": now_ts()
@@ -668,6 +723,8 @@ def api_state():
             "kid_user_id": uid,  # keep naming for frontend compatibility
             "name": md.get("name") or uid,
             "balance_gb": clamp_money(w.get("balanceGb") or 0.0),
+            "spending_balance": clamp_money(w.get("spendingBalance") or 0.0),
+            "savings_balance": clamp_money(w.get("savingsBalance") or 0.0),
             "minutes": int(w.get("minutes") or 0),
             "locked": bool(w.get("locked") or False),
             "session": {
@@ -740,13 +797,22 @@ def api_purchase_screen():
             raise ValueError("Screens locked for today")
 
         bal = float(w.get("balanceGb") or 0.0)
-        if bal < cost:
-            raise ValueError("Not enough GB$")
+        spending = float(w.get("spendingBalance") or 0.0)
+        
+        # Purchases come from spending balance
+        if spending < cost:
+            raise ValueError("Not enough GB$ in spending wallet")
 
         new_bal = clamp_money(bal - cost)
+        new_spending = clamp_money(spending - cost)
         new_min = int(w.get("minutes") or 0) + int(pkg["minutes"])
 
-        txn.update(wref, {"balanceGb": new_bal, "minutes": new_min, "updatedTs": now_ts()})
+        txn.update(wref, {
+            "balanceGb": new_bal,
+            "spendingBalance": new_spending,
+            "minutes": new_min,
+            "updatedTs": now_ts()
+        })
 
     try:
         db.transaction()(txn_op)
@@ -787,10 +853,17 @@ def api_purchase_food():
         wref = wallet_ref(family_id, uid)
         w = txn.get(wref).to_dict() or {}
         bal = float(w.get("balanceGb") or 0.0)
-        if bal < cost:
-            raise ValueError("Not enough GB$")
+        spending = float(w.get("spendingBalance") or 0.0)
+        
+        # Purchases come from spending balance
+        if spending < cost:
+            raise ValueError("Not enough GB$ in spending wallet")
 
-        txn.update(wref, {"balanceGb": clamp_money(bal - cost), "updatedTs": now_ts()})
+        txn.update(wref, {
+            "balanceGb": clamp_money(bal - cost),
+            "spendingBalance": clamp_money(spending - cost),
+            "updatedTs": now_ts()
+        })
 
     try:
         db.transaction()(txn_op)
@@ -879,6 +952,10 @@ def api_daily_allotment():
     if not isinstance(amounts, dict):
         return jsonify({"ok": False, "error": "amounts must be a JSON object map"}), 400
 
+    # Get savings settings
+    cfg = get_family_config(family_id)
+    savings_config = cfg.get("savings", DEFAULT_SAVINGS_SETTINGS) if cfg else DEFAULT_SAVINGS_SETTINGS
+
     applied = []
     for kid_name, amt in amounts.items():
         amt = clamp_money(amt)
@@ -891,15 +968,46 @@ def api_daily_allotment():
             continue
         kid_uid = matches[0].id
 
+        # Calculate savings split
+        kid_settings = savings_config.get("perKidSettings", {}).get(kid_uid, {})
+        savings_enabled = kid_settings.get("enabled", savings_config.get("enabled", False))
+        savings_pct = kid_settings.get("percentage", savings_config.get("defaultPercentage", 0))
+        
+        if savings_enabled and savings_pct > 0:
+            savings_pct = max(0, min(100, savings_pct))  # clamp to 0-100
+            savings_amt = clamp_money(amt * (savings_pct / 100.0))
+            spending_amt = clamp_money(amt - savings_amt)
+        else:
+            savings_amt = 0.0
+            spending_amt = amt
+
         def txn_op(txn):
             wref = wallet_ref(family_id, kid_uid)
             w = txn.get(wref).to_dict() or {}
             bal = float(w.get("balanceGb") or 0.0)
-            txn.set(wref, {"balanceGb": clamp_money(bal + amt), "updatedTs": now_ts()}, merge=True)
+            spending = float(w.get("spendingBalance") or 0.0)
+            savings = float(w.get("savingsBalance") or 0.0)
+            
+            txn.set(wref, {
+                "balanceGb": clamp_money(bal + amt),
+                "spendingBalance": clamp_money(spending + spending_amt),
+                "savingsBalance": clamp_money(savings + savings_amt),
+                "updatedTs": now_ts()
+            }, merge=True)
 
         db.transaction()(txn_op)
-        ledger_add(family_id, request.user["uid"], kid_uid, "DAILY_ALLOTMENT", {"amount_gb": amt})
-        applied.append({"kid": kid_name, "amount": amt})
+        ledger_add(family_id, request.user["uid"], kid_uid, "DAILY_ALLOTMENT", {
+            "amount_gb": amt,
+            "spending_amt": spending_amt,
+            "savings_amt": savings_amt,
+            "savings_pct": savings_pct
+        })
+        applied.append({
+            "kid": kid_name,
+            "amount": amt,
+            "spending": spending_amt,
+            "savings": savings_amt
+        })
 
     return jsonify({"ok": True, "applied": applied})
 
@@ -1012,11 +1120,156 @@ def api_consequence_money():
     return jsonify({"ok": True})
 
 # -------------------------
+# Savings & Transfers
+# -------------------------
+@app.post("/api/transfer_to_savings")
+@auth_required(["admin", "kid"])
+def api_transfer_to_savings():
+    """
+    Transfer money from spending to savings.
+    Admin can transfer for any kid.
+    Kid can only transfer their own money.
+    Body:
+    { "kid_user_id": "uid", "amount": 5.0 }
+    """
+    family_id = request.user["family_id"]
+    data = request.get_json(force=True)
+    kid_uid = (data.get("kid_user_id") or "").strip()
+    amount = clamp_money(data.get("amount", 0.0))
+    
+    if not kid_uid:
+        return jsonify({"ok": False, "error": "kid_user_id required"}), 400
+    
+    if amount <= 0:
+        return jsonify({"ok": False, "error": "amount must be positive"}), 400
+    
+    # Authorization check
+    if request.user["role"] == "kid" and kid_uid != request.user["uid"]:
+        return jsonify({"ok": False, "error": "Kids can only transfer their own money"}), 403
+    
+    def txn_op(txn):
+        wref = wallet_ref(family_id, kid_uid)
+        w = txn.get(wref).to_dict() or {}
+        spending = float(w.get("spendingBalance") or 0.0)
+        savings = float(w.get("savingsBalance") or 0.0)
+        
+        if spending < amount:
+            raise ValueError("Not enough in spending wallet")
+        
+        txn.update(wref, {
+            "spendingBalance": clamp_money(spending - amount),
+            "savingsBalance": clamp_money(savings + amount),
+            "updatedTs": now_ts()
+        })
+    
+    try:
+        db.transaction()(txn_op)
+        ledger_add(family_id, request.user["uid"], kid_uid, "TRANSFER_TO_SAVINGS", {"amount": amount})
+        return jsonify({"ok": True})
+    except ValueError as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+@app.post("/api/transfer_to_spending")
+@auth_required(["admin"])
+def api_transfer_to_spending():
+    """
+    Transfer money from savings to spending (admin only).
+    Body:
+    { "kid_user_id": "uid", "amount": 5.0 }
+    """
+    family_id = request.user["family_id"]
+    data = request.get_json(force=True)
+    kid_uid = (data.get("kid_user_id") or "").strip()
+    amount = clamp_money(data.get("amount", 0.0))
+    
+    if not kid_uid:
+        return jsonify({"ok": False, "error": "kid_user_id required"}), 400
+    
+    if amount <= 0:
+        return jsonify({"ok": False, "error": "amount must be positive"}), 400
+    
+    def txn_op(txn):
+        wref = wallet_ref(family_id, kid_uid)
+        w = txn.get(wref).to_dict() or {}
+        spending = float(w.get("spendingBalance") or 0.0)
+        savings = float(w.get("savingsBalance") or 0.0)
+        
+        if savings < amount:
+            raise ValueError("Not enough in savings")
+        
+        txn.update(wref, {
+            "spendingBalance": clamp_money(spending + amount),
+            "savingsBalance": clamp_money(savings - amount),
+            "updatedTs": now_ts()
+        })
+    
+    try:
+        db.transaction()(txn_op)
+        ledger_add(family_id, request.user["uid"], kid_uid, "TRANSFER_TO_SPENDING", {"amount": amount})
+        return jsonify({"ok": True})
+    except ValueError as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+@app.post("/api/admin/update_savings_settings")
+@auth_required(["admin"])
+def api_update_savings_settings():
+    """
+    Update savings settings for the family.
+    Body:
+    {
+      "enabled": true,
+      "defaultPercentage": 10,
+      "perKidSettings": {
+        "kid_uid": {"enabled": true, "percentage": 15}
+      }
+    }
+    """
+    family_id = request.user["family_id"]
+    data = request.get_json(force=True)
+    
+    cfg = get_family_config(family_id) or {}
+    savings = cfg.get("savings", DEFAULT_SAVINGS_SETTINGS.copy())
+    
+    # Update settings
+    if "enabled" in data:
+        savings["enabled"] = bool(data["enabled"])
+    if "defaultPercentage" in data:
+        pct = max(0, min(100, int(data["defaultPercentage"])))
+        savings["defaultPercentage"] = pct
+    if "perKidSettings" in data:
+        savings["perKidSettings"] = data["perKidSettings"]
+    
+    cfg["savings"] = savings
+    
+    # Update family config
+    fam_ref(family_id).update({"config": cfg})
+    
+    ledger_add(family_id, request.user["uid"], "", "UPDATE_SAVINGS_SETTINGS", {"settings": savings})
+    return jsonify({"ok": True, "savings": savings})
+
+# -------------------------
 # Health
 # -------------------------
 @app.get("/api/health")
 def api_health():
     return jsonify({"ok": True, "ts": now_ts()})
+
+# -------------------------
+# Error Handlers
+# -------------------------
+@app.errorhandler(404)
+def not_found(e):
+    """Custom 404 error page"""
+    return send_from_directory(os.path.join(APP_DIR, "public"), "404.html"), 404
+
+@app.errorhandler(500)
+def internal_error(e):
+    """Custom 500 error handler"""
+    return jsonify({
+        "ok": False,
+        "error": "Internal server error",
+        "message": "Something went wrong. Please try again later."
+    }), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=PORT, debug=False)

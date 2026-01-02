@@ -1,0 +1,47 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "purchases",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "kidUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "ts",
+          "order": "DESCENDING"
+        }
+      ],
+      "comment": "Purchase history by kid - allows parents and kids to view purchase history efficiently"
+    },
+    {
+      "collectionGroup": "members",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "role",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "name",
+          "order": "ASCENDING"
+        }
+      ],
+      "comment": "Find members by role (admin/kid) and name - used for parent actions (rewards, consequences, allotments)"
+    },
+    {
+      "collectionGroup": "ledger",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ts",
+          "order": "DESCENDING"
+        }
+      ],
+      "comment": "Ledger entries by timestamp - provides immutable audit trail for parents"
+    }
+  ],
+  "fieldOverrides": []
+}
+
