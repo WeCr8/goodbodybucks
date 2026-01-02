@@ -14,10 +14,19 @@
       "test_*.py",
       "diagnose_*.py",
       "check_*.py",
-      "*.json",
+      "goodbodybucks-firebase-adminsdk-*.json",
+      "serviceAccountKey.json",
       "requirements.txt",
-      "Dockerfile"
+      "Dockerfile",
+      ".firebase/**",
+      ".git/**",
+      "agent-tools/**"
     ],
-    "rewrites": []
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "function": "api"
+      }
+    ]
   }
 }
