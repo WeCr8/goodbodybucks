@@ -1,0 +1,567 @@
+<!-- 
+  KID WALLET MODAL
+  A dedicated modal popup for kids to view their wallet balance and transaction history
+-->
+
+<style>
+  /* Wallet Modal Styles */
+  .wallet-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+  }
+  
+  .wallet-modal {
+    background: linear-gradient(135deg, #121823 0%, #1a2332 100%);
+    border: 2px solid #34d399;
+    border-radius: 20px;
+    padding: 0;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(52, 211, 153, 0.4);
+    animation: slideIn 0.3s ease-out;
+  }
+  
+  @keyframes slideIn {
+    from {
+      transform: translateY(-50px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  .wallet-modal-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d4a6f 100%);
+    padding: 24px;
+    border-bottom: 2px solid #34d399;
+    text-align: center;
+    position: relative;
+  }
+  
+  .wallet-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #223146;
+    color: #8aa0b6;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  
+  .wallet-modal-close:hover {
+    background: #fb7185;
+    color: #fff;
+    border-color: #fb7185;
+  }
+  
+  .wallet-modal-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #34d399;
+    margin: 0 0 8px 0;
+  }
+  
+  .wallet-modal-subtitle {
+    font-size: 14px;
+    color: #8aa0b6;
+    margin: 0;
+  }
+  
+  .wallet-modal-body {
+    padding: 24px;
+    max-height: calc(90vh - 200px);
+    overflow-y: auto;
+  }
+  
+  .wallet-summary {
+    background: linear-gradient(135deg, #0d121b 0%, #121823 100%);
+    border: 1px solid #223146;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  
+  .wallet-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #223146;
+  }
+  
+  .wallet-stat:last-child {
+    border-bottom: none;
+  }
+  
+  .wallet-stat-label {
+    font-size: 14px;
+    color: #8aa0b6;
+  }
+  
+  .wallet-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+  }
+  
+  .wallet-stat-value.balance {
+    color: #34d399;
+    text-shadow: 0 2px 8px rgba(52, 211, 153, 0.3);
+  }
+  
+  .wallet-stat-value.minutes {
+    color: #60a5fa;
+    text-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
+  }
+  
+  .wallet-stat-sublabel {
+    font-size: 11px;
+    color: #8aa0b6;
+    margin-top: 2px;
+  }
+  
+  .wallet-status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .wallet-status-badge.active {
+    background: rgba(52, 211, 153, 0.2);
+    color: #34d399;
+    border: 1px solid #34d399;
+  }
+  
+  .wallet-status-badge.locked {
+    background: rgba(251, 113, 133, 0.2);
+    color: #fb7185;
+    border: 1px solid #fb7185;
+  }
+  
+  .wallet-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #eaf2ff;
+    margin: 24px 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #223146;
+  }
+  
+  .transaction-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .transaction-item {
+    background: #0d121b;
+    border: 1px solid #223146;
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+  }
+  
+  .transaction-item:hover {
+    border-color: #34d399;
+    background: rgba(52, 211, 153, 0.05);
+  }
+  
+  .transaction-info {
+    flex: 1;
+  }
+  
+  .transaction-label {
+    font-size: 14px;
+    color: #eaf2ff;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  
+  .transaction-details {
+    font-size: 11px;
+    color: #8aa0b6;
+  }
+  
+  .transaction-amount {
+    font-size: 18px;
+    font-weight: 700;
+    text-align: right;
+  }
+  
+  .transaction-amount.positive {
+    color: #34d399;
+  }
+  
+  .transaction-amount.negative {
+    color: #fb7185;
+  }
+  
+  .transaction-type {
+    font-size: 10px;
+    color: #8aa0b6;
+    text-align: right;
+    margin-top: 2px;
+  }
+  
+  .wallet-modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #223146;
+    display: flex;
+    gap: 12px;
+  }
+  
+  .wallet-modal-button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .wallet-modal-button.primary {
+    background: #34d399;
+    color: #0b0f14;
+    border: 1px solid #34d399;
+  }
+  
+  .wallet-modal-button.primary:hover {
+    background: #22c088;
+  }
+  
+  .wallet-modal-button.secondary {
+    background: #223146;
+    color: #8aa0b6;
+    border: 1px solid #223146;
+  }
+  
+  .wallet-modal-button.secondary:hover {
+    background: #2a3a52;
+    color: #eaf2ff;
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #8aa0b6;
+  }
+  
+  .empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+</style>
+
+<!-- Kid Wallet Modal HTML -->
+<div id="kidWalletModal" class="wallet-modal-overlay hidden" style="display: none;" onclick="if(event.target.id === 'kidWalletModal') closeKidWalletModal();">
+  <div class="wallet-modal" onclick="event.stopPropagation();">
+    <!-- Header -->
+    <div class="wallet-modal-header">
+      <button class="wallet-modal-close" onclick="closeKidWalletModal()">×</button>
+      <h2 class="wallet-modal-title">💰 My Wallet</h2>
+      <p class="wallet-modal-subtitle" id="walletModalKidName">Loading...</p>
+    </div>
+    
+    <!-- Body -->
+    <div class="wallet-modal-body">
+      <!-- Wallet Summary -->
+      <div class="wallet-summary">
+        <div class="wallet-stat">
+          <div>
+            <div class="wallet-stat-label">GB$ Balance</div>
+            <div class="wallet-stat-sublabel">Goodbody Bucks</div>
+          </div>
+          <div class="wallet-stat-value balance" id="walletModalBalance">$0.00</div>
+        </div>
+        
+        <div class="wallet-stat">
+          <div>
+            <div class="wallet-stat-label">Screen Time</div>
+            <div class="wallet-stat-sublabel">Available Minutes</div>
+          </div>
+          <div class="wallet-stat-value minutes" id="walletModalMinutes">0 min</div>
+        </div>
+        
+        <div class="wallet-stat">
+          <div>
+            <div class="wallet-stat-label">Status</div>
+          </div>
+          <div id="walletModalStatus">
+            <span class="wallet-status-badge active">Active</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Transaction History -->
+      <div class="wallet-section-title">📜 Recent Transactions</div>
+      <div class="transaction-list" id="walletModalTransactions">
+        <div class="empty-state">
+          <div class="empty-state-icon">📭</div>
+          <div>No transactions yet</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="wallet-modal-footer">
+      <button class="wallet-modal-button secondary" onclick="refreshWalletModal()">
+        🔄 Refresh
+      </button>
+      <button class="wallet-modal-button primary" onclick="closeKidWalletModal()">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// KID WALLET MODAL FUNCTIONS
+// ============================================================================
+
+let currentWalletData = null;
+
+/**
+ * Open the kid wallet modal
+ * @param {string} kidUid - The Firebase UID of the kid
+ * @param {string} kidName - The name of the kid
+ */
+async function openKidWalletModal(kidUid, kidName) {
+  console.log('[WALLET MODAL] Opening for kid:', kidName);
+  logEvent('wallet_modal_opened', { kidUid, kidName });
+  
+  // Show modal
+  const modal = document.getElementById('kidWalletModal');
+  modal.style.display = 'flex';
+  modal.classList.remove('hidden');
+  
+  // Set kid name
+  document.getElementById('walletModalKidName').textContent = kidName;
+  
+  // Load wallet data
+  await loadWalletData(kidUid, kidName);
+}
+
+/**
+ * Close the kid wallet modal
+ */
+function closeKidWalletModal() {
+  console.log('[WALLET MODAL] Closing');
+  logEvent('wallet_modal_closed', {});
+  
+  const modal = document.getElementById('kidWalletModal');
+  modal.style.display = 'none';
+  modal.classList.add('hidden');
+  
+  currentWalletData = null;
+}
+
+/**
+ * Load wallet data and transaction history
+ */
+async function loadWalletData(kidUid, kidName) {
+  try {
+    console.log('[WALLET MODAL] Loading data for kid:', kidUid);
+    
+    // Get state data
+    const stateResponse = await apiCall('/api/state', {});
+    
+    if (!stateResponse.ok) {
+      console.error('[WALLET MODAL] Failed to load state:', stateResponse.error);
+      return;
+    }
+    
+    // Find kid's wallet
+    const kidWallet = stateResponse.kids.find(k => k.uid === kidUid);
+    
+    if (!kidWallet) {
+      console.error('[WALLET MODAL] Kid wallet not found');
+      return;
+    }
+    
+    currentWalletData = kidWallet;
+    
+    // Update balance
+    document.getElementById('walletModalBalance').textContent = 
+      `$${parseFloat(kidWallet.balance_gb || 0).toFixed(2)}`;
+    
+    // Update minutes
+    document.getElementById('walletModalMinutes').textContent = 
+      `${Math.floor(kidWallet.minutes || 0)} min`;
+    
+    // Update status
+    const statusEl = document.getElementById('walletModalStatus');
+    if (kidWallet.locked) {
+      statusEl.innerHTML = '<span class="wallet-status-badge locked">🔒 Locked</span>';
+    } else if (kidWallet.session_active) {
+      statusEl.innerHTML = '<span class="wallet-status-badge active">▶️ Timer Active</span>';
+    } else {
+      statusEl.innerHTML = '<span class="wallet-status-badge active">✅ Active</span>';
+    }
+    
+    // Load transaction history
+    await loadTransactionHistory(kidUid);
+    
+    console.log('[WALLET MODAL] Data loaded successfully');
+    
+  } catch (error) {
+    console.error('[WALLET MODAL] Error loading data:', error);
+    logError('wallet_modal_load', error);
+  }
+}
+
+/**
+ * Load transaction history
+ */
+async function loadTransactionHistory(kidUid) {
+  try {
+    console.log('[WALLET MODAL] Loading transaction history for:', kidUid);
+    
+    const response = await apiCall('/api/purchase_history', { kid_uid: kidUid });
+    
+    if (!response.ok) {
+      console.error('[WALLET MODAL] Failed to load history:', response.error);
+      return;
+    }
+    
+    const transactions = response.purchases || [];
+    const transactionsEl = document.getElementById('walletModalTransactions');
+    
+    if (transactions.length === 0) {
+      transactionsEl.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">📭</div>
+          <div>No transactions yet</div>
+          <div style="font-size: 11px; margin-top: 8px;">Earn GB$ by completing learning activities!</div>
+        </div>
+      `;
+      return;
+    }
+    
+    // Render transactions
+    transactionsEl.innerHTML = transactions.map(tx => {
+      const isPositive = tx.type === 'reward' || tx.type === 'allotment';
+      const amount = parseFloat(tx.cost_gb || 0);
+      const amountClass = isPositive ? 'positive' : 'negative';
+      const amountPrefix = isPositive ? '+' : '-';
+      
+      // Format timestamp
+      const date = new Date(tx.ts);
+      const timeAgo = getTimeAgo(date);
+      
+      // Get transaction icon
+      const icon = getTransactionIcon(tx.type);
+      
+      return `
+        <div class="transaction-item">
+          <div class="transaction-info">
+            <div class="transaction-label">${icon} ${tx.label || tx.type}</div>
+            <div class="transaction-details">${timeAgo}</div>
+          </div>
+          <div>
+            <div class="transaction-amount ${amountClass}">
+              ${amountPrefix}$${amount.toFixed(2)}
+            </div>
+            <div class="transaction-type">${tx.type}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    console.log('[WALLET MODAL] Loaded', transactions.length, 'transactions');
+    
+  } catch (error) {
+    console.error('[WALLET MODAL] Error loading transactions:', error);
+    logError('wallet_modal_history', error);
+  }
+}
+
+/**
+ * Refresh wallet modal data
+ */
+async function refreshWalletModal() {
+  if (!currentWalletData) return;
+  
+  console.log('[WALLET MODAL] Refreshing data');
+  logEvent('wallet_modal_refreshed', {});
+  
+  await loadWalletData(currentWalletData.uid, currentWalletData.name);
+}
+
+/**
+ * Get transaction icon based on type
+ */
+function getTransactionIcon(type) {
+  const icons = {
+    'food': '🍕',
+    'screen': '🎮',
+    'reward': '🎁',
+    'allotment': '💰',
+    'consequence_time': '⏰',
+    'consequence_money': '💸'
+  };
+  return icons[type] || '📝';
+}
+
+/**
+ * Get human-readable "time ago" string
+ */
+function getTimeAgo(date) {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  
+  const intervals = {
+    year: 31536000,
+    month: 2592000,
+    week: 604800,
+    day: 86400,
+    hour: 3600,
+    minute: 60
+  };
+  
+  for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+    const interval = Math.floor(seconds / secondsInUnit);
+    if (interval >= 1) {
+      return interval === 1 ? `1 ${unit} ago` : `${interval} ${unit}s ago`;
+    }
+  }
+  
+  return 'Just now';
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('kidWalletModal');
+    if (modal && !modal.classList.contains('hidden')) {
+      closeKidWalletModal();
+    }
+  }
+});
+
+</script>
+
