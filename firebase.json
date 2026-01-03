@@ -44,8 +44,15 @@
         "destination": "/test_navigation.html"
       },
       {
+        "source": "/test-analytics",
+        "destination": "/test_analytics.html"
+      },
+      {
         "source": "/api/**",
-        "function": "api"
+        "run": {
+          "serviceId": "goodbodybucks-api",
+          "region": "us-central1"
+        }
       }
     ],
     "headers": [
@@ -68,5 +75,21 @@
         ]
       }
     ]
+  },
+  "emulators": {
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "hosting": {
+      "port": 5001
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4000
+    },
+    "singleProjectMode": true
   }
 }

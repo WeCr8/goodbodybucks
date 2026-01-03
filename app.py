@@ -1,19 +1,65 @@
 import os, time, json, hashlib
 from functools import wraps
 from flask import Flask, request, jsonify, send_from_directory
+import stripe
 
 import firebase_admin
 from firebase_admin import credentials, auth, firestore
 
+# Import Secret Manager for secure credential management
+try:
+    from google.cloud import secretmanager
+    SECRET_MANAGER_AVAILABLE = True
+except ImportError:
+    SECRET_MANAGER_AVAILABLE = False
+    print("⚠️  Secret Manager not available - using local credentials only")
+
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # -------------------------
-# Config
+# Secure Config with Secret Manager
 # -------------------------
-SERVICE_ACCOUNT_PATH = os.environ.get(
-    "GOOGLE_APPLICATION_CREDENTIALS",
-    os.path.join(APP_DIR, "serviceAccountKey.json")
-)
+def get_secret(secret_id, project_id="goodbodybucks"):
+    """Retrieve secret from Google Secret Manager"""
+    if not SECRET_MANAGER_AVAILABLE:
+        return None
+    
+    try:
+        client = secretmanager.SecretManagerServiceClient()
+        name = f"projects/{project_id}/secrets/{secret_id}/versions/latest"
+        response = client.access_secret_version(request={"name": name})
+        return response.payload.data.decode("UTF-8")
+    except Exception as e:
+        print(f"⚠️  Error fetching secret '{secret_id}': {e}")
+        return None
+
+def get_firebase_credentials():
+    """
+    Get Firebase credentials securely:
+    1. Try environment variable (for Secret Manager)
+    2. Try Secret Manager directly (Cloud Run)
+    3. Fall back to local file (development)
+    """
+    # Option 1: Environment variable (from Cloud Run secret mount)
+    env_creds = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
+    if env_creds:
+        print("🔐 Using Firebase credentials from environment variable")
+        return credentials.Certificate(json.loads(env_creds))
+    
+    # Option 2: Secret Manager (Cloud Run)
+    if SECRET_MANAGER_AVAILABLE:
+        secret_data = get_secret("goodbodybucks-service-account")
+        if secret_data:
+            print("🔐 Using Firebase credentials from Secret Manager")
+            return credentials.Certificate(json.loads(secret_data))
+    
+    # Option 3: Local file (development)
+    local_key_path = os.path.join(APP_DIR, "serviceAccountKey.json")
+    if os.path.exists(local_key_path):
+        print("🔑 Using local Firebase credentials (development mode)")
+        return credentials.Certificate(local_key_path)
+    
+    raise Exception("❌ No Firebase credentials found! Check Secret Manager or local serviceAccountKey.json")
 
 FIREBASE_PROJECT_ID = os.environ.get("FIREBASE_PROJECT_ID")  # optional
 PORT = int(os.environ.get("PORT", "5000"))
@@ -29,12 +75,53 @@ PORT = int(os.environ.get("PORT", "5000"))
 app = Flask(__name__, static_folder='public', static_url_path='')
 app.config["JSON_SORT_KEYS"] = False
 
-# Enable CORS for all routes (needed for localhost/127.0.0.1 cross-origin)
+# Enable CORS for all routes (needed for localhost/127.0.0.1 cross-origin and production)
+@app.before_request
+def handle_preflight():
+    """Handle CORS preflight requests"""
+    if request.method == "OPTIONS":
+        origin = request.headers.get('Origin')
+        allowed_origins = [
+            'http://localhost:5000',
+            'http://127.0.0.1:5000',
+            'https://goodbodybucks.web.app',
+            'https://goodbodybucks.firebaseapp.com'
+        ]
+        
+        response = app.make_default_options_response()
+        
+        if origin in allowed_origins:
+            response.headers['Access-Control-Allow-Origin'] = origin
+        else:
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,X-Family-Id'
+        response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Max-Age'] = '3600'
+        
+        return response
+
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Family-Id')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+    """Add CORS headers to all responses"""
+    origin = request.headers.get('Origin')
+    allowed_origins = [
+        'http://localhost:5000',
+        'http://127.0.0.1:5000',
+        'https://goodbodybucks.web.app',
+        'https://goodbodybucks.firebaseapp.com'
+    ]
+    
+    if origin in allowed_origins:
+        response.headers['Access-Control-Allow-Origin'] = origin
+    else:
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,X-Family-Id'
+    response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+    
     return response
 
 # -------------------------
@@ -118,15 +205,15 @@ def compute_ledger_hash(ts, actor_uid, target_uid, typ, payload_json, prev_hash)
 # -------------------------
 # Firebase init
 # -------------------------
-if not os.path.exists(SERVICE_ACCOUNT_PATH):
-    raise RuntimeError(
-        f"Missing service account key at {SERVICE_ACCOUNT_PATH}. "
-        f"Put serviceAccountKey.json next to app.py or set GOOGLE_APPLICATION_CREDENTIALS."
-    )
-
-cred = credentials.Certificate(SERVICE_ACCOUNT_PATH)
-firebase_admin.initialize_app(cred, {"projectId": FIREBASE_PROJECT_ID} if FIREBASE_PROJECT_ID else None)
-db = firestore.client()
+# Initialize Firebase Admin SDK with secure credentials
+try:
+    cred = get_firebase_credentials()
+    firebase_admin.initialize_app(cred, {"projectId": FIREBASE_PROJECT_ID} if FIREBASE_PROJECT_ID else None)
+    db = firestore.client()
+    print("✅ Firebase Admin SDK initialized successfully")
+except Exception as e:
+    print(f"❌ Failed to initialize Firebase: {e}")
+    raise
 
 # -------------------------
 # Firestore helpers
@@ -265,6 +352,216 @@ def index_html():
     # Direct access to index.html redirects to /app
     from flask import redirect
     return redirect("/app", code=302)
+
+# -------------------------
+# Email Capture Endpoint (Landing Page Newsletter)
+# -------------------------
+@app.post("/api/capture-email")
+def capture_email():
+    """Capture email addresses from landing page for newsletter/interest list"""
+    try:
+        data = request.get_json()
+        if not data or 'email' not in data:
+            return jsonify({"ok": False, "error": "Email is required"}), 400
+        
+        email = data['email'].strip().lower()
+        
+        # Basic email validation
+        import re
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, email):
+            return jsonify({"ok": False, "error": "Invalid email format"}), 400
+        
+        # Check if email already exists
+        existing = db.collection('email_captures').where('email', '==', email).limit(1).get()
+        if len(list(existing)) > 0:
+            return jsonify({"ok": True, "message": "Email already registered"}), 200
+        
+        # Save to Firestore
+        capture_data = {
+            "email": email,
+            "timestamp": firestore.SERVER_TIMESTAMP,
+            "source": data.get('source', 'landing_page'),
+            "userAgent": request.headers.get('User-Agent', ''),
+            "ipAddress": request.headers.get('X-Forwarded-For', request.remote_addr)
+        }
+        
+        db.collection('email_captures').add(capture_data)
+        
+        return jsonify({
+            "ok": True,
+            "message": "Thank you! We'll keep you updated."
+        }), 201
+        
+    except Exception as e:
+        print(f"[ERROR] Email capture failed: {e}")
+        return jsonify({"ok": False, "error": "Failed to save email"}), 500
+
+# -------------------------
+# Stripe Configuration & Digital Products
+# -------------------------
+
+# Initialize Stripe (use environment variable or Secret Manager)
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY') or get_secret('stripe-secret-key')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET') or get_secret('stripe-webhook-secret')
+
+if STRIPE_SECRET_KEY:
+    stripe.api_key = STRIPE_SECRET_KEY
+    print("✅ Stripe initialized")
+else:
+    print("⚠️  WARNING: Stripe not configured - digital products disabled")
+
+# Product configurations
+PRODUCTS = {
+    'standard_pdf': {
+        'name': 'GoodbodyBucks Starter Kit',
+        'description': 'Ready-to-print GB$ system with all essential materials',
+        'price': 1999,  # $19.99 in cents
+        'currency': 'usd',
+        'pdf_file': 'gb_starter_kit.pdf'
+    },
+    'custom_pdf': {
+        'name': 'GoodbodyBucks Custom Kit',
+        'description': 'Personalized GB$ system tailored to your family',
+        'price': 3999,  # $39.99 in cents
+        'currency': 'usd',
+        'requires_customization': True
+    }
+}
+
+@app.post("/api/create-checkout-session")
+def create_checkout_session():
+    """Create Stripe Checkout session for digital product purchase"""
+    try:
+        if not STRIPE_SECRET_KEY:
+            return jsonify({"ok": False, "error": "Payment system not configured"}), 503
+        
+        data = request.get_json()
+        product_id = data.get('productId')
+        customization = data.get('customization')
+        
+        if product_id not in PRODUCTS:
+            return jsonify({"ok": False, "error": "Invalid product"}), 400
+        
+        product = PRODUCTS[product_id]
+        
+        # Get domain from request
+        domain = request.headers.get('Origin') or 'http://localhost:5000'
+        
+        # Create checkout session
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': product['currency'],
+                    'unit_amount': product['price'],
+                    'product_data': {
+                        'name': product['name'],
+                        'description': product['description'],
+                    },
+                },
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url=f"{domain}/success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{domain}/#digital-products",
+            customer_email=customization.get('email') if customization else None,
+            metadata={
+                'product_id': product_id,
+                'customization': json.dumps(customization) if customization else None
+            }
+        )
+        
+        print(f"[INFO] Created checkout session: {session.id} for product: {product_id}")
+        
+        return jsonify({
+            "ok": True,
+            "checkoutUrl": session.url,
+            "sessionId": session.id
+        }), 200
+        
+    except stripe.error.StripeError as e:
+        print(f"[ERROR] Stripe error: {e}")
+        return jsonify({"ok": False, "error": "Payment system error"}), 500
+    except Exception as e:
+        print(f"[ERROR] Checkout session creation failed: {e}")
+        return jsonify({"ok": False, "error": "Failed to create checkout"}), 500
+
+@app.post("/api/stripe-webhook")
+def stripe_webhook():
+    """Handle Stripe webhook events (payment completion, etc.)"""
+    try:
+        if not STRIPE_WEBHOOK_SECRET:
+            print("⚠️  WARNING: Webhook secret not configured")
+            return jsonify({"ok": False}), 400
+        
+        payload = request.data
+        sig_header = request.headers.get('Stripe-Signature')
+        
+        # Verify webhook signature
+        try:
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, STRIPE_WEBHOOK_SECRET
+            )
+        except ValueError:
+            return jsonify({"ok": False, "error": "Invalid payload"}), 400
+        except stripe.error.SignatureVerificationError:
+            return jsonify({"ok": False, "error": "Invalid signature"}), 400
+        
+        # Handle the event
+        if event['type'] == 'checkout.session.completed':
+            session = event['data']['object']
+            handle_successful_payment(session)
+        
+        return jsonify({"ok": True}), 200
+        
+    except Exception as e:
+        print(f"[ERROR] Webhook handling failed: {e}")
+        return jsonify({"ok": False}), 500
+
+def handle_successful_payment(session):
+    """Process successful payment and create order"""
+    try:
+        product_id = session['metadata'].get('product_id')
+        customization_json = session['metadata'].get('customization')
+        customization = json.loads(customization_json) if customization_json else None
+        
+        # Create order in Firestore
+        order_data = {
+            'orderId': session['id'],
+            'productId': product_id,
+            'productName': PRODUCTS[product_id]['name'],
+            'price': PRODUCTS[product_id]['price'] / 100,  # Convert cents to dollars
+            'currency': PRODUCTS[product_id]['currency'],
+            'status': 'completed',
+            'customerEmail': session['customer_email'] or (customization.get('email') if customization else None),
+            'customername': customization.get('familyName') if customization else None,
+            'stripeSessionId': session['id'],
+            'stripePaymentIntentId': session.get('payment_intent'),
+            'customization': customization,
+            'createdAt': firestore.SERVER_TIMESTAMP,
+            'downloadCount': 0
+        }
+        
+        # Save order to Firestore
+        order_ref = db.collection('orders').document(session['id'])
+        order_ref.set(order_data)
+        
+        print(f"[INFO] Order created: {session['id']} for product: {product_id}")
+        
+        # TODO: Generate/retrieve PDF and send email with download link
+        # This will be implemented in the next phase
+        
+        return True
+        
+    except Exception as e:
+        print(f"[ERROR] Failed to handle successful payment: {e}")
+        return False
+
+@app.get("/success")
+def payment_success():
+    # Payment success page
+    return send_from_directory(APP_DIR, "success.html")
 
 @app.get("/landing.html")
 def landing_html():
@@ -467,12 +764,20 @@ def api_bootstrap():
         return jsonify({"ok": False, "error": "Name required"}), 400
     
     # Create member, wallet, and session
-    member_ref(family_id, uid).set({
+    member_data = {
         "uid": uid,
         "name": final_name,
         "role": final_role,
         "createdTs": now_ts()
-    })
+    }
+    
+    # Add optional kid metadata (age, avatar, onboarding status)
+    if final_role == "kid":
+        member_data["age"] = data.get("age", 8)  # Default age 8
+        member_data["avatar"] = data.get("avatar", "👧")  # Default avatar
+        member_data["onboarding_completed"] = data.get("onboarding_completed", False)
+    
+    member_ref(family_id, uid).set(member_data)
     
     wallet_ref(family_id, uid).set({
         "balanceGb": 0.0,
@@ -492,6 +797,25 @@ def api_bootstrap():
     })
     
     return jsonify({"ok": True, "role": final_role, "name": final_name})
+
+@app.post("/api/complete_onboarding")
+@auth_required(["kid"])
+def api_complete_onboarding():
+    """
+    Mark kid's onboarding as completed.
+    Called when kid finishes the first-time onboarding wizard.
+    """
+    family_id = request.user["family_id"]
+    uid = request.user["uid"]
+    
+    # Update member record
+    member_ref(family_id, uid).update({
+        "onboarding_completed": True,
+        "onboarding_completed_ts": now_ts()
+    })
+    
+    ledger_add(family_id, uid, uid, "ONBOARDING_COMPLETED", {"name": request.user["name"]})
+    return jsonify({"ok": True})
 
 # -------------------------
 # Admin: register members (creates membership + initial wallet/session docs)
@@ -722,6 +1046,9 @@ def api_state():
         kids.append({
             "kid_user_id": uid,  # keep naming for frontend compatibility
             "name": md.get("name") or uid,
+            "age": md.get("age", 8),
+            "avatar": md.get("avatar", "👧"),
+            "onboarding_completed": md.get("onboarding_completed", False),
             "balance_gb": clamp_money(w.get("balanceGb") or 0.0),
             "spending_balance": clamp_money(w.get("spendingBalance") or 0.0),
             "savings_balance": clamp_money(w.get("savingsBalance") or 0.0),

@@ -115,6 +115,28 @@ service cloud.firestore {
       }
     }
     
+    // Email captures collection (for landing page newsletter signups)
+    match /email_captures/{captureId} {
+      // Allow anyone to create an email capture (newsletter signup)
+      allow create: if request.resource.data.keys().hasAll(['email', 'timestamp']) &&
+                       request.resource.data.email is string &&
+                       request.resource.data.email.matches('.*@.*\\..*') &&
+                       request.resource.data.timestamp == request.time;
+      
+      // No public read access to email captures (privacy)
+      allow read, update, delete: if false;
+    }
+    
+    // Orders collection (for digital product purchases)
+    match /orders/{orderId} {
+      // Only backend can write orders (Admin SDK bypasses these rules)
+      allow write: if false;
+      
+      // Users can read their own orders by email
+      allow read: if isAuthenticated() && 
+                     resource.data.customerEmail == request.auth.token.email;
+    }
+    
     // Default deny all other access
     match /{document=**} {
       allow read, write: if false;
