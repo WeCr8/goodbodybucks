@@ -532,6 +532,106 @@
             box-shadow: 0 12px 32px rgba(52, 211, 153, 0.4);
         }
         
+        /* Hero Downloads */
+        .hero-downloads {
+            max-width: 700px;
+        }
+        
+        .divider-text {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .divider-text::before,
+        .divider-text::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .divider-text span {
+            padding: 0 16px;
+        }
+        
+        .hero-product-card {
+            background: rgba(18, 24, 35, 0.6);
+            border: 1px solid rgba(52, 211, 153, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .hero-product-card:hover {
+            border-color: var(--primary);
+            background: rgba(18, 24, 35, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(52, 211, 153, 0.2);
+        }
+        
+        .hero-product-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+        
+        .hero-product-card h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-light);
+        }
+        
+        .hero-product-card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+        
+        .hero-product-price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .btn-hero-product {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 8px 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-hero-product:hover {
+            background: var(--primary);
+            color: var(--dark-bg);
+            transform: scale(1.05);
+        }
+        
+        /* Mobile Responsive for Hero Downloads */
+        @media (max-width: 768px) {
+            .hero-product-card {
+                margin-bottom: 12px;
+            }
+            
+            .hero-product-price {
+                font-size: 1.1rem;
+            }
+            
+            .btn-hero-product {
+                padding: 6px 16px;
+                font-size: 0.85rem;
+            }
+        }
+        
         /* Footer */
         footer {
             background: var(--card-bg);
@@ -615,6 +715,53 @@
                         <h1>Teaching Real-World Skills<br>Through <span class="highlight">Everyday Life</span></h1>
                         <p class="lead">A family economy system that turns learning into earning, choices into budgeting, and responsibility into something visible.</p>
                         <a href="/app" class="btn btn-hero">Get Started <i class="bi bi-arrow-right"></i></a>
+                        
+                        <!-- Digital Downloads in Hero -->
+                        <div class="hero-downloads mt-5">
+                            <div class="divider-text mb-4">
+                                <span>or get printed materials</span>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="hero-product-card">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <div class="hero-product-icon">
+                                                <i class="bi bi-file-earmark-pdf"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h4>Starter Kit</h4>
+                                                <p class="mb-2">Ready-to-print materials to start today</p>
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span class="hero-product-price">$19.99</span>
+                                                    <button class="btn btn-hero-product btn-sm" onclick="buyProduct('standard_pdf')">
+                                                        Buy Now <i class="bi bi-cart"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="hero-product-card">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <div class="hero-product-icon">
+                                                <i class="bi bi-file-earmark-text"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h4>Custom Kit</h4>
+                                                <p class="mb-2">Personalized forms with your values</p>
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span class="hero-product-price">$39.99</span>
+                                                    <button class="btn btn-hero-product btn-sm" onclick="buyProduct('custom_pdf')">
+                                                        Buy Now <i class="bi bi-cart"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="col-lg-4 text-center">
