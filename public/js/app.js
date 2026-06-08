@@ -18,6 +18,7 @@ import {
   loginWithGoogle, loginWithApple,
   createFamilyAndLogin, createFamilyWithGoogle, linkGoogleToFamily, showAuthStep,
   switchAuthTab, handleRedirectResult, finishFamilySetup,
+  loginKidWithGoogle,
 } from './auth.js';
 import {
   refreshCatalog,
@@ -62,6 +63,7 @@ Object.assign(window, {
   showAuthStep,
   switchAuthTab,
   finishFamilySetup,
+  loginKidWithGoogle,
   switchTab,
   // catalog / menus
   refreshCatalog,

@@ -7,7 +7,7 @@
 
 import { state }                              from './state.js';
 import { auth }                               from './config.js';
-import { api, setStatus, API_BASE }           from './api.js';
+import { api, setStatus }                      from './api.js';
 import { logEvent, logClick, logError }       from './logger.js';
 import { refreshCatalog }                     from './catalog.js';
 import { refreshState }                       from './wallet.js';
@@ -175,18 +175,21 @@ export async function finishFamilySetup() {
   try {
     state.idToken = await user.getIdToken();
 
-    const res = await fetch(API_BASE + '/api/setup_family', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ family_name: name }),
+    // Write family document directly to Firestore (no backend required)
+    const db = firebase.firestore();
+    const docRef = db.collection('families').doc();
+    const familyId = docRef.id;
+    await docRef.set({
+      name,
+      ownerUid: user.uid,
+      createdTs: firebase.firestore.FieldValue.serverTimestamp(),
+      config: {},
     });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Failed to create family');
 
-    state.familyId = data.family_id;
-    saveFamilyId(state.familyId);
-    _showFamilyIdBanner(state.familyId);
-    logEvent('family_created', { familyId: state.familyId, familyName: name });
+    state.familyId = familyId;
+    saveFamilyId(familyId);
+    _showFamilyIdBanner(familyId);
+    logEvent('family_created', { familyId, familyName: name });
     _pendingUser = null;
 
     await _bootstrapAndEnter(user, 'parent');
@@ -198,37 +201,79 @@ export async function finishFamilySetup() {
 
 /* ── Kid sign-in ──────────────────────────────────────────── */
 
-export async function loginKid() {
-  const name = document.getElementById('kidName')?.value.trim();
-  const pin  = document.getElementById('kidPin')?.value;
+function _getKidFamilyId() {
+  return loadFamilyId() || document.getElementById('kidFamilyId')?.value.trim() || '';
+}
 
-  if (!name)                  { setStatus('Enter your name'); return; }
-  if (!pin || pin.length < 6) { setStatus('PIN must be at least 6 characters'); return; }
+async function _bootstrapKidAndEnter(user, famId) {
+  state.idToken     = await user.getIdToken();
+  state.currentUser = { uid: user.uid, email: user.email, role: 'kid' };
+  state.familyId    = famId;
+  saveFamilyId(famId);
+  try {
+    await api('/api/bootstrap', 'POST', {
+      name: user.displayName || user.email?.split('@')[0] || 'Kid',
+      role: 'kid',
+    });
+  } catch (_) {}
+  logEvent('kid_login_success', { uid: user.uid, familyId: famId });
+  try { await refreshCatalog(); } catch (_) {}
+  try { await refreshState(); } catch (_) {}
+  setStatus('');
+  showHub('kid');
+}
 
-  let famId = loadFamilyId();
+export async function loginKidWithGoogle() {
+  logClick('loginKidWithGoogle', 'kid_google_signin');
+  const famId = _getKidFamilyId();
   if (!famId) {
-    famId = document.getElementById('kidFamilyId')?.value.trim();
-    if (!famId) {
-      document.getElementById('kidFamilyIdRow')?.classList.remove('hidden');
-      setStatus('Enter your Family ID (ask your parent)');
-      return;
+    document.getElementById('kidFamilyIdRow')?.classList.remove('hidden');
+    setStatus('Enter your Family ID first (ask your parent)');
+    return;
+  }
+  setStatus('Signing in with Google...');
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  try {
+    const result = await auth.signInWithPopup(provider);
+    await _bootstrapKidAndEnter(result.user, famId);
+  } catch (e) {
+    if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-cancelled-by-user') {
+      setStatus('Redirecting to Google...');
+      try { await auth.signInWithRedirect(provider); } catch (re) { setStatus('Error: ' + re.message); }
+    } else if (e.code !== 'auth/popup-closed-by-user') {
+      logError('loginKidWithGoogle', e);
+      setStatus('Google sign-in error: ' + e.message);
+    } else {
+      setStatus('');
     }
   }
-  state.familyId = famId;
+}
 
-  const nameKey = name.toLowerCase().replace(/\s+/g, '');
-  const email   = `${nameKey}.${famId}@gbucks.local`;
+export async function loginKid() {
+  const email = document.getElementById('kidEmail')?.value.trim();
+  const pass  = document.getElementById('kidPass')?.value;
+
+  if (!email)              { setStatus('Enter your email'); return; }
+  if (!pass || pass.length < 6) { setStatus('Password must be at least 6 characters'); return; }
+
+  const famId = _getKidFamilyId();
+  if (!famId) {
+    document.getElementById('kidFamilyIdRow')?.classList.remove('hidden');
+    setStatus('Enter your Family ID (ask your parent)');
+    return;
+  }
 
   setStatus('Signing in...');
   let cred;
   try {
-    cred = await auth.signInWithEmailAndPassword(email, pin);
+    cred = await auth.signInWithEmailAndPassword(email, pass);
   } catch (e) {
     const code = e.code || '';
     if (code === 'auth/user-not-found' || code === 'auth/invalid-credential' || code === 'auth/wrong-password') {
       try {
-        cred = await auth.createUserWithEmailAndPassword(email, pin);
-        logEvent('kid_account_created', { nameKey });
+        cred = await auth.createUserWithEmailAndPassword(email, pass);
+        logEvent('kid_account_created', { email });
       } catch (ce) {
         setStatus('Error: ' + (ce.message || ce.code));
         return;
@@ -239,26 +284,14 @@ export async function loginKid() {
     }
   }
 
-  state.idToken     = await cred.user.getIdToken();
-  state.currentUser = { uid: cred.user.uid, email: cred.user.email, role: 'kid', name };
-  saveFamilyId(famId);
-
-  try {
-    await api('/api/bootstrap', 'POST', { name, role: 'kid' });
-  } catch (_) {}
-
-  logEvent('kid_login_success', { uid: cred.user.uid, familyId: famId });
-  setStatus('Signed in!');
-  await refreshCatalog();
-  await refreshState();
-  showHub('kid');
+  await _bootstrapKidAndEnter(cred.user, famId);
 }
 
 /* ── Internal helpers ─────────────────────────────────────── */
 
 async function _bootstrapAndEnter(user, role) {
+  try { state.idToken = await user.getIdToken(); } catch (_) {}
   try {
-    state.idToken = await user.getIdToken();
     await api('/api/bootstrap', 'POST', {
       name: user.displayName || user.email?.split('@')[0] || 'Admin',
       role: 'admin',
@@ -266,9 +299,9 @@ async function _bootstrapAndEnter(user, role) {
   } catch (_) {}
   saveFamilyId(state.familyId);
   logEvent('login_success', { uid: user.uid, familyId: state.familyId });
-  setStatus('Signed in');
-  await refreshCatalog();
-  await refreshState();
+  try { await refreshCatalog(); } catch (_) {}
+  try { await refreshState(); } catch (_) {}
+  setStatus('');
   showHub(role);
 }
 
