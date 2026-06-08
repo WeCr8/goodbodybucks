@@ -1,6 +1,13 @@
 {
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "functions": {
+    "source": ".",
+    "runtime": "python311"
+  },
   "hosting": {
-    "public": ".",
+    "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -11,6 +18,9 @@
       "**/*.ps1",
       "**/*.sh",
       "hosting/**",
+      "academy/package/**/*.docx",
+      "academy/package/**/*.pptx",
+      "academy/package/**/*.xlsx",
       "test_*.py",
       "diagnose_*.py",
       "check_*.py",

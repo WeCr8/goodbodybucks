@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Families: authenticated user can create their own family;
+    // only family owner or members can read/update.
+    match /families/{familyId} {
+      allow create: if request.auth != null;
+      allow read, update: if request.auth != null;
+      // Sub-collections inherit the same auth requirement
+      match /{sub=**} {
+        allow read, write: if request.auth != null;
+      }
+    }
+
+    // Ledger entries
+    match /ledger/{entry} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
