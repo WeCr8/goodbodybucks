@@ -184,6 +184,15 @@ button { min-height:44px; }              /* WCAG touch target */
 .auth-divider      { display:flex; align-items:center; gap:10px; margin:14px 0; color:var(--gb-muted); font-size:.8rem; }
 .auth-divider::before,
 .auth-divider::after { content:''; flex:1; height:1px; background:var(--gb-border); }
+/* ── Auth tabs (Parent / Kid) ── */
+.auth-tabs         { display:flex; gap:0; margin:-24px -24px 20px; border-bottom:2px solid var(--gb-border); }
+.auth-tab          { flex:1; padding:13px 8px; background:none; border:none; border-bottom:2px solid transparent; margin-bottom:-2px; color:var(--gb-muted); font-size:.93rem; font-weight:600; cursor:pointer; font-family:inherit; transition:color 0.15s,border-color 0.15s; }
+.auth-tab.active   { color:var(--gb-green); border-bottom-color:var(--gb-green); }
+.auth-tab:hover:not(.active) { color:var(--gb-text); }
+.auth-panel        { /* login panel shown/hidden via .hidden */ }
+.auth-setup-title  { margin:0 0 6px; font-size:1.1rem; font-weight:700; color:var(--gb-text); }
+.auth-divider::before,
+.auth-divider::after { content:''; flex:1; height:1px; background:var(--gb-border); }
 .btn-primary       { background:linear-gradient(135deg,var(--gb-green) 0%,var(--gb-green-dk) 100%) !important; color:var(--gb-bg) !important; border:none !important; font-weight:700 !important; }
 .btn-primary:hover { opacity:0.88; }
 .btn-google        { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:12px 16px; background:#fff; color:#3c4043; border:1px solid #dadce0; border-radius:8px; font-size:.93rem; font-weight:600; cursor:pointer; font-family:inherit; transition:box-shadow 0.15s,background 0.15s; margin-bottom:8px; min-height:0; }

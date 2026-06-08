@@ -17,6 +17,7 @@ import {
   setupFamily, showHub, signOut,
   loginWithGoogle, loginWithApple,
   createFamilyAndLogin, createFamilyWithGoogle, linkGoogleToFamily, showAuthStep,
+  switchAuthTab, handleRedirectResult, finishFamilySetup,
 } from './auth.js';
 import {
   refreshCatalog,
@@ -59,6 +60,8 @@ Object.assign(window, {
   createFamilyWithGoogle,
   linkGoogleToFamily,
   showAuthStep,
+  switchAuthTab,
+  finishFamilySetup,
   switchTab,
   // catalog / menus
   refreshCatalog,
@@ -109,8 +112,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Render academy hub materials
   renderAcademyHub();
 
-  // Show initial auth step
-  showAuthStep('step0');
+  // Init auth tab and handle Google redirect result
+  switchAuthTab('parent');
+  handleRedirectResult();
 
   // Ensure purchase modal is hidden on page load
   const modal = document.getElementById("purchaseModal");
