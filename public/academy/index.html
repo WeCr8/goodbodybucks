@@ -1,0 +1,258 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Goodbody Summer Academy Hub</title>
+<meta name="theme-color" content="#0b0f14"/>
+<meta name="description" content="Goodbody Summer Academy â€” all materials, rewards, and certificates in one branded hub."/>
+<link rel="apple-touch-icon" href="/images/gbucks-coin.png"/>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7M51PF7WMC"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7M51PF7WMC');
+</script>
+<!-- Google AdSense (auto ads) -->
+<meta name="google-adsense-account" content="ca-pub-3639153716376265"/>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3639153716376265" crossorigin="anonymous"></script>
+<!-- Shared design system (tokens + base components) -->
+<link rel="stylesheet" href="/css/gbucks.css"/>
+<!-- Academy hub page-specific styles -->
+<style>
+  /* ---- Hero ---- */
+  .hero {
+    background: linear-gradient(135deg,#12344f 0%,#1f5f6d 54%,#f59e0b 100%);
+    border:1px solid #2a6f7f; border-radius:16px; padding:28px 24px;
+    margin-bottom:20px; display:flex; align-items:center; gap:20px; flex-wrap:wrap;
+  }
+  .hero-coin { width:80px; height:80px; border-radius:50%; border:3px solid var(--gb-green); box-shadow:0 0 20px rgba(52,211,153,0.45); flex-shrink:0; }
+  .hero-text h1 { margin:0 0 4px; font-size:clamp(20px,4vw,30px); color:#fff; }
+  .hero-text p  { margin:0; color:#d9f6ff; font-size:14px; }
+  .hero-quote    { margin-top:6px; font-size:13px; color:#9ed8e6; }
+  .hero-actions  { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+  .btn-ghost { background:rgba(255,255,255,0.07); color:var(--gb-text); border:1px solid var(--gb-border); padding:10px 18px; border-radius:10px; text-decoration:none; font-size:14px; cursor:pointer; display:inline-block; }
+  .btn-ghost:hover { background:rgba(255,255,255,0.12); }
+
+  /* ---- Section heading ---- */
+  .section-heading { font-size:13px; color:var(--gb-muted); text-transform:uppercase; letter-spacing:1px; font-weight:700; margin:24px 0 12px; display:flex; align-items:center; gap:8px; }
+  .section-heading::after { content:''; flex:1; height:1px; background:var(--gb-border); }
+
+  /* ---- Filter bar ---- */
+  .filter-bar { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .filter-btn { background:var(--gb-low); border:1px solid var(--gb-border); color:var(--gb-muted); padding:7px 14px; border-radius:999px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; font-family:inherit; }
+  .filter-btn:hover  { border-color:var(--gb-green); color:var(--gb-text); }
+  .filter-btn.active { border-color:var(--gb-green); background:rgba(52,211,153,0.12); color:var(--gb-green); }
+
+  /* ---- Material grid ---- */
+  .mat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
+  .mat-card { background:var(--gb-low); border:1px solid var(--gb-border-d); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:8px; transition:border-color 0.15s, box-shadow 0.15s; }
+  .mat-card:hover { border-color:var(--gb-green); box-shadow:0 4px 16px rgba(52,211,153,0.15); }
+  .mat-card-meta { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+  .mat-icon   { font-size:22px; line-height:1; }
+  .mat-title  { font-size:14px; font-weight:700; color:var(--gb-text); }
+  .mat-detail { font-size:12px; color:var(--gb-muted); line-height:1.4; flex:1; }
+  .mat-open   { margin-top:auto; font-size:12px; font-weight:700; color:var(--gb-cyan); text-decoration:none; display:inline-flex; align-items:center; gap:4px; }
+  .mat-open:hover { text-decoration:underline; }
+
+  /* ---- Type badges (page uses .badge instead of .academy-type-badge) ---- */
+  .badge { font-size:10px; font-weight:700; padding:2px 7px; border-radius:999px; text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap; }
+
+  /* ---- Reward table ---- */
+  .reward-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .reward-table th { text-align:left; color:var(--gb-muted); font-size:11px; text-transform:uppercase; letter-spacing:0.8px; padding:6px 10px; border-bottom:1px solid var(--gb-border); }
+  .reward-table td { padding:8px 10px; border-bottom:1px solid rgba(34,49,70,0.5); }
+  .reward-table tr:last-child td { border-bottom:none; }
+  .reward-table tr:hover td { background:rgba(52,211,153,0.04); }
+  .reward-amount { color:var(--gb-green); font-weight:700; white-space:nowrap; }
+  .reward-big    { color:var(--gb-amber); font-weight:700; }
+
+  /* ---- Certificates ---- */
+  .cert-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; }
+  .cert-card { background:var(--gb-low); border:1px solid var(--gb-amber); border-radius:12px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:10px; transition:box-shadow 0.15s; }
+  .cert-card:hover { box-shadow:0 4px 20px rgba(245,158,11,0.25); }
+  .cert-medal { font-size:36px; }
+  .cert-name  { font-size:15px; font-weight:700; color:var(--gb-text); }
+  .cert-sub   { font-size:11px; color:var(--gb-muted); }
+  .cert-btn   { background:var(--gb-amber); color:#0b0f14; font-weight:700; padding:8px 16px; border-radius:8px; text-decoration:none; font-size:12px; display:inline-block; margin-top:4px; }
+  .cert-btn:hover { background:var(--gb-amber-lt); }
+
+  /* ---- Top nav ---- */
+  .topnav       { display:flex; align-items:center; gap:12px; padding:12px 20px; background:var(--gb-surface); border-bottom:1px solid var(--gb-border); }
+  .topnav-logo  { width:32px; height:32px; border-radius:50%; border:1px solid var(--gb-green); }
+  .topnav-brand { font-weight:700; font-size:15px; color:var(--gb-text); text-decoration:none; }
+  .topnav-back  { margin-left:auto; font-size:13px; color:var(--gb-muted); text-decoration:none; }
+  .topnav-back:hover { color:var(--gb-text); }
+
+  /* ---- Daily rhythm ---- */
+  .rhythm-list { list-style:none; padding:0; margin:0; }
+  .rhythm-list li { display:flex; gap:12px; padding:8px 0; border-bottom:1px solid rgba(34,49,70,0.5); font-size:13px; }
+  .rhythm-list li:last-child { border-bottom:none; }
+  .rhythm-time { color:var(--gb-muted); font-variant-numeric:tabular-nums; min-width:70px; flex-shrink:0; }
+  .rhythm-act  { color:var(--gb-text); }
+</style>
+</head>
+<body>
+
+<!-- Top nav -->
+<nav class="topnav">
+  <img src="/images/gbucks-coin.png" alt="GB$ Logo" class="topnav-logo" onerror="this.style.display='none'"/>
+  <a href="/" class="topnav-brand">GB$ Family Wallet</a>
+  <a href="/" class="topnav-back">â† Back to App</a>
+</nav>
+
+<div class="wrap">
+
+  <!-- Hero -->
+  <div class="hero">
+    <img src="/images/gbucks-coin.png" alt="GB$ Coin" class="hero-coin" onerror="this.style.display='none'"/>
+    <div class="hero-text">
+      <h1>â˜€ï¸ Goodbody Summer Academy</h1>
+      <p>8 weeks Â· Miles (Grade 2) &amp; Sabrina (Grade 5) Â· GB$12â€“15/day allotment</p>
+      <p class="hero-quote">"Money is limited. Time runs out. Good choices compound. Poor choices have consequences."</p>
+      <div class="hero-actions">
+        <a href="/" class="btn-primary">âš¡ Open App</a>
+        <a href="/academy/package/0_START_HERE/START_HERE.md" target="_blank" rel="noopener" class="btn-ghost">ðŸ—ºï¸ Start Here</a>
+        <a href="/academy/package/6_PPTX_KICKOFF/summer_kickoff_deck.pptx" class="btn-ghost">ðŸš€ Kickoff Deck</a>
+        <a href="/academy/package/7_PRINTABLES/fridge_menus.pdf" target="_blank" rel="noopener" class="btn-ghost">ðŸ–¨ï¸ Print Menus</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Material library -->
+  <div class="section-heading">ðŸ“š All Materials</div>
+
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" onclick="filterMats('all', this)">All</button>
+    <button class="filter-btn" onclick="filterMats('Essential', this)">Essential</button>
+    <button class="filter-btn" onclick="filterMats('Student Plans', this)">Student Plans</button>
+    <button class="filter-btn" onclick="filterMats('Lesson Decks', this)">Lesson Decks</button>
+    <button class="filter-btn" onclick="filterMats('Print & Use', this)">Print &amp; Use</button>
+    <button class="filter-btn" onclick="filterMats('Progress', this)">Progress</button>
+  </div>
+
+  <div class="mat-grid" id="matGrid"></div>
+
+  <!-- Reward schedule -->
+  <div class="section-heading">ðŸ’° Academy GB$ Reward Schedule</div>
+  <div class="card">
+    <table class="reward-table">
+      <thead>
+        <tr>
+          <th>Activity</th>
+          <th>Reward</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Lesson complete</td>         <td class="reward-amount">+GB$5</td>   <td>Core subject session done</td></tr>
+        <tr><td>Video watched</td>            <td class="reward-amount">+GB$2</td>   <td>Curriculum video, full watch</td></tr>
+        <tr><td>Full writing page</td>        <td class="reward-amount">+GB$10</td>  <td>Prompt + minimum 5 sentences</td></tr>
+        <tr><td>Read 20 minutes</td>          <td class="reward-amount">+GB$5</td>   <td>Independent reading, logged</td></tr>
+        <tr><td>Teach it back</td>            <td class="reward-amount">+GB$10</td>  <td>Explain the lesson to a parent</td></tr>
+        <tr><td>Math challenge</td>           <td class="reward-amount">+GB$3</td>   <td>Extra problem set or drill</td></tr>
+        <tr><td>Sports goal achieved</td>     <td class="reward-amount reward-big">+GB$15</td>  <td>Own goal, set at start of week</td></tr>
+        <tr><td>Project milestone</td>        <td class="reward-amount reward-big">+GB$20</td>  <td>Better Yourself project checkpoint</td></tr>
+        <tr><td>Helped sibling</td>           <td class="reward-amount">+GB$5</td>   <td>Genuine coaching, parent verified</td></tr>
+        <tr><td>Bonus challenge</td>          <td class="reward-amount">+GB$8</td>   <td>Extra credit assigned by parent</td></tr>
+        <tr><td>ðŸ† Perfect week bonus</td>    <td class="reward-amount reward-big">+GB$25</td>  <td>All Monâ€“Thu sessions completed</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Daily rhythm -->
+  <div class="section-heading">â° Daily Rhythm (Monâ€“Thu)</div>
+  <div class="card">
+    <ul class="rhythm-list">
+      <li><span class="rhythm-time">8:30 AM</span><span class="rhythm-act">Morning Meeting â€” check GB$ balance + set daily intention</span></li>
+      <li><span class="rhythm-time">9:00 AM</span><span class="rhythm-act">Session 1 â€” core subject (slide deck + video)</span></li>
+      <li><span class="rhythm-time">9:45 AM</span><span class="rhythm-act">Break</span></li>
+      <li><span class="rhythm-time">10:00 AM</span><span class="rhythm-act">Session 2 â€” writing or project work</span></li>
+      <li><span class="rhythm-time">10:45 AM</span><span class="rhythm-act">Accounting Block â€” log GB$ in app + 1 financial concept</span></li>
+      <li><span class="rhythm-time">11:00 AM</span><span class="rhythm-act">Cross-family / sibling activity</span></li>
+      <li><span class="rhythm-time">Afternoon</span><span class="rhythm-act">Sports practice + Better Yourself Project</span></li>
+      <li><span class="rhythm-time">Friday</span><span class="rhythm-act">Light day â€” project work, field trip, or free time</span></li>
+    </ul>
+  </div>
+
+  <!-- Certificates -->
+  <div class="section-heading">ðŸ… Certificates of Achievement</div>
+  <div class="cert-grid">
+    <div class="cert-card">
+      <span class="cert-medal">ðŸ¥‡</span>
+      <div class="cert-name">Miles Goodbody</div>
+      <div class="cert-sub">Grade 2 Â· Summer 2026</div>
+      <a class="cert-btn" href="/academy/certificate.html?name=Miles&grade=2" target="_blank" rel="noopener">Print Certificate</a>
+    </div>
+    <div class="cert-card">
+      <span class="cert-medal">ðŸ¥‡</span>
+      <div class="cert-name">Sabrina Goodbody</div>
+      <div class="cert-sub">Grade 5 Â· Summer 2026</div>
+      <a class="cert-btn" href="/academy/certificate.html?name=Sabrina&grade=5" target="_blank" rel="noopener">Print Certificate</a>
+    </div>
+    <div class="cert-card">
+      <span class="cert-medal">ðŸ“„</span>
+      <div class="cert-name">Blank Template</div>
+      <div class="cert-sub">Fill in any name</div>
+      <a class="cert-btn" href="/academy/certificate.html" target="_blank" rel="noopener">Open Blank</a>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+const MATERIALS = [
+  { title:"Start Here",         detail:"Day 1 flow, daily rhythm, and full package map.",              icon:"ðŸ—ºï¸", type:"guide",   cat:"Essential",     href:"/academy/package/0_START_HERE/START_HERE.md" },
+  { title:"Teacher Guide",      detail:"Master curriculum guide for running the Academy.",              icon:"ðŸ‘¨â€ðŸ«", type:"guide",   cat:"Essential",     href:"/academy/package/1_TEACHER_GUIDES/dads_teacher_guide.pdf" },
+  { title:"Parent Cheatsheet",  detail:"Quick reference: rewards, rules, and app usage.",              icon:"ðŸ“‹", type:"guide",   cat:"Essential",     href:"/academy/package/1_TEACHER_GUIDES/gbb_parent_cheatsheet.pdf" },
+  { title:"8-Week Calendar",    detail:"Monâ€“Thu schedule for the full summer.",                        icon:"ðŸ“…", type:"guide",   cat:"Essential",     href:"/academy/package/4_LESSON_CALENDARS/8_week_calendar.pdf" },
+  { title:"GBB Reference",      detail:"Complete platform reference â€” rewards, images, rules.",         icon:"ðŸ“•", type:"guide",   cat:"Essential",     href:"/academy/package/11_GBB_DOCS/GOODBODYBUCKS_REFERENCE.md" },
+  { title:"Miles Plan",         detail:"Personalized 8-week plan â€” Grade 2.",                          icon:"ðŸ‘¦", type:"plan",    cat:"Student Plans", href:"/academy/package/2_STUDENT_PLANS/miles_student_plan.pdf" },
+  { title:"Sabrina Plan",       detail:"Personalized 8-week plan â€” Grade 5.",                          icon:"ðŸ‘§", type:"plan",    cat:"Student Plans", href:"/academy/package/2_STUDENT_PLANS/sabrina_student_plan.pdf" },
+  { title:"Blank Student Plan", detail:"Editable template for any child.",                             icon:"ðŸ“", type:"plan",    cat:"Student Plans", href:"/academy/package/3_BLANK_TEMPLATES/blank_student_plan.pdf" },
+  { title:"Kickoff Deck",       detail:"Day 1 presentation â€” show the kids.",                          icon:"ðŸš€", type:"deck",    cat:"Lesson Decks",  href:"/academy/package/6_PPTX_KICKOFF/summer_kickoff_deck.pptx" },
+  { title:"Miles Â· Math",       detail:"Reusable lesson slides â€” Miles Math.",                          icon:"ðŸ”¢", type:"deck",    cat:"Lesson Decks",  href:"/academy/package/5_PPTX_LESSON_TEMPLATES/Miles_MATH_template.pptx" },
+  { title:"Miles Â· Reading",    detail:"Reusable lesson slides â€” Miles Reading.",                       icon:"ðŸ“–", type:"deck",    cat:"Lesson Decks",  href:"/academy/package/5_PPTX_LESSON_TEMPLATES/Miles_READING_template.pptx" },
+  { title:"Miles Â· Writing",    detail:"Reusable lesson slides â€” Miles Writing.",                       icon:"âœï¸", type:"deck",    cat:"Lesson Decks",  href:"/academy/package/5_PPTX_LESSON_TEMPLATES/Miles_WRITING_template.pptx" },
+  { title:"Sabrina Â· ELA",      detail:"Reusable lesson slides â€” Sabrina ELA.",                        icon:"ðŸ“š", type:"deck",    cat:"Lesson Decks",  href:"/academy/package/5_PPTX_LESSON_TEMPLATES/Sabrina_ELA_template.pptx" },
+  { title:"Sabrina Â· Math",     detail:"Reusable lesson slides â€” Sabrina Math.",                       icon:"ðŸ”¢", type:"deck",    cat:"Lesson Decks",  href:"/academy/package/5_PPTX_LESSON_TEMPLATES/Sabrina_MATH_template.pptx" },
+  { title:"Sabrina Â· Science",  detail:"Reusable lesson slides â€” Sabrina Science.",                    icon:"ðŸ”¬", type:"deck",    cat:"Lesson Decks",  href:"/academy/package/5_PPTX_LESSON_TEMPLATES/Sabrina_SCIENCE_template.pptx" },
+  { title:"Fridge Menus",       detail:"4-page printable menus: food, screen time, learning, consequences.", icon:"ðŸ–¨ï¸", type:"print", cat:"Print & Use", href:"/academy/package/7_PRINTABLES/fridge_menus.pdf" },
+  { title:"GB$ Currency Bills", detail:"Cut-out printable GoodbodyBucks for offline use.",              icon:"ðŸ’µ", type:"print",   cat:"Print & Use",  href:"/academy/package/7_PRINTABLES/gbb_currency_bills.pdf" },
+  { title:"Sports Goal Sheets", detail:"Sports goals + Better Yourself project guide.",                 icon:"ðŸ†", type:"print",   cat:"Print & Use",  href:"/academy/package/8_SPORTS_AND_PROJECTS/sports_goal_sheets.pdf" },
+  { title:"Summer Tracker",     detail:"Excel: GB$ ledger, progress tracker, video library.",           icon:"ðŸ“Š", type:"tracker", cat:"Progress",     href:"/academy/package/9_TRACKING_SHEETS/summer_tracker.xlsx" },
+];
+
+const TYPE_LABEL = { print:"Print", guide:"Guide", plan:"Plan", deck:"Deck", tracker:"Tracker" };
+
+let currentFilter = "all";
+
+function renderGrid(filter) {
+  const grid = document.getElementById("matGrid");
+  const items = filter === "all" ? MATERIALS : MATERIALS.filter(m => m.cat === filter);
+  grid.innerHTML = items.map(m => `
+    <div class="mat-card" data-cat="${m.cat}">
+      <div class="mat-card-meta">
+        <span class="mat-icon">${m.icon}</span>
+        <span class="badge badge-${m.type}">${TYPE_LABEL[m.type]||m.type}</span>
+      </div>
+      <div class="mat-title">${m.title}</div>
+      <div class="mat-detail">${m.detail}</div>
+      <a class="mat-open" href="${m.href}" target="_blank" rel="noopener noreferrer">Open â†’</a>
+    </div>
+  `).join("");
+}
+
+function filterMats(cat, btn) {
+  currentFilter = cat;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderGrid(cat);
+}
+
+renderGrid("all");
+</script>
+</body>
+</html>

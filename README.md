@@ -38,6 +38,7 @@ Think of it as a **real-world economy simulator** for your family!
 - ⚠️ **Consequences** - Apply time or money penalties when needed
 - 🔒 **Screen Locks** - Lock/unlock screen time access
 - 📈 **Visual Menus** - Manage food, screen time, and learning catalogs
+- 🎓 **Summer Academy Hub** - Open copied Academy printables, plans, tracker workbook, kickoff deck, and platform docs from inside the app
 
 ### System Features
 - 🔐 **Firebase Authentication** - Secure email/password login
@@ -46,6 +47,19 @@ Think of it as a **real-world economy simulator** for your family!
 - 🖼️ **Visual Menus** - Image-based item selection
 - ✅ **Purchase Confirmation** - Modal with preview before buying
 - 📱 **Responsive Design** - Works on desktop, tablet, and mobile
+
+## 🎓 Summer Academy Package
+
+The downloaded package from `C:\Users\zach\Downloads\Goodbody_Summer_Academy_COMPLETE_v2\final_package` is copied into `public/academy/package` and served by the current app under `/academy/package/...`.
+
+Key app links:
+- `/academy/package/0_START_HERE/START_HERE.md`
+- `/academy/package/7_PRINTABLES/fridge_menus.pdf`
+- `/academy/package/9_TRACKING_SHEETS/summer_tracker.xlsx`
+- `/academy/package/6_PPTX_KICKOFF/summer_kickoff_deck.pptx`
+- `/academy/academy-data.json`
+
+The backend default reward catalog now includes Summer Academy actions such as lesson completion, video watched, writing page, sports goals, project milestones, and perfect week bonus. Existing family catalogs receive these default actions at catalog-read time without overwriting custom entries.
 
 ## 🚀 Quick Start
 

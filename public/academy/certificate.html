@@ -1,0 +1,413 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>GB$ Certificate of Achievement</title>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7M51PF7WMC"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7M51PF7WMC');
+</script>
+<!-- Google AdSense (auto ads) -->
+<meta name="google-adsense-account" content="ca-pub-3639153716376265"/>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3639153716376265" crossorigin="anonymous"></script>
+<style>
+  /* ---- Screen styles ---- */
+  :root {
+    --gb-green:  #34d399;
+    --gb-amber:  #f59e0b;
+    --gb-blue:   #60a5fa;
+    --gb-text:   #1a2636;
+    --gb-muted:  #4a6080;
+    --gb-bg:     #f5f8fc;
+    --gb-gold:   #b8860b;
+    --gb-gold-lt:#ffd700;
+  }
+
+  * { box-sizing:border-box; margin:0; padding:0; }
+
+  body {
+    background: var(--gb-bg);
+    font-family: Georgia, 'Times New Roman', serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+    color: var(--gb-text);
+  }
+
+  /* ---- Screen controls (hidden on print) ---- */
+  .screen-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .ctrl-label { font-family:system-ui; font-size:13px; color:var(--gb-muted); }
+  .ctrl-input {
+    font-family:system-ui; font-size:14px;
+    border:1px solid #ccd8e8; border-radius:8px;
+    padding:7px 12px; background:#fff;
+    color:var(--gb-text); width:200px;
+  }
+  .print-btn {
+    background: linear-gradient(135deg, var(--gb-green) 0%, #22c088 100%);
+    color: #0b0f14; font-family:system-ui; font-weight:700;
+    font-size:14px; padding:10px 22px; border-radius:10px;
+    border:none; cursor:pointer;
+  }
+  .print-btn:hover { opacity:0.88; }
+  .back-link {
+    font-family:system-ui; font-size:13px; color:var(--gb-muted);
+    text-decoration:none;
+  }
+  .ctrl-input-sm { width:80px; }
+  .ctrl-input-md { width:140px; }
+
+  /* ---- Certificate frame ---- */
+  .cert {
+    width: 100%;
+    max-width: 860px;
+    background: #fff;
+    border: 6px double var(--gb-gold);
+    border-radius: 4px;
+    padding: 50px 60px;
+    position: relative;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+    text-align: center;
+  }
+
+  /* Corner decorations */
+  .cert::before, .cert::after {
+    content: '✦';
+    position: absolute;
+    font-size: 28px;
+    color: var(--gb-gold);
+    line-height: 1;
+  }
+  .cert::before { top: 14px; left: 18px; }
+  .cert::after  { top: 14px; right: 18px; }
+  .cert-corner-bl, .cert-corner-br {
+    position: absolute;
+    font-size: 28px;
+    color: var(--gb-gold);
+    line-height: 1;
+  }
+  .cert-corner-bl { bottom: 14px; left: 18px; }
+  .cert-corner-br { bottom: 14px; right: 18px; }
+
+  /* Inner decorative border */
+  .cert-inner {
+    border: 2px solid rgba(184,134,11,0.3);
+    border-radius: 2px;
+    padding: 40px 40px 36px;
+    position: relative;
+  }
+
+  /* Header brand row */
+  .cert-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .cert-coin {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    border: 2px solid var(--gb-gold);
+    box-shadow: 0 0 10px rgba(184,134,11,0.3);
+  }
+  .cert-brand-name {
+    font-family: Georgia, serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gb-gold);
+  }
+
+  /* Divider */
+  .cert-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 0;
+    color: var(--gb-gold);
+    font-size: 18px;
+  }
+  .cert-divider::before, .cert-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gb-gold), transparent);
+  }
+
+  /* Main text */
+  .cert-presents {
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gb-muted);
+    margin-bottom: 8px;
+  }
+  .cert-title {
+    font-size: clamp(22px, 5vw, 34px);
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--gb-gold);
+    margin-bottom: 18px;
+    text-shadow: 0 1px 2px rgba(184,134,11,0.15);
+  }
+  .cert-awarded-to {
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gb-muted);
+    margin-bottom: 6px;
+  }
+  .cert-name {
+    font-size: clamp(28px, 7vw, 48px);
+    font-style: italic;
+    color: var(--gb-text);
+    border-bottom: 2px solid rgba(184,134,11,0.4);
+    display: inline-block;
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+    min-width: 300px;
+  }
+  .cert-grade {
+    font-size: 13px;
+    color: var(--gb-muted);
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+  }
+  .cert-body {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--gb-muted);
+    max-width: 580px;
+    margin: 0 auto 24px;
+  }
+  .cert-body strong { color: var(--gb-text); }
+
+  /* Achievements / highlights */
+  .cert-achievements {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
+  }
+  .cert-ach {
+    background: rgba(184,134,11,0.07);
+    border: 1px solid rgba(184,134,11,0.25);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: var(--gb-gold);
+    font-family: system-ui;
+    font-weight: 600;
+  }
+
+  /* Medals row */
+  .cert-medals {
+    font-size: 32px;
+    letter-spacing: 6px;
+    margin: 10px 0 20px;
+  }
+
+  /* Signature row */
+  .cert-sig-row {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    gap: 24px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+  }
+  .cert-sig {
+    text-align: center;
+    min-width: 140px;
+  }
+  .cert-sig-line {
+    border-bottom: 1px solid rgba(0,0,0,0.2);
+    margin-bottom: 5px;
+    padding-bottom: 2px;
+    font-size: 16px;
+    font-style: italic;
+    min-height: 28px;
+  }
+  .cert-sig-label {
+    font-family: system-ui;
+    font-size: 11px;
+    color: var(--gb-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* Footer */
+  .cert-footer {
+    margin-top: 24px;
+    font-family: system-ui;
+    font-size: 11px;
+    color: rgba(74,96,128,0.5);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ---- Print styles ---- */
+  @media print {
+    body {
+      background: #fff;
+      padding: 0;
+      display: block;
+    }
+    .screen-controls { display: none !important; }
+    .cert {
+      max-width: 100%;
+      box-shadow: none;
+      border-width: 6px;
+      page-break-inside: avoid;
+      margin: 0;
+    }
+    @page {
+      size: landscape;
+      margin: 10mm;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Screen controls -->
+<div class="screen-controls" id="screenControls">
+  <a href="/academy/" class="back-link">← Academy Hub</a>
+  <label class="ctrl-label" for="nameInput">Student Name:</label>
+  <input class="ctrl-input" id="nameInput" type="text" placeholder="e.g. Miles"/>
+  <label class="ctrl-label" for="gradeInput">Grade:</label>
+  <input class="ctrl-input ctrl-input-sm" id="gradeInput" type="text" placeholder="e.g. 2"/>
+  <label class="ctrl-label" for="dateInput">Date:</label>
+  <input class="ctrl-input ctrl-input-md" id="dateInput" type="text" placeholder="August 2026"/>
+  <button class="print-btn" onclick="window.print()">🖨️ Print / Save PDF</button>
+</div>
+
+<!-- Certificate -->
+<div class="cert" id="cert">
+  <span class="cert-corner-bl">✦</span>
+  <span class="cert-corner-br">✦</span>
+
+  <div class="cert-inner">
+
+    <!-- Brand header -->
+    <div class="cert-brand">
+      <img src="/images/gbucks-coin.png" alt="GB$ Coin" class="cert-coin"
+           onerror="this.style.display='none'"/>
+      <div class="cert-brand-name">GoodbodyBucks · Goodbody Family Academy</div>
+    </div>
+
+    <div class="cert-divider">✦</div>
+
+    <div class="cert-presents">Proudly Presents</div>
+
+    <div class="cert-title">Certificate of Achievement</div>
+
+    <div class="cert-medals">🌟 🏅 🌟</div>
+
+    <div class="cert-awarded-to">This Certificate Is Awarded To</div>
+    <div class="cert-name" id="certName">__________________________</div>
+    <div class="cert-grade" id="certGrade"></div>
+
+    <div class="cert-divider">★</div>
+
+    <p class="cert-body" id="certBody">
+      For successfully completing the <strong>Goodbody Summer Academy</strong> —
+      8 weeks of dedication, learning, and growth.
+      This student demonstrated commitment to academic excellence,
+      financial responsibility through the <strong>GB$ economy</strong>,
+      and personal development through sports and project goals.
+    </p>
+
+    <!-- Achievement badges -->
+    <div class="cert-achievements">
+      <span class="cert-ach">📖 Reading &amp; Writing</span>
+      <span class="cert-ach">🔢 Mathematics</span>
+      <span class="cert-ach">💰 Financial Literacy</span>
+      <span class="cert-ach">🏆 Sports Goals</span>
+      <span class="cert-ach">🌱 Better Yourself Project</span>
+      <span class="cert-ach">🤝 Family Teamwork</span>
+    </div>
+
+    <div class="cert-divider">✦</div>
+
+    <!-- Signature row -->
+    <div class="cert-sig-row">
+      <div class="cert-sig">
+        <div class="cert-sig-line">Zach Goodbody</div>
+        <div class="cert-sig-label">Lead Instructor &amp; Dad</div>
+      </div>
+      <div class="cert-sig">
+        <div class="cert-sig-line" id="certDate"></div>
+        <div class="cert-sig-label">Date of Completion</div>
+      </div>
+      <div class="cert-sig">
+        <div class="cert-sig-line">Goodbody Academy</div>
+        <div class="cert-sig-label">Issued By</div>
+      </div>
+    </div>
+
+    <div class="cert-footer" id="certFooter">goodbodybucks.web.app · Summer 2026</div>
+
+  </div><!-- /cert-inner -->
+</div><!-- /cert -->
+
+<script>
+// Read URL params
+function getParam(key) {
+  return new URLSearchParams(window.location.search).get(key) || '';
+}
+
+function init() {
+  const name  = getParam('name');
+  const grade = getParam('grade');
+  const date  = getParam('date') || 'Summer 2026';
+
+  const nameEl  = document.getElementById('certName');
+  const gradeEl = document.getElementById('certGrade');
+  const dateEl  = document.getElementById('certDate');
+  const nameIn  = document.getElementById('nameInput');
+  const gradeIn = document.getElementById('gradeInput');
+  const dateIn  = document.getElementById('dateInput');
+
+  function update() {
+    const n = nameIn.value.trim();
+    const g = gradeIn.value.trim();
+    const d = dateIn.value.trim();
+    nameEl.textContent  = n || '__________________________';
+    gradeEl.textContent = (n && g) ? `Grade ${g} · Goodbody Family Academy` : (g ? `Grade ${g}` : '');
+    dateEl.textContent  = d || '';
+  }
+
+  // Populate from params
+  if (name)  nameIn.value  = name;
+  if (grade) gradeIn.value = grade;
+  dateIn.value = date;
+
+  nameIn.addEventListener('input', update);
+  gradeIn.addEventListener('input', update);
+  dateIn.addEventListener('input', update);
+
+  update();
+}
+
+init();
+</script>
+</body>
+</html>

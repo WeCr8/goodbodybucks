@@ -1,0 +1,39 @@
+{
+  "name": "Goodbody Summer Academy",
+  "source": "C:\\Users\\zach\\Downloads\\Goodbody_Summer_Academy_COMPLETE_v2\\final_package",
+  "copiedTo": "/academy/package",
+  "dailyAllotment": {
+    "Miles": 12,
+    "Sabrina": 15
+  },
+  "materials": [
+    { "label": "Start Here", "path": "/academy/package/0_START_HERE/START_HERE.md" },
+    { "label": "Dad's Teacher Guide", "path": "/academy/package/1_TEACHER_GUIDES/dads_teacher_guide.pdf" },
+    { "label": "GBB Parent Cheatsheet", "path": "/academy/package/1_TEACHER_GUIDES/gbb_parent_cheatsheet.pdf" },
+    { "label": "Miles Student Plan", "path": "/academy/package/2_STUDENT_PLANS/miles_student_plan.pdf" },
+    { "label": "Sabrina Student Plan", "path": "/academy/package/2_STUDENT_PLANS/sabrina_student_plan.pdf" },
+    { "label": "Blank Student Plan", "path": "/academy/package/3_BLANK_TEMPLATES/blank_student_plan.pdf" },
+    { "label": "8 Week Calendar", "path": "/academy/package/4_LESSON_CALENDARS/8_week_calendar.pdf" },
+    { "label": "Kickoff Deck", "path": "/academy/package/6_PPTX_KICKOFF/summer_kickoff_deck.pptx" },
+    { "label": "Fridge Menus", "path": "/academy/package/7_PRINTABLES/fridge_menus.pdf" },
+    { "label": "GBB Currency Bills", "path": "/academy/package/7_PRINTABLES/gbb_currency_bills.pdf" },
+    { "label": "Sports Goal Sheets", "path": "/academy/package/8_SPORTS_AND_PROJECTS/sports_goal_sheets.pdf" },
+    { "label": "Summer Tracker Workbook", "path": "/academy/package/9_TRACKING_SHEETS/summer_tracker.xlsx" },
+    { "label": "Certificates", "path": "/academy/package/10_CERTIFICATES/certificate_BLANK.pdf" },
+    { "label": "GBB Reference", "path": "/academy/package/11_GBB_DOCS/GOODBODYBUCKS_REFERENCE.md" },
+    { "label": "Platform README", "path": "/academy/package/12_TECH_PLATFORM/platform_README.md" }
+  ],
+  "academyRewards": [
+    { "id": "academy_lesson_complete", "label": "Academy: Lesson complete", "delta_gb": 5 },
+    { "id": "academy_video_watched", "label": "Academy: Video watched", "delta_gb": 2 },
+    { "id": "academy_writing_page", "label": "Academy: Full writing page", "delta_gb": 10 },
+    { "id": "academy_read20", "label": "Academy: Read 20 minutes", "delta_gb": 5 },
+    { "id": "academy_teach_back", "label": "Academy: Teach it back", "delta_gb": 10 },
+    { "id": "academy_math_challenge", "label": "Academy: Math challenge", "delta_gb": 3 },
+    { "id": "academy_sports_goal", "label": "Academy: Sports goal achieved", "delta_gb": 15 },
+    { "id": "academy_project_milestone", "label": "Academy: Project milestone", "delta_gb": 20 },
+    { "id": "academy_help_sibling", "label": "Academy: Helped sibling", "delta_gb": 5 },
+    { "id": "academy_bonus_challenge", "label": "Academy: Bonus challenge", "delta_gb": 8 },
+    { "id": "academy_perfect_week", "label": "Academy: Perfect week bonus", "delta_gb": 25 }
+  ]
+}

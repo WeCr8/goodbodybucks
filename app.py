@@ -48,6 +48,17 @@ DEFAULT_REWARDS = [
     {"id":"lit_read5","label":"Reading: 5 pages","delta_gb":1.00},
     {"id":"spell_word","label":"Spelling: 1 word correct","delta_gb":0.25},
     {"id":"write_sentence","label":"Writing: 1 sentence","delta_gb":0.50},
+    {"id":"academy_lesson_complete","label":"Academy: Lesson complete","delta_gb":5.00},
+    {"id":"academy_video_watched","label":"Academy: Video watched","delta_gb":2.00},
+    {"id":"academy_writing_page","label":"Academy: Full writing page","delta_gb":10.00},
+    {"id":"academy_read20","label":"Academy: Read 20 minutes","delta_gb":5.00},
+    {"id":"academy_teach_back","label":"Academy: Teach it back","delta_gb":10.00},
+    {"id":"academy_math_challenge","label":"Academy: Math challenge","delta_gb":3.00},
+    {"id":"academy_sports_goal","label":"Academy: Sports goal achieved","delta_gb":15.00},
+    {"id":"academy_project_milestone","label":"Academy: Project milestone","delta_gb":20.00},
+    {"id":"academy_help_sibling","label":"Academy: Helped sibling","delta_gb":5.00},
+    {"id":"academy_bonus_challenge","label":"Academy: Bonus challenge","delta_gb":8.00},
+    {"id":"academy_perfect_week","label":"Academy: Perfect week bonus","delta_gb":25.00},
 ]
 
 DEFAULT_SCREEN_PACKAGES = [
@@ -106,6 +117,31 @@ def compute_ledger_hash(ts, actor_uid, target_uid, typ, payload_json, prev_hash)
     s = f"{ts}|{actor_uid}|{target_uid}|{typ}|{payload_json}|{prev_hash}"
     return sha256(s)
 
+def default_catalog_config() -> dict:
+    return {
+        "rewards": DEFAULT_REWARDS,
+        "screen": DEFAULT_SCREEN_PACKAGES,
+        "food": DEFAULT_FOOD_MENU,
+        "time_consequences": DEFAULT_TIME_CONSEQUENCES,
+        "money_consequences": DEFAULT_MONEY_CONSEQUENCES,
+    }
+
+def merge_catalog_items(default_items, configured_items):
+    configured_items = configured_items or []
+    seen = {item.get("id") for item in configured_items if isinstance(item, dict)}
+    merged = list(configured_items)
+    merged.extend(item for item in default_items if item.get("id") not in seen)
+    return merged
+
+def merge_catalog_config(config: dict) -> dict:
+    defaults = default_catalog_config()
+    if not config:
+        return defaults
+    merged = dict(config)
+    for key, default_items in defaults.items():
+        merged[key] = merge_catalog_items(default_items, config.get(key))
+    return merged
+
 # -------------------------
 # Firebase init
 # -------------------------
@@ -145,7 +181,7 @@ def get_family_config(family_id: str) -> dict:
     if not snap.exists:
         return None
     data = snap.to_dict()
-    return data.get("config")
+    return merge_catalog_config(data.get("config"))
 
 def is_admin(family_id: str, uid: str) -> bool:
     snap = member_ref(family_id, uid).get()
@@ -305,13 +341,7 @@ def api_setup_family():
     if not name:
         return jsonify({"ok": False, "error": "family_name required"}), 400
 
-    cfg = {
-        "rewards": DEFAULT_REWARDS,
-        "screen": DEFAULT_SCREEN_PACKAGES,
-        "food": DEFAULT_FOOD_MENU,
-        "time_consequences": DEFAULT_TIME_CONSEQUENCES,
-        "money_consequences": DEFAULT_MONEY_CONSEQUENCES,
-    }
+    cfg = default_catalog_config()
 
     try:
         doc = db.collection("families").document()
