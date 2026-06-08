@@ -8,15 +8,6 @@ import { logEvent, logClick, logError } from './logger.js';
 import { refreshState }                 from './wallet.js';
 
 /**
- * members.js — Add, remove, and reset family members.
- * Depends on: state.js, api.js, logger.js, wallet.js
- */
-
-import { api, setStatus }               from './api.js';
-import { logEvent, logClick, logError } from './logger.js';
-import { refreshState }                 from './wallet.js';
-
-/**
  * Quick Add Child — creates Firebase Auth + family membership via server.
  * Admin stays signed in (server creates the kid account via Admin SDK).
  */
