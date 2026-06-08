@@ -39,6 +39,11 @@ VERIFY_*.py
 # Documentation (temporary)
 *.md
 !README.md
+!CHANGELOG.md
+!mobile/CHANGELOG.md
+!docs/*.md
+!public/*/CHANGELOG.md
+!public/academy/CHANGELOG.md
 
 # Deployment scripts
 deploy_*.sh

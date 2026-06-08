@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>GB$ Family Wallet</title>
+<meta name="theme-color" content="#0b0f14"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="GB$ Wallet"/>
+<meta name="description" content="The Goodbody family economy system — earn, spend, learn."/>
+<meta name="gb-release-sha" content="9ed30170"/>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7M51PF7WMC"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7M51PF7WMC');
+</script>
+<!-- Google AdSense (auto ads) -->
+<meta name="google-adsense-account" content="ca-pub-3639153716376265"/>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3639153716376265" crossorigin="anonymous"></script>
+<link rel="manifest" href="/manifest.json"/>
+<link rel="apple-touch-icon" href="/images/gbucks-coin.png"/>
+
+<!-- Firebase SDKs (compat required before ES module config.js runs) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<!-- Shared design system -->
+<link rel="stylesheet" href="/css/gbucks.css"/>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="logo-header">
+    <div>
+      <h1 class="logo-h1">
+        <img src="/images/gbucks-coin.png" alt="GB$ Logo" class="logo-img-sm" 
+             onload="console.log('[IMAGE] ✅ Loaded: gbucks-coin.png');" 
+             onerror="console.error('[IMAGE] ❌ Failed to load: gbucks-coin.png from', this.src); this.style.display='none';"/>
+        GB$ Family Wallet
+      </h1>
+      <p class="logo-tagline">Earn, Spend, Learn!</p>
+    </div>
+  </div>
+
+<!-- ===== MARKETING LANDING (shown to unauthenticated visitors) ===== -->
+<section id="landingSection">
+
+  <!-- Origin story hero -->
+  <div class="card landing-hero">
+    <img src="/images/gbucks-coin.png" alt="GB$ Coin" class="landing-coin"/>
+    <h2 class="landing-headline">The board that raised 9 kids.<br>Now it's an app.</h2>
+    <p class="landing-sub">Before smartphones, the Goodbody family ran their household with a hand-drawn chore board — dish duty, ice rights, contribution schedules. Everyone knew the rules. Everyone was accountable. <strong>GoodBodyBucks is that board, digitized.</strong></p>
+  </div>
+
+  <!-- App preview: 5 category thumbnails -->
+  <div class="card landing-preview">
+    <p class="landing-kicker">What your family uses every day</p>
+    <h3 class="landing-story-title">Five categories. One system.</h3>
+    <div class="landing-preview-grid">
+      <div class="landing-preview-item">
+        <img src="/images/wallet/wallet_menu.png" alt="Earn GB$ — wallet view" class="landing-preview-img" loading="lazy" onerror="this.closest('.landing-preview-item').style.display='none'"/>
+        <span class="landing-preview-label">💰 Earn GB$</span>
+      </div>
+      <div class="landing-preview-item">
+        <img src="/images/food/food_menu.png" alt="Food rewards menu" class="landing-preview-img" loading="lazy" onerror="this.closest('.landing-preview-item').style.display='none'"/>
+        <span class="landing-preview-label">🍕 Food rewards</span>
+      </div>
+      <div class="landing-preview-item">
+        <img src="/images/tablet_time/gaming_menu.png" alt="Screen time menu" class="landing-preview-img" loading="lazy" onerror="this.closest('.landing-preview-item').style.display='none'"/>
+        <span class="landing-preview-label">🎮 Screen time</span>
+      </div>
+      <div class="landing-preview-item">
+        <img src="/images/learning/learning_menu.png" alt="Learning rewards" class="landing-preview-img" loading="lazy" onerror="this.closest('.landing-preview-item').style.display='none'"/>
+        <span class="landing-preview-label">📚 Learning</span>
+      </div>
+      <div class="landing-preview-item">
+        <img src="/images/consequences/consequences_menu_money.png" alt="Accountability — consequences" class="landing-preview-img" loading="lazy" onerror="this.closest('.landing-preview-item').style.display='none'"/>
+        <span class="landing-preview-label">⚠️ Accountability</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legacy chore board photo -->
+  <div class="card landing-legacy" id="legacyCard">
+    <img
+      src="/images/legacy/goodbody_legacy_schedule.JPG"
+      alt="Original Goodbody family hand-drawn chore board"
+      class="landing-legacy-img"
+      loading="lazy"
+      onerror="this.style.display='none'; document.getElementById('legacyPlaceholder').style.display='flex';"
+    />
+    <div id="legacyPlaceholder" class="landing-legacy-placeholder" style="display:none">
+      <div class="landing-legacy-placeholder-icon">📋</div>
+      <p class="landing-legacy-placeholder-title">The Original Chore Board</p>
+      <p class="landing-legacy-placeholder-sub">Drop <code>goodbody_legacy_schedule.JPG</code> into <code>public/images/legacy/</code> to show the hand-drawn board that started it all.</p>
+    </div>
+    <p class="landing-legacy-caption"><em>"The tools have changed. The lesson hasn't."</em></p>
+  </div>
+
+  <!-- Why we started -->
+  <div class="card landing-origin-story">
+    <p class="landing-kicker">Why we started GB$</p>
+    <h3 class="landing-story-title">We needed a fair way to make family work visible.</h3>
+    <p class="landing-story-copy">GoodbodyBucks did not start as a startup idea. It started as a family system: one board, nine kids, clear rules, and real accountability. The board made invisible work visible. It showed whose turn it was, what contribution was expected, and what privileges had to be earned.</p>
+    <div class="landing-principles" aria-label="GoodbodyBucks origin principles">
+      <div class="landing-principle"><strong>Visibility</strong><span>Everyone can see the rules.</span></div>
+      <div class="landing-principle"><strong>Rotation</strong><span>Work gets shared fairly.</span></div>
+      <div class="landing-principle"><strong>Clarity</strong><span>No guessing who owes what.</span></div>
+    </div>
+    <p class="landing-story-copy">GB$ continues that legacy for modern families, adding kid wallets, screen-time choices, learning rewards, and parent controls without losing the original lesson: contribution comes before consumption.</p>
+  </div>
+
+  <!-- What the app does -->
+  <div class="card">
+    <h3 class="landing-section-title">How it works today</h3>
+    <div class="landing-features">
+      <div class="landing-feature">💰 Kids earn GB$ for chores, learning &amp; outdoor work</div>
+      <div class="landing-feature">🍕 Spend on food, screen time &amp; real privileges</div>
+      <div class="landing-feature">⏱️ Screen time tracked by a live countdown timer</div>
+      <div class="landing-feature">⚠️ Consequences for poor choices — money or time</div>
+      <div class="landing-feature">📚 Summer Academy built in</div>
+      <div class="landing-feature">🔒 Parents control every rule</div>
+    </div>
+    <blockquote class="landing-quote">"Chores aren't optional — they're your contribution."</blockquote>
+    <button class="btn-primary landing-cta" onclick="document.getElementById('landingSection').classList.add('hidden'); document.getElementById('appSection').classList.remove('hidden');">
+      Start your family's economy →
+    </button>
+    <p class="landing-already">Already have an account? <a href="#" onclick="event.preventDefault(); document.getElementById('landingSection').classList.add('hidden'); document.getElementById('appSection').classList.remove('hidden');">Sign in</a></p>
+  </div>
+
+</section>
+
+<!-- ===== APP SECTION (shown after auth / get-started click) ===== -->
+<section id="appSection" class="hidden">
+
+<!-- User bar -->
+<div id="userBar" class="user-bar hidden">
+  <span id="userBarEmail" class="user-bar-email"></span>
+  <button class="user-bar-signout" onclick="signOut()">Sign Out</button>
+</div>
+
+<!-- ── LOGIN CARD ─────────────────────────────────────────────────── -->
+<div class="card" id="loginCard">
+
+  <!-- Family ID: hidden persistent field, populated by role-picker or saved value -->
+  <input id="familyId" type="hidden" autocomplete="organization"/>
+
+  <!-- Step 0: Initial choice ─────────────────────────────────── -->
+  <div id="authStep0">
+    <h2 class="auth-logo-title">Welcome to GB$</h2>
+
+    <button type="button" class="btn-google" onclick="loginWithGoogle()">
+      <svg class="btn-social-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Sign in with Google
+    </button>
+
+    <button type="button" class="btn-apple" onclick="loginWithApple()">
+      <svg class="btn-social-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+        <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.42.07 2.41.74 3.26.72.85-.02 2.43-.91 4.13-.77 1.08.08 3.26.6 3.26 3.93-3.97 2.27-3.03 6.63 1.35 7zm-3.9-14.4C12.1 7.23 9.56 6.39 9.32 4.02c2.26-.13 4.2 1.15 4.83 1.86z"/>
+      </svg>
+      Sign in with Apple
+    </button>
+
+    <div class="auth-divider"><span>or</span></div>
+
+    <div class="auth-picker-row">
+      <button type="button" class="auth-picker-card" onclick="showAuthStep('new-family')" aria-label="Create a new family">
+        <span class="auth-picker-icon">👨‍👩‍👧</span>
+        <span class="auth-picker-title">New Family</span>
+        <span class="auth-picker-sub">First time here</span>
+      </button>
+      <button type="button" class="auth-picker-card" onclick="showAuthStep('role-picker')" aria-label="Sign in to existing family">
+        <span class="auth-picker-icon">🔑</span>
+        <span class="auth-picker-title">Sign In</span>
+        <span class="auth-picker-sub">Already a member</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Step: New Family (email) ───────────────────────────────── -->
+  <div id="authNewFamily" class="auth-step hidden">
+    <button type="button" class="auth-back" onclick="showAuthStep('step0')">← Back</button>
+    <h2>Create Your Family</h2>
+    <p class="auth-hint">Set up your family account. You'll get a Family ID to share with kids.</p>
+
+    <button type="button" class="btn-google" onclick="loginWithGoogle()">
+      <svg class="btn-social-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Continue with Google
+    </button>
+    <div class="auth-divider"><span>or use email</span></div>
+
+    <form onsubmit="event.preventDefault(); createFamilyAndLogin();">
+      <label for="newFamilyName">Family Name</label>
+      <input id="newFamilyName" required placeholder="e.g. Goodbody" title="Family name" autocomplete="organization"/>
+      <label for="newAdminEmail">Your Email</label>
+      <input id="newAdminEmail" type="email" required placeholder="parent@email.com" autocomplete="email"/>
+      <label for="newAdminPass">Password</label>
+      <input id="newAdminPass" type="password" required minlength="6" placeholder="Min 6 characters" autocomplete="new-password"/>
+      <button type="submit" class="btn-primary">Create Family &amp; Sign In</button>
+    </form>
+  </div>
+
+  <!-- Step: Role picker (returning) ──────────────────────────── -->
+  <div id="authRolePicker" class="auth-step hidden">
+    <button type="button" class="auth-back" onclick="showAuthStep('step0')">← Back</button>
+    <h2>Sign In</h2>
+    <label for="familyIdVisible">Family ID</label>
+    <input id="familyIdVisible" required placeholder="Paste your Family ID" title="Family ID" autocomplete="organization"
+           oninput="document.getElementById('familyId').value=this.value.trim()"/>
+    <div id="rolePicker">
+      <div class="auth-picker-label">Who's signing in?</div>
+      <div class="auth-picker-row">
+        <button type="button" class="auth-picker-card" id="pickAdmin" onclick="showAdmin()" aria-label="Sign in as Parent">
+          <span class="auth-picker-icon">👨‍🏫</span>
+          <span class="auth-picker-title">Parent</span>
+          <span class="auth-picker-sub">Email or Google</span>
+        </button>
+        <button type="button" class="auth-picker-card" id="pickKid" onclick="showKid()" aria-label="Sign in as Kid">
+          <span class="auth-picker-icon">🧒</span>
+          <span class="auth-picker-title">Kid</span>
+          <span class="auth-picker-sub">Name &amp; PIN</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step: Admin form ───────────────────────────────────────── -->
+  <div id="adminBox" class="auth-step hidden auth-form">
+    <button type="button" class="auth-back" onclick="resetPicker()">← Back</button>
+    <h2>Parent Sign In</h2>
+
+    <button type="button" class="btn-google" onclick="loginWithGoogle()">
+      <svg class="btn-social-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Sign in with Google
+    </button>
+    <button type="button" class="btn-apple" onclick="loginWithApple()">
+      <svg class="btn-social-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+        <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.42.07 2.41.74 3.26.72.85-.02 2.43-.91 4.13-.77 1.08.08 3.26.6 3.26 3.93-3.97 2.27-3.03 6.63 1.35 7zm-3.9-14.4C12.1 7.23 9.56 6.39 9.32 4.02c2.26-.13 4.2 1.15 4.83 1.86z"/>
+      </svg>
+      Sign in with Apple
+    </button>
+
+    <div class="auth-divider"><span>or use email</span></div>
+    <form onsubmit="event.preventDefault(); loginAdmin();">
+      <label for="adminEmail">Email</label>
+      <input id="adminEmail" type="email" autocomplete="email" required placeholder="parent@email.com" title="Admin email"/>
+      <label for="adminPass">Password</label>
+      <input id="adminPass" type="password" autocomplete="current-password" required minlength="6" placeholder="Min 6 characters" title="Password"/>
+      <button type="submit" class="btn-primary">Sign In as Parent</button>
+    </form>
+  </div>
+
+  <!-- Step: Kid form ─────────────────────────────────────────── -->
+  <div id="kidBox" class="auth-step hidden auth-form">
+    <button type="button" class="auth-back" onclick="resetPicker()">← Back</button>
+    <h2>Kid Sign In</h2>
+    <form onsubmit="event.preventDefault(); loginKid();">
+      <label for="kidName">Your Name</label>
+      <input id="kidName" autocomplete="username" required placeholder="Miles or Sabrina" title="Kid name"/>
+      <label for="kidPin">PIN</label>
+      <input id="kidPin" type="password" autocomplete="current-password" required minlength="6" placeholder="At least 6 characters" title="PIN"/>
+      <button type="submit" class="btn-primary">Sign In</button>
+    </form>
+  </div>
+
+  <!-- Step: Google/Apple — link to family ────────────────────── -->
+  <div id="authGoogleLink" class="auth-step hidden">
+    <h2>One more step!</h2>
+    <p class="auth-hint">You're signed in. Now link your family.</p>
+    <div class="auth-picker-row" style="margin-bottom:16px">
+      <button type="button" class="auth-picker-card" id="glNewFam" onclick="document.getElementById('glNewFam').classList.add('active');document.getElementById('glExisting').classList.remove('active');document.getElementById('glNewForm').classList.remove('hidden');document.getElementById('glLinkForm').classList.add('hidden');">
+        <span class="auth-picker-icon">🆕</span>
+        <span class="auth-picker-title">New Family</span>
+        <span class="auth-picker-sub">Create one now</span>
+      </button>
+      <button type="button" class="auth-picker-card" id="glExisting" onclick="document.getElementById('glExisting').classList.add('active');document.getElementById('glNewFam').classList.remove('active');document.getElementById('glLinkForm').classList.remove('hidden');document.getElementById('glNewForm').classList.add('hidden');">
+        <span class="auth-picker-icon">🔗</span>
+        <span class="auth-picker-title">Existing Family</span>
+        <span class="auth-picker-sub">Enter Family ID</span>
+      </button>
+    </div>
+    <form id="glNewForm" class="hidden" onsubmit="event.preventDefault(); createFamilyWithGoogle();">
+      <label for="googleFamilyName">Family Name</label>
+      <input id="googleFamilyName" required placeholder="e.g. Goodbody" autocomplete="organization"/>
+      <button type="submit" class="btn-primary">Create Family</button>
+    </form>
+    <form id="glLinkForm" class="hidden" onsubmit="event.preventDefault(); linkGoogleToFamily();">
+      <label for="googleLinkFamilyId">Family ID</label>
+      <input id="googleLinkFamilyId" required placeholder="Paste your Family ID" autocomplete="organization"/>
+      <button type="submit" class="btn-primary">Link &amp; Sign In</button>
+    </form>
+  </div>
+
+  <!-- Family ID banner (shown after account creation) ────────── -->
+  <div id="familyIdBanner" class="family-id-banner hidden">
+    <div class="family-id-banner-label">Your Family ID — share this with kids to sign in:</div>
+    <div class="family-id-banner-code" id="bannerFamilyId"></div>
+    <button type="button" class="btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('bannerFamilyId').textContent)">📋 Copy</button>
+  </div>
+
+  <div id="status" class="pill" role="status" aria-live="polite"></div>
+</div>
+
+
+<!-- ── KID HUB ─────────────────────────────────────────────────────── -->
+<div id="kidHub" class="hub hidden">
+  <nav class="hub-tabs" role="tablist" aria-label="Kid sections">
+    <button class="hub-tab active" data-tab="kidWalletTab"  onclick="switchTab('kidHub','kidWalletTab')"  role="tab">💰 Wallet</button>
+    <button class="hub-tab"        data-tab="kidShopTab"    onclick="switchTab('kidHub','kidShopTab')"    role="tab">🛒 Shop</button>
+    <button class="hub-tab"        data-tab="kidLearnTab"   onclick="switchTab('kidHub','kidLearnTab')"   role="tab">📚 Learn</button>
+    <button class="hub-tab"        data-tab="kidTimerTab"   onclick="switchTab('kidHub','kidTimerTab')"   role="tab">⏱️ Timer</button>
+    <button class="hub-tab"        data-tab="kidAcademyTab" onclick="switchTab('kidHub','kidAcademyTab')" role="tab">🏆 Academy</button>
+  </nav>
+  <div class="hub-panels">
+
+    <div id="kidWalletTab" class="hub-panel active">
+      <div id="kidWallet" class="card">
+        <h2>💰 My Wallet</h2>
+        <div id="walletDisplay"></div>
+      </div>
+      <div id="historyView" class="card hidden"></div>
+    </div>
+
+    <div id="kidShopTab" class="hub-panel">
+      <div class="card">
+        <h2>🍕 Food</h2>
+        <img src="/images/food/food_menu.png" alt="Food Menu" class="menu-image" onclick="showFoodMenu()"
+             onload="console.log('[IMAGE] ✅ food_menu.png');" onerror="this.style.opacity='.3'"/>
+        <div id="foodMenuGrid" class="menu-grid"></div>
+      </div>
+      <div class="card">
+        <h2>🎮 Screen Time</h2>
+        <img src="/images/tablet_time/gaming_menu.png" alt="Screen Time Menu" class="menu-image" onclick="showScreenMenu()"
+             onload="console.log('[IMAGE] ✅ gaming_menu.png');" onerror="this.style.opacity='.3'"/>
+        <div id="screenMenuGrid" class="menu-grid"></div>
+        <div id="dropdownMenus" class="hidden">
+          <label>Screen Package</label>
+          <select id="screenPkg"></select>
+          <button onclick="buyScreen()">Buy Screen Time</button>
+          <label>Food Item</label>
+          <select id="foodItem"></select>
+          <img id="foodPreview" src="" class="food-preview-img" alt="Food preview"/>
+          <button onclick="buyFood()">Buy Food</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="kidLearnTab" class="hub-panel">
+      <div class="card">
+        <h2>📚 Learning Rewards</h2>
+        <p class="hub-panel-hint">Complete a task and show your parent — they award the GB$.</p>
+        <img src="/images/learning/learning_menu.png" alt="Learning Menu" class="menu-image" onclick="showLearningMenu()"
+             onload="console.log('[IMAGE] ✅ learning_menu.png');" onerror="this.style.opacity='.3'"/>
+        <div id="learningMenuGrid" class="menu-grid"></div>
+      </div>
+    </div>
+
+    <div id="kidTimerTab" class="hub-panel">
+      <div class="card">
+        <h2>⏱️ Screen Timer</h2>
+        <p class="hub-panel-hint">Buy screen time on the Shop tab first, then start your session here.</p>
+        <label>Mode</label>
+        <select id="mode" title="Timer mode">
+          <option value="tablet">Tablet</option>
+          <option value="game">Game</option>
+        </select>
+        <button onclick="startSession()">▶ Start Session</button>
+        <button onclick="stopSession()">■ Stop Session</button>
+      </div>
+    </div>
+
+    <div id="kidAcademyTab" class="hub-panel">
+      <div class="card academy-hero">
+        <div class="academy-hero-header">
+          <img src="/images/gbucks-coin.png" alt="GB$ Coin" class="academy-hero-coin" onerror="this.style.display='none'"/>
+          <div class="academy-hero-titles">
+            <h2>☀️ Summer Academy Hub</h2>
+            <p class="academy-hero-tagline">Goodbody Family · 8 Weeks · GB$12–15/day</p>
+          </div>
+        </div>
+        <p>Print menus, open student plans, launch lesson decks, track progress, and award Academy GB$ — all from one place.</p>
+        <div class="academy-pill-row">
+          <button class="academy-pill" onclick="applyAcademyAllotment()">⚡ Load Allotment</button>
+          <button class="academy-pill" onclick="focusAcademyReward()">🎯 Academy Rewards</button>
+          <a class="academy-hub-btn" href="/academy/" target="_blank" rel="noopener">🌐 Full Hub Page</a>
+        </div>
+        <div class="academy-cert-row">
+          <span class="academy-cert-row-label">Certificates:</span>
+          <a class="academy-cert-link" href="/academy/certificate.html?name=Miles&amp;grade=2" target="_blank" rel="noopener">🏅 Miles</a>
+          <a class="academy-cert-link" href="/academy/certificate.html?name=Sabrina&amp;grade=5" target="_blank" rel="noopener">🏅 Sabrina</a>
+          <a class="academy-cert-link" href="/academy/certificate.html" target="_blank" rel="noopener">📄 Blank</a>
+        </div>
+        <div id="academyMaterials" class="academy-grid"></div>
+      </div>
+    </div>
+
+  </div><!-- /hub-panels -->
+</div><!-- /kidHub -->
+
+<!-- ── PARENT HUB ──────────────────────────────────────────────────── -->
+<div id="parentHub" class="hub hidden">
+  <nav class="hub-tabs" role="tablist" aria-label="Parent sections">
+    <button class="hub-tab active" data-tab="parentDashTab"    onclick="switchTab('parentHub','parentDashTab')"    role="tab">📊 Dashboard</button>
+    <button class="hub-tab"        data-tab="parentRewardsTab" onclick="switchTab('parentHub','parentRewardsTab')" role="tab">🎁 Rewards</button>
+    <button class="hub-tab"        data-tab="parentRulesTab"   onclick="switchTab('parentHub','parentRulesTab')"   role="tab">⚠️ Rules</button>
+    <button class="hub-tab"        data-tab="parentFamilyTab"  onclick="switchTab('parentHub','parentFamilyTab')"  role="tab">🏠 Family</button>
+    <button class="hub-tab"        data-tab="parentMenusTab"   onclick="switchTab('parentHub','parentMenusTab')"   role="tab">📋 Menus</button>
+  </nav>
+  <div class="hub-panels">
+
+    <div id="parentDashTab" class="hub-panel active">
+      <div class="card">
+        <div class="hub-card-header">
+          <h2>📊 Family Dashboard</h2>
+          <button class="btn-inline" onclick="refreshState()">↻ Refresh</button>
+        </div>
+        <div id="kids"></div>
+      </div>
+    </div>
+
+    <div id="parentRewardsTab" class="hub-panel">
+      <div class="card">
+        <h2>💵 Daily Allotment</h2>
+        <p class="hub-panel-hint">JSON map of kid name → GB$ amount to award today.</p>
+        <label>Allotment JSON</label>
+        <textarea id="allotment" title="Daily allotment JSON" placeholder='{ "Kid": 12 }'>{ "Miles": 12, "Sabrina": 15 }</textarea>
+        <button onclick="dailyAllotment()">Apply Allotment</button>
+      </div>
+      <div class="card">
+        <h2>🎁 Reward a Kid</h2>
+        <label>Kid Name</label>
+        <input id="rewardKid" title="Kid name" placeholder="Miles or Sabrina"/>
+        <label>Reward Type</label>
+        <select id="rewardAction" title="Reward type"></select>
+        <button onclick="rewardKid()">Award GB$</button>
+      </div>
+    </div>
+
+    <div id="parentRulesTab" class="hub-panel">
+      <div class="card">
+        <h2>⚠️ Consequences</h2>
+        <p class="hub-panel-hint">Apply time or money penalties when needed.</p>
+        <label>Time Consequence — Kid Name</label>
+        <input id="timeKid" title="Kid name" placeholder="Kid name"/>
+        <label>Consequence Type</label>
+        <select id="timeConsequence" title="Time consequence"></select>
+        <button onclick="timePunish()">Apply Time Penalty</button>
+        <div class="hub-divider"></div>
+        <label>Money Consequence — Kid Name</label>
+        <input id="moneyKid" title="Kid name" placeholder="Kid name"/>
+        <label>Consequence Type</label>
+        <select id="moneyConsequence" title="Money consequence"></select>
+        <button onclick="moneyPunish()">Apply Money Penalty</button>
+      </div>
+    </div>
+
+    <div id="parentFamilyTab" class="hub-panel">
+
+      <!-- Quick Add Child ───────────────────────────────────── -->
+      <div class="card add-kid-card">
+        <h2>➕ Add a Child</h2>
+        <p class="hub-panel-hint">Creates the account automatically — kids sign in with their name and PIN.</p>
+        <label for="quickKidName">Child's Name</label>
+        <input id="quickKidName" autocomplete="off" placeholder="Miles or Sabrina" title="Child's name"/>
+        <label for="quickKidPin">PIN <span class="auth-hint-inline">(6+ characters, they'll type this to sign in)</span></label>
+        <input id="quickKidPin" type="password" minlength="6" placeholder="At least 6 characters" title="PIN" autocomplete="new-password"/>
+        <button class="btn-primary" onclick="addKid()">Add Child</button>
+      </div>
+
+      <!-- Family ID display / copy ──────────────────────────── -->
+      <div class="card">
+        <h2>🪪 Your Family ID</h2>
+        <p class="hub-panel-hint">Share this with anyone who needs to sign in to your family.</p>
+        <div class="family-id-display">
+          <span id="userBarFamilyId" class="family-id-code">—</span>
+          <button type="button" class="btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('userBarFamilyId').textContent)">📋 Copy</button>
+        </div>
+      </div>
+
+      <!-- Advanced: manual member management ────────────────── -->
+      <div class="card">
+        <h2>👨‍👩‍👧‍👦 Advanced Member Management</h2>
+        <p class="hub-panel-hint">Use "Add Child" above for kids. This section is for edge cases (connecting an existing Firebase account).</p>
+        <label>Add Member by UID</label>
+        <div class="row">
+          <input id="addMemberName" placeholder="Name"/>
+          <select id="addMemberRole" title="Member role">
+            <option value="kid">Kid</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <input id="addMemberUid" placeholder="Firebase UID"/>
+        <button onclick="addMember()">Add Member</button>
+        <div class="hub-divider"></div>
+        <label>Remove Member</label>
+        <input id="removeMemberUid" placeholder="Firebase UID or Kid Name"/>
+        <button onclick="removeMember()">Remove Member</button>
+        <div class="hub-divider"></div>
+        <label>Reset Kid Values</label>
+        <input id="resetKidUid" placeholder="Firebase UID or Kid Name"/>
+        <div class="row">
+          <input id="resetBalance" type="number" step="0.01" placeholder="Balance (0)"/>
+          <input id="resetMinutes" type="number" placeholder="Minutes (0)"/>
+        </div>
+        <label class="label-mt"><input type="checkbox" id="resetLocked"/> Lock screens</label>
+        <button onclick="resetKid()">Reset Kid</button>
+      </div>
+
+      <div class="card">
+        <h2>🏠 Family Setup</h2>
+        <p class="hub-panel-hint">One-time setup when creating a new family.</p>
+        <form onsubmit="event.preventDefault(); setupFamily();">
+          <label>Family Name</label>
+          <input id="familyName" value="Goodbody" title="Family Name" placeholder="Your family name" required/>
+          <button type="submit">Create Family</button>
+        </form>
+        <div id="setupResult" class="pill"></div>
+      </div>
+    </div>
+
+
+    <div id="parentMenusTab" class="hub-panel">
+      <div class="card">
+        <h2>📋 Menu Reference</h2>
+        <p class="hub-panel-hint">Visual menus kids see. Tap image to expand item grid.</p>
+        <div class="menu-section">
+          <h3>🍕 Food Menu</h3>
+          <img src="/images/food/food_menu.png" alt="Food Menu" class="menu-image" onclick="showAdminFoodMenu()"
+               onerror="this.style.opacity='.3'"/>
+          <div id="adminFoodMenuGrid" class="menu-grid hidden"></div>
+        </div>
+        <div class="menu-section">
+          <h3>🎮 Screen Time Menu</h3>
+          <img src="/images/tablet_time/gaming_menu.png" alt="Screen Time Menu" class="menu-image" onclick="showAdminScreenMenu()"
+               onload="console.log('[IMAGE] ✅ admin gaming_menu');" onerror="this.style.opacity='.3'"/>
+          <div id="adminScreenMenuGrid" class="menu-grid hidden"></div>
+        </div>
+        <div class="menu-section">
+          <h3>📚 Learning Rewards</h3>
+          <img src="/images/learning/learning_menu.png" alt="Learning Menu" class="menu-image" onclick="showAdminLearningMenu()"
+               onload="console.log('[IMAGE] ✅ admin learning_menu');" onerror="this.style.opacity='.3'"/>
+          <div id="adminLearningMenuGrid" class="menu-grid hidden"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /hub-panels -->
+</div><!-- /parentHub -->
+
+<!-- ── PURCHASE MODAL ──────────────────────────────────────────────── -->
+<div id="purchaseModal" class="modal-overlay hidden" onclick="if(event.target.id === 'purchaseModal') closePurchaseModal();">
+  <div class="modal modal-wide" onclick="event.stopPropagation();">
+    <div class="modal-header" id="modalTitle">Confirm Purchase</div>
+    <div class="modal-content">
+      <div id="modalMenuImage" class="modal-img-wrap">
+        <img id="modalMenuImageSrc" src="" alt="Menu" class="modal-img"
+             onload="console.log('[IMAGE] ✅ modal menu');" onerror="this.style.display='none'"/>
+      </div>
+      <div class="modal-row"><span class="modal-label">Item:</span><span class="modal-value" id="modalItemName">-</span></div>
+      <div class="modal-row"><span class="modal-label">Cost:</span><span class="modal-value negative" id="modalCost">-</span></div>
+      <div class="modal-row"><span class="modal-label">Current Balance:</span><span class="modal-value positive" id="modalCurrentBalance">-</span></div>
+      <div class="modal-row"><span class="modal-label">New Balance:</span><span class="modal-value" id="modalNewBalance">-</span></div>
+      <div id="modalExtraInfo" class="modal-extra-info"></div>
+      <div class="modal-menu-section">
+        <div class="modal-option-label">Select a different option:</div>
+        <div id="modalMenuGrid" class="modal-menu-grid"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closePurchaseModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmPurchase()">Confirm Purchase</button>
+    </div>
+  </div>
+</div>
+
+</section><!-- /appSection -->
+
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-import os, time, json, hashlib
+import os, re, time, json, hashlib
 from functools import wraps
 from flask import Flask, request, jsonify, send_from_directory
 
@@ -145,21 +145,26 @@ def merge_catalog_config(config: dict) -> dict:
 # -------------------------
 # Firebase init
 # -------------------------
-if not os.path.exists(SERVICE_ACCOUNT_PATH):
-    raise RuntimeError(
-        f"Missing service account key at {SERVICE_ACCOUNT_PATH}. "
-        f"Put serviceAccountKey.json next to app.py or set GOOGLE_APPLICATION_CREDENTIALS."
-    )
+if os.path.exists(SERVICE_ACCOUNT_PATH):
+    cred = credentials.Certificate(SERVICE_ACCOUNT_PATH)
+else:
+    cred = credentials.ApplicationDefault()
 
-cred = credentials.Certificate(SERVICE_ACCOUNT_PATH)
-firebase_admin.initialize_app(cred, {"projectId": FIREBASE_PROJECT_ID} if FIREBASE_PROJECT_ID else None)
-db = firestore.client()
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(cred, {"projectId": FIREBASE_PROJECT_ID} if FIREBASE_PROJECT_ID else None)
+db = None
+
+def get_db():
+    global db
+    if db is None:
+        db = firestore.client()
+    return db
 
 # -------------------------
 # Firestore helpers
 # -------------------------
 def fam_ref(family_id: str):
-    return db.collection("families").document(family_id)
+    return get_db().collection("families").document(family_id)
 
 def member_ref(family_id: str, uid: str):
     return fam_ref(family_id).collection("members").document(uid)
@@ -269,8 +274,7 @@ def auth_required(roles=None, allow_bootstrap=False):
 # -------------------------
 @app.get("/")
 def index():
-    # If you keep your index.html next to app.py for local testing
-    return send_from_directory(APP_DIR, "index.html")
+    return send_from_directory(os.path.join(APP_DIR, "public"), "index.html")
 
 @app.route("/test-image", methods=["GET"])
 def test_image():
@@ -344,7 +348,7 @@ def api_setup_family():
     cfg = default_catalog_config()
 
     try:
-        doc = db.collection("families").document()
+        doc = get_db().collection("families").document()
         family_id = doc.id
         doc.set({
             "name": name,
@@ -522,6 +526,49 @@ def api_admin_add_member():
     ledger_add(family_id, request.user["uid"], uid, "ADD_MEMBER", {"name": name, "role": role})
     return jsonify({"ok": True})
 
+@app.post("/api/admin/create_kid")
+@auth_required(["admin"])
+def api_admin_create_kid():
+    """
+    Admin creates a kid Firebase Auth account + family membership in one step.
+    Avoids the client-side issue where createUserWithEmailAndPassword logs out the admin.
+    Body: { "name": "Miles", "pin": "123456" }
+    Returns: { ok: true, uid: "...", email: "...", name: "..." }
+    """
+    family_id = request.user["family_id"]
+    data = request.get_json(force=True)
+    name = (data.get("name") or "").strip()
+    pin  = str(data.get("pin") or "").strip()
+
+    if not name:
+        return jsonify({"ok": False, "error": "name required"}), 400
+    if not pin or len(pin) < 6:
+        return jsonify({"ok": False, "error": "pin must be at least 6 characters"}), 400
+
+    safe_name = re.sub(r'\s+', '', name.lower())
+    email = f"{safe_name}.{family_id}@gbucks.local"
+
+    try:
+        try:
+            kid_user = auth.create_user(email=email, password=pin, display_name=name)
+        except auth.EmailAlreadyExistsError:
+            kid_user = auth.get_user_by_email(email)
+        uid = kid_user.uid
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"Failed to create account: {e}"}), 500
+
+    member_ref(family_id, uid).set(
+        {"uid": uid, "name": name, "role": "kid", "createdTs": now_ts()}, merge=True
+    )
+    wallet_ref(family_id, uid).set(
+        {"balanceGb": 0.0, "minutes": 0, "locked": False, "updatedTs": now_ts()}, merge=True
+    )
+    session_ref(family_id, uid).set(
+        {"active": False, "mode": None, "startTs": None, "endTs": None, "updatedTs": now_ts()}, merge=True
+    )
+    ledger_add(family_id, request.user["uid"], uid, "CREATE_KID", {"name": name, "email": email})
+    return jsonify({"ok": True, "uid": uid, "email": email, "name": name})
+
 @app.post("/api/admin/remove_member")
 @auth_required(["admin"])
 def api_admin_remove_member():
@@ -670,7 +717,7 @@ def sync_timer_for_kid(family_id: str, uid: str):
         else:
             txn.update(sref, {"startTs": new_start, "updatedTs": now_ts()})
 
-    db.transaction()(txn_op)
+    get_db().transaction()(txn_op)
 
 @app.get("/api/state")
 @auth_required(["admin","kid"])
@@ -779,7 +826,7 @@ def api_purchase_screen():
         txn.update(wref, {"balanceGb": new_bal, "minutes": new_min, "updatedTs": now_ts()})
 
     try:
-        db.transaction()(txn_op)
+        get_db().transaction()(txn_op)
         # Add purchase record outside transaction (audit trail)
         purchases_col(family_id).add({
             "familyId": family_id,
@@ -823,7 +870,7 @@ def api_purchase_food():
         txn.update(wref, {"balanceGb": clamp_money(bal - cost), "updatedTs": now_ts()})
 
     try:
-        db.transaction()(txn_op)
+        get_db().transaction()(txn_op)
         # Add purchase record outside transaction (audit trail)
         purchases_col(family_id).add({
             "familyId": family_id,
@@ -869,7 +916,7 @@ def api_session_start():
         txn.set(sref, {"active": True, "mode": mode, "startTs": now_ts(), "endTs": None, "updatedTs": now_ts()}, merge=True)
 
     try:
-        db.transaction()(txn_op)
+        get_db().transaction()(txn_op)
     except ValueError as e:
         return jsonify({"ok": False, "error": str(e)}), 400
 
@@ -927,7 +974,7 @@ def api_daily_allotment():
             bal = float(w.get("balanceGb") or 0.0)
             txn.set(wref, {"balanceGb": clamp_money(bal + amt), "updatedTs": now_ts()}, merge=True)
 
-        db.transaction()(txn_op)
+        get_db().transaction()(txn_op)
         ledger_add(family_id, request.user["uid"], kid_uid, "DAILY_ALLOTMENT", {"amount_gb": amt})
         applied.append({"kid": kid_name, "amount": amt})
 
@@ -959,7 +1006,7 @@ def api_reward():
         bal = float(w.get("balanceGb") or 0.0)
         txn.set(wref, {"balanceGb": clamp_money(bal + delta), "updatedTs": now_ts()}, merge=True)
 
-    db.transaction()(txn_op)
+    get_db().transaction()(txn_op)
     ledger_add(family_id, request.user["uid"], kid_uid, "REWARD", {"action": action, "delta_gb": delta})
     return jsonify({"ok": True})
 
@@ -1003,7 +1050,7 @@ def api_consequence_time():
         if c["id"] in ("end_session", "lock_day"):
             txn.set(sref, {"active": False, "endTs": now_ts(), "updatedTs": now_ts()}, merge=True)
 
-    db.transaction()(txn_op)
+    get_db().transaction()(txn_op)
 
     ledger_add(family_id, request.user["uid"], kid_uid, "CONSEQUENCE_TIME", {"consequence": c, "note": note})
     return jsonify({"ok": True})
@@ -1036,7 +1083,7 @@ def api_consequence_money():
         new_bal = max(0.0, clamp_money(bal + delta))
         txn.set(wref, {"balanceGb": new_bal, "updatedTs": now_ts()}, merge=True)
 
-    db.transaction()(txn_op)
+    get_db().transaction()(txn_op)
 
     ledger_add(family_id, request.user["uid"], kid_uid, "CONSEQUENCE_MONEY", {"consequence": c, "delta_gb": delta, "note": note})
     return jsonify({"ok": True})

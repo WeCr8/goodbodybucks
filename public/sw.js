@@ -2,7 +2,7 @@
 // Provides offline shell and enables PWA install prompts on Android/Chrome.
 // Strategy: network-first for API calls, cache-first for static shell.
 
-const CACHE = 'gbucks-shell-v1';
+const CACHE = 'gbucks-shell-v2';
 const SHELL = ['/', '/manifest.json', '/images/gbucks-coin.png'];
 
 self.addEventListener('install', e => {

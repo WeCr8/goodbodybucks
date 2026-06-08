@@ -7,6 +7,41 @@ import { api, setStatus }               from './api.js';
 import { logEvent, logClick, logError } from './logger.js';
 import { refreshState }                 from './wallet.js';
 
+/**
+ * members.js — Add, remove, and reset family members.
+ * Depends on: state.js, api.js, logger.js, wallet.js
+ */
+
+import { api, setStatus }               from './api.js';
+import { logEvent, logClick, logError } from './logger.js';
+import { refreshState }                 from './wallet.js';
+
+/**
+ * Quick Add Child — creates Firebase Auth + family membership via server.
+ * Admin stays signed in (server creates the kid account via Admin SDK).
+ */
+export async function addKid() {
+  logClick('addKid', 'admin_add_kid');
+  try {
+    const name = document.getElementById("quickKidName").value.trim();
+    const pin  = document.getElementById("quickKidPin").value.trim();
+    if (!name) { setStatus("Child's name is required"); return; }
+    if (!pin || pin.length < 6) { setStatus("PIN must be at least 6 characters"); return; }
+
+    setStatus("Creating account for " + name + "…");
+    logEvent('add_kid_attempt', { name });
+    const result = await api("/api/admin/create_kid", "POST", { name, pin });
+    logEvent('add_kid_success', { name, uid: result.uid });
+    setStatus(`✅ ${result.name} added! Sign-in name: "${name.toLowerCase().replace(/\s+/g, '')}", use their PIN.`);
+    document.getElementById("quickKidName").value = "";
+    document.getElementById("quickKidPin").value  = "";
+    await refreshState();
+  } catch (e) {
+    logError('addKid', e);
+    setStatus("Error: " + e.message);
+  }
+}
+
 export async function addMember() {
   logClick('addMember', 'admin_add_member');
   try {

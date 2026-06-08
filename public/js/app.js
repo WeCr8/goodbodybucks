@@ -12,7 +12,12 @@ import './config.js'; // side-effect: firebase.initializeApp
 import { mountDevtools } from './debug.js';
 
 import { renderAcademyHub, applyAcademyAllotment, focusAcademyReward } from './academy.js';
-import { resetPicker, showAdmin, showKid, loginAdmin, loginKid, familyIdInput, setupFamily } from './auth.js';
+import {
+  resetPicker, showAdmin, showKid, loginAdmin, loginKid, familyIdInput,
+  setupFamily, showHub, signOut,
+  loginWithGoogle, loginWithApple,
+  createFamilyAndLogin, createFamilyWithGoogle, linkGoogleToFamily, showAuthStep,
+} from './auth.js';
 import {
   refreshCatalog,
   toggleMenuView, showFoodMenu, showScreenMenu, showLearningMenu,
@@ -26,7 +31,15 @@ import {
 import { startSession, stopSession }       from './session.js';
 import { dailyAllotment, rewardKid, timePunish, moneyPunish,
          toggleAdminMenuView, showAdminFoodMenu, showAdminScreenMenu, showAdminLearningMenu } from './admin.js';
-import { addMember, removeMember, resetKid, quickResetKid }   from './members.js';
+import { addMember, removeMember, resetKid, quickResetKid, addKid } from './members.js';
+
+/* ---- Tab switcher (used by hub nav onclick) --------------- */
+function switchTab(hubId, tabId) {
+  const hub = document.getElementById(hubId);
+  if (!hub) return;
+  hub.querySelectorAll('.hub-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
+  hub.querySelectorAll('.hub-panel').forEach(p => p.classList.toggle('active', p.id === tabId));
+}
 
 /* ---- Expose to global scope for onclick= HTML attributes --- */
 Object.assign(window, {
@@ -38,6 +51,15 @@ Object.assign(window, {
   loginKid,
   familyIdInput,
   setupFamily,
+  showHub,
+  signOut,
+  loginWithGoogle,
+  loginWithApple,
+  createFamilyAndLogin,
+  createFamilyWithGoogle,
+  linkGoogleToFamily,
+  showAuthStep,
+  switchTab,
   // catalog / menus
   refreshCatalog,
   toggleMenuView,
@@ -72,6 +94,7 @@ Object.assign(window, {
   removeMember,
   resetKid,
   quickResetKid,
+  addKid,
   // academy
   applyAcademyAllotment,
   focusAcademyReward,
@@ -85,6 +108,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Render academy hub materials
   renderAcademyHub();
+
+  // Show initial auth step
+  showAuthStep('step0');
 
   // Ensure purchase modal is hidden on page load
   const modal = document.getElementById("purchaseModal");
